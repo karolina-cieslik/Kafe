@@ -32,12 +32,12 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 
 - Kod suspend testujemy w `runTest { ... }` (wirtualny czas, więc `delay` nie spowalnia testów).
 - Flow testujemy biblioteką **Turbine** (`app.cash.turbine`): `flow.test { awaitItem(); ... }`. Pod koniec bloku Turbine sprawdza, czy nie zostały nieodebrane emisje.
-- ViewModele testujemy helperem `runViewModelTest` z `core/testing/RunViewModelTest.kt`, który podmienia `Dispatchers.Main`, bo z niego korzysta `viewModelScope`. Dispatcher z lambdy wstrzykujemy do ViewModelu, żeby wszystko działało na jednym schedulerze:
+- ViewModele testujemy helperem `runViewModelTest` z `core/testing/RunViewModelTest.kt`, który podmienia `Dispatchers.Main`, bo z niego korzysta `viewModelScope`. `context.dispatcher` wstrzykujemy do ViewModelu, żeby wszystko działało na jednym schedulerze. Każdy VM opakowujemy w `context.track(...)`: po teście helper anuluje jego `viewModelScope` przed `resetMain`. Bez tego subskrypcje `stateIn`/`shareIn` sięgną do Main już po teście i rzucą „Dispatchers.Main accessed after resetMain”.
 
   ```kotlin
   @Test
-  fun initialLoadEmitsLoadingThenContent() = runViewModelTest { dispatcher ->
-      val viewModel = MenuViewModel(repository = FakeMenuRepository(), dispatcher = dispatcher)
+  fun initialLoadEmitsLoadingThenContent() = runViewModelTest { context ->
+      val viewModel = context.track(MenuViewModel(..., dispatcher = context.dispatcher))
 
       viewModel.state.test {
           assertIs<MenuUiState.Loading>(awaitItem())

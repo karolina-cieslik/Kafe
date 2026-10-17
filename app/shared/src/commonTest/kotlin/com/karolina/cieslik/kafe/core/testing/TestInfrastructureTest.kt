@@ -32,8 +32,8 @@ class TestInfrastructureTest {
     }
 
     @Test
-    fun viewModelStateIsObservedWithTurbineUsingVirtualTime() = runViewModelTest { dispatcher ->
-        val viewModel = SampleViewModel(ioDispatcher = dispatcher)
+    fun viewModelStateIsObservedWithTurbineUsingVirtualTime() = runViewModelTest { context ->
+        val viewModel = context.track(SampleViewModel(ioDispatcher = context.dispatcher))
 
         viewModel.state.test {
             assertEquals("Loading", awaitItem())

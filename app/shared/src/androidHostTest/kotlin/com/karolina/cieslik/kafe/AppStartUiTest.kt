@@ -1,8 +1,10 @@
 package com.karolina.cieslik.kafe
 
+import android.provider.Settings
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.EmptyResult
@@ -110,6 +112,22 @@ class AppStartUiTest {
         composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()
         composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
         composeRule.onNodeWithTag(MenuTestTags.product("espresso")).assertIsDisplayed()
+    }
+
+    // Wyłączone animacje: intro kończy się od razu, zostaje tylko crossfade (300 ms) – bez czekania ~1300 ms.
+    @Test
+    fun withReducedMotionTargetScreenAppearsRightAfterCrossfade() {
+        val resolver = ApplicationProvider.getApplicationContext<android.content.Context>().contentResolver
+        Settings.Global.putFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
+        cafes.selectedId.value = "krakow"
+        setApp()
+
+        composeRule.mainClock.advanceTimeBy(300 + 100)
+        composeRule.mainClock.autoAdvance = true
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
     }
 
     @Test

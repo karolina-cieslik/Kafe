@@ -1,4 +1,4 @@
-This is a Kotlin Multiplatform project targeting Android, iOS and Web.
+This is a Kotlin Multiplatform project targeting Android and iOS.
 
 * [/app/iosApp](./app/iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
@@ -19,9 +19,6 @@ This is a Kotlin Multiplatform project targeting Android, iOS and Web.
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
 - Android app: `./gradlew :app:androidApp:assembleDebug`
-- Web app:
-  - Wasm target (faster, modern browsers): `./gradlew :app:webApp:wasmJsBrowserDevelopmentRun`
-  - JS target (slower, supports older browsers): `./gradlew :app:webApp:jsBrowserDevelopmentRun`
 - iOS app: open the [/app/iosApp](./app/iosApp) directory in Xcode and run it from there.
 
 ### Running tests
@@ -29,16 +26,9 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - Android tests: `./gradlew :app:shared:testAndroidHostTest`
-- Web tests:
-  - Wasm target: `./gradlew :app:shared:wasmJsTest`
-  - JS target: `./gradlew :app:shared:jsTest`
 - iOS tests: `./gradlew :app:shared:iosSimulatorArm64Test`
 
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
-
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/).

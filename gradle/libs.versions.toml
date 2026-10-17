@@ -23,6 +23,9 @@ material3 = "1.12.0-alpha03"
 navigation = "2.10.0-rc01"
 room = "2.8.5"
 sqlite = "2.7.1"
+turbine = "1.2.1"
+robolectric = "4.16"
+androidx-compose-uiTest = "1.12.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -62,6 +65,10 @@ koin-test = { module = "io.insert-koin:koin-test" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-compose-uiTest-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-uiTest" }
+androidx-compose-uiTest-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-uiTest" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 

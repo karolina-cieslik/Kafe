@@ -1,0 +1,74 @@
+# KAFE-27: CI – build Androida, testy JVM i lint. iOS pomijamy (brak runnera macOS w MVP).
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, master]
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Build i testy (Android/JVM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # KAFE-27: jednorazowy build na CI – demon Gradle niepotrzebny.
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AGP 9.x wymaga JDK 17+; lokalnie używamy JBR 21 z Android Studio.
+      - name: JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Gradle (cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
+
+      # KAFE-27: Robolectric pobiera obrazy android-all do ~/.m2 przy pierwszym teście UI.
+      - name: Cache Robolectric
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Assemble debug
+        run: ./gradlew :app:androidApp:assembleDebug
+
+      - name: Testy JVM
+        run: >-
+          ./gradlew
+          :core:testAndroidHostTest
+          :app:shared:testAndroidHostTest
+          :app:androidApp:testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew :app:androidApp:lintDebug
+
+      - name: Raporty testów i lint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+            **/build/reports/lint-results-*.html
+          if-no-files-found: ignore
+          retention-days: 7

@@ -97,7 +97,7 @@ class ProductDetailViewModel(
 
     private fun addToCart() {
         val (cafeId, details) = currentDetails() ?: return
-        if (effectiveConfiguration(configuration.value, cafeId, details).validate(details) != null) return
+        if (effectiveConfiguration(configuration.value, cafeId, details).configuration.validate(details) != null) return
         // KAFE-12: tu trafi zapis do koszyka; na razie tylko potwierdzenie dla UI (snackbar).
         sendEvent(ProductDetailEvent.AddedToCart(details.product.name))
     }
@@ -127,7 +127,7 @@ class ProductDetailViewModel(
 
     private fun updateConfiguration(change: ProductConfiguration.(ProductDetails) -> ProductConfiguration) {
         val (cafeId, details) = currentDetails() ?: return
-        val updated = effectiveConfiguration(configuration.value, cafeId, details).change(details)
+        val updated = effectiveConfiguration(configuration.value, cafeId, details).configuration.change(details)
         configuration.value = CafeConfiguration(cafeId, updated)
     }
 
@@ -137,16 +137,17 @@ class ProductDetailViewModel(
         return result.cafeId to found.details
     }
 
-    /** Zapisany wybór, jeśli pasuje do lokalu i produktu (rozmiar istnieje); w przeciwnym razie wartości domyślne. */
+    /**
+     * Zapisany wybór z tego lokalu dopasowany do aktualnego menu (KAFE-10: po odświeżeniu niedostępne opcje są
+     * odznaczane, usunięte znikają); bez wyboru – wartości domyślne.
+     */
     private fun effectiveConfiguration(
         saved: CafeConfiguration?,
         cafeId: String,
         details: ProductDetails,
-    ): ProductConfiguration =
-        saved
-            ?.takeIf { saved -> saved.cafeId == cafeId && details.product.sizes.any { it.code == saved.configuration.size } }
-            ?.configuration
-            ?: ProductConfiguration.initial(details)
+    ): ProductConfiguration.Normalized =
+        saved?.takeIf { it.cafeId == cafeId }?.configuration?.normalizedFor(details)
+            ?: ProductConfiguration.Normalized(ProductConfiguration.initial(details), emptyList())
 
     private fun sendEvent(event: ProductDetailEvent) {
         viewModelScope.launch { eventChannel.send(event) }
@@ -170,8 +171,10 @@ class ProductDetailViewModel(
                     ?.let { ProductDetailUiState.Error(it.error.toProductErrorMessage()) }
                     ?: ProductDetailUiState.Loading
             ProductLookup.NotFound -> ProductDetailUiState.Error(PRODUCT_ERROR_NOT_FOUND)
-            is ProductLookup.Found ->
-                lookup.details.toContent(effectiveConfiguration(saved, result.cafeId, lookup.details), priceCalculator)
+            is ProductLookup.Found -> {
+                val effective = effectiveConfiguration(saved, result.cafeId, lookup.details)
+                lookup.details.toContent(effective.configuration, priceCalculator, effective.deselectedOptions)
+            }
         }
     }
 

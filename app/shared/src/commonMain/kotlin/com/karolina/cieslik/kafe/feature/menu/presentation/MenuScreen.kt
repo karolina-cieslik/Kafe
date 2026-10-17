@@ -35,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,6 +50,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.components.Searc
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.SearchFieldDefaults
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import kafe.app.shared.generated.resources.Res
+import kafe.app.shared.generated.resources.ds_loading
 import kafe.app.shared.generated.resources.ic_expand_more
 import kafe.app.shared.generated.resources.ic_place
 import kafe.app.shared.generated.resources.ic_search_off
@@ -64,6 +67,14 @@ import org.jetbrains.compose.resources.stringResource
 private const val GRID_COLUMNS = 2
 private const val SKELETON_ITEMS = 6
 
+// KAFE-6: Stabilne tagi dla testów UI (Robolectric / instrumentacyjnych).
+object MenuTestTags {
+    const val LOADING = "menuLoading"
+    const val GRID = "menuGrid"
+    fun product(id: String) = "menuProduct_$id"
+    fun category(id: String) = "menuCategory_$id"
+}
+
 // KAFE-6: Ekran menu lokalu – bezstanowy (state + onAction), inspirowany ekranem Home z makiety:
 // ciemny nagłówek z lokalem i wyszukiwarką, chipy kategorii, siatka produktów w 2 kolumnach.
 // Bez wyszukiwania pokazuje wybraną kategorię; przy aktywnym wyszukiwaniu – wszystkie wyniki w sekcjach.
@@ -74,13 +85,18 @@ fun MenuScreen(
     onAction: (MenuAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val loadingDescription = stringResource(Res.string.ds_loading)
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(KafeTheme.colors.background),
     ) {
         when (state) {
-            MenuUiState.Loading -> MenuGrid {
+            MenuUiState.Loading -> MenuGrid(
+                modifier = Modifier
+                    .testTag(MenuTestTags.LOADING)
+                    .semantics { contentDescription = loadingDescription },
+            ) {
                 header(cafeName = null, searchQuery = "", onAction = onAction)
                 items(SKELETON_ITEMS) { ProductCardSkeleton() }
             }
@@ -108,7 +124,7 @@ private fun MenuContent(
     onAction: (MenuAction) -> Unit,
 ) {
     val isSearching = state.searchQuery.isNotBlank()
-    MenuGrid {
+    MenuGrid(modifier = Modifier.testTag(MenuTestTags.GRID)) {
         header(cafeName = state.cafeName, searchQuery = state.searchQuery, onAction = onAction)
         when {
             state.categories.isEmpty() -> fullSpanItem(key = "empty") {
@@ -150,7 +166,10 @@ private fun MenuContent(
 }
 
 @Composable
-private fun MenuGrid(content: LazyGridScope.() -> Unit) {
+private fun MenuGrid(
+    modifier: Modifier = Modifier,
+    content: LazyGridScope.() -> Unit,
+) {
     val spacing = KafeTheme.spacing
     val navigationBars = WindowInsets.navigationBars.asPaddingValues()
     LazyVerticalGrid(
@@ -162,7 +181,7 @@ private fun MenuGrid(content: LazyGridScope.() -> Unit) {
             end = spacing.screenHorizontal,
             bottom = spacing.xl + navigationBars.calculateBottomPadding(),
         ),
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         content = content,
     )
 }
@@ -195,6 +214,7 @@ private fun LazyGridScope.products(category: CategoryUi, onAction: (MenuAction) 
             isAvailable = product.isAvailable,
             onClick = { onAction(MenuAction.ProductClicked(product.id)) },
             onAddClick = { onAction(MenuAction.ProductClicked(product.id)) },
+            modifier = Modifier.testTag(MenuTestTags.product(product.id)),
         )
     }
 }
@@ -309,6 +329,7 @@ private fun CategoryChips(
                 label = category.name,
                 selected = category.id == selectedCategoryId,
                 onClick = { onSelect(category.id) },
+                modifier = Modifier.testTag(MenuTestTags.category(category.id)),
             )
         }
     }

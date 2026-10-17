@@ -51,6 +51,11 @@ jobs:
       - name: Assemble debug
         run: ./gradlew :app:androidApp:assembleDebug
 
+      # KAFE-27 (R-2): testy urządzeniowe tylko kompilujemy (APK testowe) – bez emulatora na CI,
+      # ale zmiana DAO / modułu Koin nie zepsuje ich niezauważenie.
+      - name: Kompilacja testów urządzeniowych
+        run: ./gradlew :app:shared:assembleAndroidDeviceTest
+
       - name: Testy JVM
         run: >-
           ./gradlew

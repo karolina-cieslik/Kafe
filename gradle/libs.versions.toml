@@ -3,6 +3,7 @@ agp = "9.1.1"
 android-compileSdk = "37"
 android-minSdk = "29"
 android-targetSdk = "37"
+coil = "3.6.3"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
 androidx-core = "1.19.1"
@@ -66,6 +67,8 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 androidx-compose-uiTest-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-uiTest" }
 androidx-compose-uiTest-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-uiTest" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

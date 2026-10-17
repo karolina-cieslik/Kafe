@@ -17,6 +17,8 @@ val networkModule = module {
 val databaseModule = module {
     single<KafeDatabase> { get<DatabaseFactory>().create().buildKafeDatabase() } onClose { it?.close() }
     single { get<KafeDatabase>().syncMetadataDao() }
+    single { get<KafeDatabase>().menuDao() }
+    single { get<KafeDatabase>().cafeDao() }
 }
 
 expect val platformModule: Module

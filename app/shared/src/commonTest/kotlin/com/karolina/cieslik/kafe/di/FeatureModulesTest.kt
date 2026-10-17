@@ -8,6 +8,7 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
+import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
@@ -31,7 +32,7 @@ class FeatureModulesTest {
                 override suspend fun saveMenu(
                     cafeId: String,
                     menu: MenuDto,
-                    availability: Map<String, Boolean>,
+                    availability: AvailabilityDto,
                     syncedAtEpochMillis: Long,
                 ): EmptyResult<DataError.Local> = Result.Success(Unit)
             }
@@ -49,7 +50,7 @@ class FeatureModulesTest {
     fun menuAndCafeDefinitionsAreResolvable() {
         val koin = koinApplication {
             allowOverride(true)
-            modules(dispatchersModule, cafeModule, menuModule, fakeLocalModule)
+            modules(dispatchersModule, cafeModule, menuModule, productModule, fakeLocalModule)
         }.koin
 
         try {

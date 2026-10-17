@@ -1,49 +1,25 @@
 package com.karolina.cieslik.kafe
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.runtime.Composable
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.request.crossfade
+import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
+import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 
-import kafe.app.shared.generated.resources.Res
-import kafe.app.shared.generated.resources.compose_multiplatform
-
+// KAFE-25 / KAFE-6: Korzeń UI – motyw Kafe i ekran menu. Ekrany produktu i wyboru lokalu
+// jeszcze nie istnieją, więc nawigacja z menu to na razie no-op.
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
-        }
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .crossfade(true)
+            .build()
+    }
+    KafeTheme {
+        MenuRoute(
+            onNavigateToProduct = { /* TODO: ekran szczegółów produktu */ },
+            onNavigateToCafePicker = { /* TODO: wybór lokalu (epik KAFE-22) */ },
+        )
     }
 }

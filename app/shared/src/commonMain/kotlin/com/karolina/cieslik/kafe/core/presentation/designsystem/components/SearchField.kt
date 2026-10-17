@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -60,6 +61,8 @@ object SearchFieldDefaults {
     )
 }
 
+private const val DISABLED_ALPHA = 0.6f
+
 // KAFE-25: Pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia. „Szukaj” na klawiaturze chowa klawiaturę.
 @Composable
 fun SearchField(
@@ -67,12 +70,14 @@ fun SearchField(
     onQueryChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     colors: SearchFieldColors = SearchFieldDefaults.onBackground(),
 ) {
     val focusManager = LocalFocusManager.current
     BasicTextField(
         value = query,
         onValueChange = onQueryChange,
+        enabled = enabled,
         singleLine = true,
         textStyle = KafeTheme.typography.bodyMedium.copy(color = colors.content),
         cursorBrush = SolidColor(colors.cursor),
@@ -81,7 +86,9 @@ fun SearchField(
             imeAction = ImeAction.Search,
         ),
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else DISABLED_ALPHA),
         decorationBox = { innerTextField ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +116,7 @@ fun SearchField(
                     }
                     innerTextField()
                 }
-                if (query.isNotEmpty()) {
+                if (query.isNotEmpty() && enabled) {
                     IconButton(onClick = { onQueryChange("") }) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_close),
@@ -131,6 +138,7 @@ private fun SearchFieldPreview() {
         Column(verticalArrangement = Arrangement.spacedBy(KafeTheme.spacing.m)) {
             SearchField(query = "", onQueryChange = {}, placeholder = "Szukaj kawy")
             SearchField(query = "latte", onQueryChange = {}, placeholder = "Szukaj kawy")
+            SearchField(query = "", onQueryChange = {}, placeholder = "Szukaj kawy", enabled = false)
             Box(
                 modifier = Modifier
                     .background(KafeTheme.extendedColors.header)

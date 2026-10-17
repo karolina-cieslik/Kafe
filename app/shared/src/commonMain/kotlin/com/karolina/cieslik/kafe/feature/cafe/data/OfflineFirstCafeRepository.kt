@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 
 // KAFE-6: Offline-first – Room jest źródłem prawdy, refresh() pobiera lokale i zapisuje je lokalnie.
-// Wybór lokalu na razie tylko w pamięci (zapamiętanie wyboru i mapa – KAFE-7).
+// Wybór lokalu na razie tylko w pamięci (wybór i zapamiętanie go między sesjami – KAFE-31).
 class OfflineFirstCafeRepository(
     private val local: CafeLocalDataSource,
     private val remote: CafeRemoteDataSource,

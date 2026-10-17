@@ -5,15 +5,21 @@ import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupWithOptions
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierOptionEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductWithSizes
 import com.karolina.cieslik.kafe.feature.menu.data.local.toDomain
 import com.karolina.cieslik.kafe.feature.menu.data.local.toDomainOrNull
+import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.CategoryDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuRemoteDataSource
+import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenu
 import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSource
+import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroupType
 import com.karolina.cieslik.kafe.feature.menu.domain.Category
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
@@ -36,7 +42,7 @@ class OfflineFirstMenuRepositoryTest {
 
     private class FakeRemote(
         var menu: Result<MenuDto, DataError.Remote> = Result.Success(MenuDto(categories = listOf(CategoryDto("c", "Kawy", 1)))),
-        var availability: Result<Map<String, Boolean>, DataError.Remote> = Result.Success(mapOf("p" to false)),
+        var availability: Result<AvailabilityDto, DataError.Remote> = Result.Success(AvailabilityDto(products = mapOf("p" to false))),
     ) : MenuRemoteDataSource {
         override suspend fun fetchMenu() = menu
         override suspend fun fetchAvailability(cafeId: String) = availability
@@ -52,7 +58,7 @@ class OfflineFirstMenuRepositoryTest {
         override suspend fun saveMenu(
             cafeId: String,
             menu: MenuDto,
-            availability: Map<String, Boolean>,
+            availability: AvailabilityDto,
             syncedAtEpochMillis: Long,
         ): EmptyResult<DataError.Local> {
             if (saveResult is Result.Failure) return saveResult
@@ -60,7 +66,7 @@ class OfflineFirstMenuRepositoryTest {
             saved.value += cafeId to Menu(
                 categories = menu.categories.map { Category(it.id, it.name, it.sortOrder) },
                 products = emptyList(),
-                unavailableProductIds = availability.filterValues { !it }.keys,
+                unavailableProductIds = availability.products.filterValues { !it }.keys,
             )
             return saveResult
         }
@@ -144,5 +150,48 @@ class OfflineFirstMenuRepositoryTest {
         assertEquals(listOf(SizeCode.S, SizeCode.L), product.sizes.map { it.code })
         assertNull(product.description)
         assertNull(product.imageUrl)
+    }
+
+    // KAFE-10: odporność mapowania modyfikatorów na błędne dane.
+    @Test
+    fun modifierGroupWithUnknownTypeOrWithoutValidOptionsIsDropped() {
+        val options = listOf(ModifierOptionEntity("o", "g", "Opcja", 100, 1))
+
+        assertNull(ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "MULTI", false, 1, null), options).toDomainOrNull())
+        assertNull(
+            ModifierGroupWithOptions(
+                ModifierGroupEntity("g", "G", "SINGLE", false, 1, null),
+                listOf(ModifierOptionEntity("o", "g", "Opcja", -1, 1)),
+            ).toDomainOrNull(),
+        )
+    }
+
+    @Test
+    fun modifierGroupNormalizesLimitAndUnknownDefaultOption() {
+        val options = listOf(ModifierOptionEntity("b", "g", "B", 0, 2), ModifierOptionEntity("a", "g", "A", 0, 1))
+
+        val single = assertNotNull(
+            ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "single", true, 5, "missing"), options).toDomainOrNull(),
+        )
+        assertEquals(ModifierGroupType.SINGLE, single.type)
+        assertEquals(1, single.maxQuantity)
+        assertNull(single.defaultOptionId)
+        assertEquals(listOf("a", "b"), single.options.map { it.id })
+
+        val quantity = assertNotNull(
+            ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "QUANTITY", false, 0, null), options).toDomainOrNull(),
+        )
+        assertEquals(1, quantity.maxQuantity)
+    }
+
+    // KAFE-9 / KAFE-10: spójność seeda (grupy i domyślne rozmiary istnieją).
+    @Test
+    fun seedProductsReferenceExistingModifierGroupsAndDefaultSizes() {
+        val groupIds = SeedMenu.menu.modifierGroups.map { it.id }.toSet()
+
+        SeedMenu.menu.products.forEach { product ->
+            assertEquals(emptySet(), product.modifierGroupIds.toSet() - groupIds, product.id)
+            product.defaultSize?.let { code -> assertNotNull(product.sizes.firstOrNull { it.code == code }, product.id) }
+        }
     }
 }

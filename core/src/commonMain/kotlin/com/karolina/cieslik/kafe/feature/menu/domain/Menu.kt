@@ -19,6 +19,10 @@ data class Product(
     val sortOrder: Int,
     /** Produkt aktywny w menu sieci (np. sezonowy poza sezonem = false). Nieaktywne nie są pokazywane (AC 5). */
     val isActive: Boolean,
+    /** KAFE-9 AC3: rozmiar wybrany na start; null = pierwszy dostępny. */
+    val defaultSize: SizeCode? = null,
+    /** KAFE-10: grupy modyfikatorów produktu w kolejności wyświetlania (id z [Menu.modifierGroups]). */
+    val modifierGroupIds: List<String> = emptyList(),
 ) {
     /** Cena bazowa na liście = najtańszy rozmiar (AC 2); null tylko dla błędnych danych bez rozmiarów. */
     val basePrice: Money? get() = sizes.minOfOrNull { it.price }
@@ -34,11 +38,17 @@ data class ProductSize(
 enum class SizeCode { S, M, L }
 
 /**
- * Menu sieci w kontekście lokalu: kategorie i produkty są wspólne,
- * [unavailableProductIds] to produkty chwilowo niedostępne w tym lokalu (domyślnie produkt jest dostępny).
+ * Menu sieci w kontekście lokalu: kategorie, produkty i modyfikatory są wspólne, a zbiory „unavailable”
+ * opisują braki w tym lokalu (domyślnie wszystko jest dostępne).
  */
 data class Menu(
     val categories: List<Category>,
     val products: List<Product>,
     val unavailableProductIds: Set<String>,
+    /** KAFE-10: wszystkie grupy modyfikatorów sieci. */
+    val modifierGroups: List<ModifierGroup> = emptyList(),
+    /** KAFE-9 AC6: niedostępne rozmiary, productId -> kody. */
+    val unavailableSizes: Map<String, Set<SizeCode>> = emptyMap(),
+    /** KAFE-10: niedostępne opcje modyfikatorów (id opcji). */
+    val unavailableOptionIds: Set<String> = emptySet(),
 )

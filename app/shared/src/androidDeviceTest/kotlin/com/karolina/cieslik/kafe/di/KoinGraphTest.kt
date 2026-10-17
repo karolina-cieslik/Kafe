@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.karolina.cieslik.kafe.core.data.database.KafeDatabase
 import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataDao
 import com.karolina.cieslik.kafe.core.data.network.NetworkConfig
+import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import io.ktor.client.HttpClient
@@ -33,6 +34,8 @@ class KoinGraphTest {
             // KAFE-6
             assertNotNull(koinApp.koin.get<MenuRepository>())
             assertNotNull(koinApp.koin.get<CafeRepository>())
+            // KAFE-31: DataStore z prawdziwą ścieżką z Context.
+            assertNotNull(koinApp.koin.get<SelectedCafeStore>())
         } finally {
             koinApp.close()
             context.deleteDatabase(KafeDatabase.DATABASE_NAME)

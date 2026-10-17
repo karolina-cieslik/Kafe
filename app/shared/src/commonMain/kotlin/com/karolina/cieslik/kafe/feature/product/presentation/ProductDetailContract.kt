@@ -18,6 +18,9 @@ sealed interface ProductDetailUiState {
         val sizes: List<ProductSizeUi>,
         val modifierGroups: List<ModifierGroupUi>,
         val quantity: Int,
+        /** Limit liczby sztuk 1–20 (domyślne wartości – zgodność wstecz z pierwszą wersją kontraktu). */
+        val canIncreaseQuantity: Boolean = true,
+        val canDecreaseQuantity: Boolean = true,
         /** Cena za wszystkie sztuki z dopłatami, np. „27,00 zł” (KAFE-11). */
         val totalPriceLabel: String,
         val canAddToCart: Boolean,

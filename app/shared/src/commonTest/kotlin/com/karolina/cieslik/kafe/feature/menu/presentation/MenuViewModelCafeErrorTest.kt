@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -48,8 +49,10 @@ class MenuViewModelCafeErrorTest {
 
     private class FakeMenuRepository : MenuRepository {
         private val menu = MutableStateFlow<Menu?>(null)
+        var refreshCount = 0
         override fun observeMenu(cafeId: String): Flow<Menu?> = menu
         override suspend fun refresh(cafeId: String): EmptyResult<DataError> {
+            refreshCount++
             menu.value = Menu(listOf(Category("c", "Kawy", 1)), emptyList(), emptySet())
             return Result.Success(Unit)
         }
@@ -91,5 +94,34 @@ class MenuViewModelCafeErrorTest {
         val content = assertIs<MenuUiState.Content>(viewModel.state.value)
         assertEquals("Kafe A", content.cafeName)
         assertEquals(2, cafes.refreshCount)
+    }
+
+    // KAFE-31: powrót na ekran (ponowna subskrypcja po > 5 s) nie odświeża ponownie – tylko Refresh / Retry.
+    @Test
+    fun resubscribingDoesNotRefreshAgain() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val cafes = FakeCafeRepository().apply { refreshResult = Result.Success(Unit) }
+        val menu = FakeMenuRepository()
+        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu), dispatcher)
+        try {
+            val first = launch { viewModel.state.collect {} }
+            advanceUntilIdle()
+            first.cancel()
+            // Dłużej niż WhileSubscribed(5_000) – upstream się zatrzymuje, jak po wyjściu do szczegółów.
+            advanceTimeBy(10_000)
+
+            val second = launch { viewModel.state.collect {} }
+            advanceUntilIdle()
+
+            assertIs<MenuUiState.Content>(viewModel.state.value)
+            assertEquals(1, cafes.refreshCount)
+            assertEquals(1, menu.refreshCount)
+            second.cancel()
+        } finally {
+            viewModel.viewModelScope.cancel()
+            advanceUntilIdle()
+            Dispatchers.resetMain()
+        }
     }
 }

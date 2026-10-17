@@ -4,6 +4,8 @@ import com.karolina.cieslik.kafe.core.data.database.DatabaseFactory
 import com.karolina.cieslik.kafe.core.data.database.KafeDatabase
 import com.karolina.cieslik.kafe.core.data.database.buildKafeDatabase
 import com.karolina.cieslik.kafe.core.data.network.HttpClientFactory
+import com.karolina.cieslik.kafe.core.data.preferences.PreferencesFactory
+import com.karolina.cieslik.kafe.core.data.preferences.createDataStore
 import io.ktor.client.HttpClient
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -19,6 +21,11 @@ val databaseModule = module {
     single { get<KafeDatabase>().syncMetadataDao() }
     single { get<KafeDatabase>().menuDao() }
     single { get<KafeDatabase>().cafeDao() }
+}
+
+// KAFE-31: Jedna instancja DataStore na plik preferencji.
+val preferencesModule = module {
+    single { get<PreferencesFactory>().createDataStore() }
 }
 
 expect val platformModule: Module

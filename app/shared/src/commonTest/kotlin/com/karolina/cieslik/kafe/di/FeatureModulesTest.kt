@@ -4,15 +4,18 @@ import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeLocalDataSource
+import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
+import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -31,9 +34,19 @@ class FeatureModulesTest {
                 override suspend fun saveMenu(
                     cafeId: String,
                     menu: MenuDto,
-                    availability: Map<String, Boolean>,
+                    availability: AvailabilityDto,
                     syncedAtEpochMillis: Long,
                 ): EmptyResult<DataError.Local> = Result.Success(Unit)
+            }
+        }
+        // KAFE-31: DataStore wymaga ścieżki platformowej – na JVM wybór w pamięci.
+        single<SelectedCafeStore> {
+            object : SelectedCafeStore {
+                private val id = MutableStateFlow<String?>(null)
+                override fun observeSelectedCafeId(): Flow<String?> = id
+                override suspend fun saveSelectedCafeId(cafeId: String) {
+                    id.value = cafeId
+                }
             }
         }
         single<CafeLocalDataSource> {
@@ -49,7 +62,7 @@ class FeatureModulesTest {
     fun menuAndCafeDefinitionsAreResolvable() {
         val koin = koinApplication {
             allowOverride(true)
-            modules(dispatchersModule, cafeModule, menuModule, fakeLocalModule)
+            modules(dispatchersModule, cafeModule, menuModule, productModule, fakeLocalModule)
         }.koin
 
         try {

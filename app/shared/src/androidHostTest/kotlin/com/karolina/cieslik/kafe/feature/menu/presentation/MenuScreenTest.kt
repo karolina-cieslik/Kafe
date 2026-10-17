@@ -2,6 +2,9 @@ package com.karolina.cieslik.kafe.feature.menu.presentation
 
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
@@ -12,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -209,6 +213,76 @@ class MenuScreenTest {
 
         assertEquals(listOf<MenuAction>(MenuAction.ChangeCafeClicked), actions)
     }
+
+    // --- Przypięty nagłówek i chipy ---
+
+    private val longCategory = CategoryUi(
+        id = "classic",
+        name = "Kawy klasyczne",
+        products = (1..12).map { ProductUi("p$it", "Kawa $it", null, "12,00 zł", null, isAvailable = true) },
+    )
+
+    @Test
+    fun headerAndChipsStayVisibleAfterScrollingGrid() {
+        setScreen(content.copy(categories = listOf(longCategory, snacks)))
+
+        composeRule.onNodeWithTag(MenuTestTags.GRID).performScrollToIndex(11)
+
+        composeRule.onNodeWithTag(MenuTestTags.product("p12")).assertIsDisplayed()
+        composeRule.onNodeWithTag(MenuTestTags.product("p1")).assertIsNotDisplayedOrAbsent()
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
+        composeRule.onNodeWithTag(MenuTestTags.CATEGORIES).assertIsDisplayed()
+        composeRule.onNodeWithTag(MenuTestTags.category("snacks")).assertIsDisplayed()
+        composeRule.onNodeWithText("Kafe Rynek").assertIsDisplayed()
+    }
+
+    @Test
+    fun gridDoesNotContainHeaderOrChips() {
+        setScreen(content)
+
+        composeRule.onNode(hasTestTag(MenuTestTags.HEADER) and hasAnyAncestor(hasTestTag(MenuTestTags.GRID))).assertDoesNotExist()
+        composeRule.onNode(hasTestTag(MenuTestTags.CATEGORIES) and hasAnyAncestor(hasTestTag(MenuTestTags.GRID))).assertDoesNotExist()
+    }
+
+    @Test
+    fun loadingShowsHeaderWithDisabledSearch() {
+        setScreen(MenuUiState.Loading)
+
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
+        // Wyłączone pole tekstowe nie wystawia akcji SetText – nie da się w nim pisać.
+        composeRule.onNodeWithText("Szukaj kawy").assertIsDisplayed()
+        composeRule.onNode(hasSetTextAction()).assertDoesNotExist()
+        composeRule.onNodeWithTag(MenuTestTags.CATEGORIES).assertDoesNotExist()
+    }
+
+    @Test
+    fun errorIsFullScreenWithoutHeader() {
+        setScreen(MenuUiState.Error(MENU_ERROR_GENERIC))
+
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertDoesNotExist()
+    }
+
+    @Test
+    fun categoriesRowIsHiddenWhileSearchingAndForEmptyMenu() {
+        setScreen(content.copy(searchQuery = "kawa"))
+
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
+        composeRule.onNodeWithTag(MenuTestTags.CATEGORIES).assertDoesNotExist()
+    }
+
+    @Test
+    fun categoriesRowIsHiddenForEmptyMenu() {
+        setScreen(content.copy(categories = emptyList(), selectedCategoryId = null))
+
+        composeRule.onNodeWithTag(MenuTestTags.CATEGORIES).assertDoesNotExist()
+    }
+
+    private fun SemanticsNodeInteraction.assertIsNotDisplayedOrAbsent() {
+        if (fetchSemanticsNodes().isNotEmpty()) assertIsNotDisplayed()
+    }
+
+    private fun SemanticsNodeInteraction.fetchSemanticsNodes() =
+        runCatching { listOf(fetchSemanticsNode()) }.getOrDefault(emptyList())
 
     private fun hasClickLabel(label: String) = SemanticsMatcher("onClickLabel = $label") { node ->
         node.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label

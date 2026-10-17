@@ -14,6 +14,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -39,6 +40,7 @@ fun SizeSelector(
     selectedId: String?,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
+    optionTestTag: ((optionId: String) -> String)? = null,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(KafeTheme.spacing.m),
@@ -51,7 +53,9 @@ fun SizeSelector(
                 option = option,
                 selected = option.id == selectedId,
                 onClick = { onSelect(option.id) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .then(if (optionTestTag != null) Modifier.testTag(optionTestTag(option.id)) else Modifier),
             )
         }
     }

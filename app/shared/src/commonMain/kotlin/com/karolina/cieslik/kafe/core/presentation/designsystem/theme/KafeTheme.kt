@@ -24,7 +24,7 @@ fun KafeTheme(
     ) {
         MaterialTheme(
             colorScheme = if (darkTheme) KafeDarkColorScheme else KafeLightColorScheme,
-            typography = kafeTypography(),
+            typography = KafeTypography,
             shapes = KafeShapes,
             content = content,
         )

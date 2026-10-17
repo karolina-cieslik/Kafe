@@ -10,6 +10,7 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.PolishAlphabeticalOrder
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 import com.karolina.cieslik.kafe.feature.cafe.domain.isOpenAt
 import com.karolina.cieslik.kafe.feature.cafe.domain.openingHoursOn
+import com.karolina.cieslik.kafe.feature.cafe.domain.previous
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -106,7 +107,7 @@ class CafePickerViewModel(
                     id = cafe.id,
                     name = cafe.name,
                     address = cafe.address,
-                    openingHoursLabel = cafe.todayLabel(today),
+                    openingHoursLabel = cafe.todayLabel(today, minuteOfDay),
                     isOpenNow = cafe.isOpenAt(today, minuteOfDay),
                     isSelected = cafe.id == selected?.id,
                 )
@@ -126,7 +127,12 @@ class CafePickerViewModel(
     }
 }
 
-internal fun Cafe.todayLabel(today: Weekday): String {
+/** Otwarte jeszcze z wczoraj (godziny przez północ) – „Do 2:00”, żeby etykieta nie przeczyła „otwarte teraz”. */
+internal fun Cafe.todayLabel(today: Weekday, minuteOfDay: Int): String {
+    val yesterday = openingHoursOn(today.previous())
+    if (yesterday != null && yesterday.closesAtMinute <= yesterday.opensAtMinute && minuteOfDay < yesterday.closesAtMinute) {
+        return "Do ${yesterday.closesAtMinute.toClockLabel()}"
+    }
     val hours = openingHoursOn(today) ?: return CAFE_CLOSED_TODAY
     return "Dziś ${hours.opensAtMinute.toClockLabel()}–${hours.closesAtMinute.toClockLabel()}"
 }

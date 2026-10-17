@@ -2,6 +2,7 @@ package com.karolina.cieslik.kafe.feature.product.domain
 
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
+import com.karolina.cieslik.kafe.feature.menu.domain.isAvailable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -20,17 +21,16 @@ internal fun Menu.findProduct(productId: String): ProductLookup {
         ?.takeIf { it.isActive && it.sizes.isNotEmpty() }
         ?: return ProductLookup.NotFound
     val groupsById = modifierGroups.associateBy { it.id }
-    val productUnavailableSizes = unavailableSizes[product.id].orEmpty()
     return ProductLookup.Found(
         ProductDetails(
             product = product,
             // Przypadek brzegowy KAFE-9: wszystkie rozmiary niedostępne = produkt niedostępny w lokalu.
-            isAvailable = product.id !in unavailableProductIds && product.sizes.any { it.code !in productUnavailableSizes },
+            isAvailable = isAvailable(product),
             // Nieznane id grup i grupy bez opcji są pomijane – wymagana pusta grupa zablokowałaby dodanie.
             modifierGroups = product.modifierGroupIds.distinct()
                 .mapNotNull { groupsById[it] }
                 .filter { it.options.isNotEmpty() },
-            unavailableSizes = productUnavailableSizes,
+            unavailableSizes = unavailableSizes[product.id].orEmpty(),
             unavailableOptionIds = unavailableOptionIds,
         ),
     )

@@ -100,7 +100,6 @@ class ProductDetailViewModelRefreshTest {
 
     // KAFE-10 edge: wybrany modyfikator staje się niedostępny po odświeżeniu – jest automatycznie odznaczany,
     // a użytkownik dostaje krótką informację.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun selectedOptionBecomingUnavailableIsDeselectedWithInfo() = runViewModelTest { context ->
         val env = createViewModel(context, menu())
@@ -117,7 +116,6 @@ class ProductDetailViewModelRefreshTest {
     }
 
     // Wybrana opcja zniknęła z grupy po odświeżeniu (i jest na liście niedostępnych) – ekran nie może się wywrócić.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun refreshRemovingSelectedOptionDoesNotCrash() = runViewModelTest { context ->
         val env = createViewModel(context, menu())
@@ -131,7 +129,6 @@ class ProductDetailViewModelRefreshTest {
     }
 
     // Wybrana opcja wymaganej grupy zniknęła z menu – nie można dodać do koszyka bez widocznego wyboru mleka.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun refreshRemovingSelectedRequiredOptionBlocksAddToCartOrRestoresDefault() = runViewModelTest { context ->
         val env = createViewModel(context, menu())

@@ -7,6 +7,7 @@ import com.karolina.cieslik.kafe.core.testing.ViewModelTestContext
 import com.karolina.cieslik.kafe.core.testing.runViewModelTest
 import com.karolina.cieslik.kafe.feature.cafe.data.OfflineFirstCafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeLocalDataSource
+import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
@@ -48,9 +49,13 @@ class MenuViewModelIntegrationTest {
         val cafeRemote: SwitchableCafeRemote,
     )
 
-    private fun ViewModelTestContext.createViewModel(cafeRemote: CafeRemoteDataSource = SeedCafeRemoteDataSource()): Setup {
+    // KAFE-31: bez zapamiętanego wyboru nie ma domyślnego lokalu – testy menu zaczynają od wybranego Krakowa.
+    private fun ViewModelTestContext.createViewModel(
+        cafeRemote: CafeRemoteDataSource = SeedCafeRemoteDataSource(),
+        selectedCafeId: String? = "krakow-rynek",
+    ): Setup {
         val switchable = SwitchableCafeRemote(cafeRemote)
-        val cafeRepository = OfflineFirstCafeRepository(InMemoryCafeLocal(), switchable)
+        val cafeRepository = OfflineFirstCafeRepository(InMemoryCafeLocal(), switchable, InMemorySelectedCafeStore(selectedCafeId))
         val menuRepository = OfflineFirstMenuRepository(InMemoryMenuLocal(), SeedMenuRemoteDataSource(latency = Duration.ZERO))
         val viewModel = track(
             MenuViewModel(
@@ -157,6 +162,16 @@ private class InMemoryCafeLocal : CafeLocalDataSource {
     override suspend fun saveCafes(cafes: List<CafeDto>, syncedAtEpochMillis: Long): EmptyResult<DataError.Local> {
         this.cafes.value = cafes.map { Cafe(it.id, it.name, it.address, it.lat, it.lng, emptyList()) }
         return Result.Success(Unit)
+    }
+}
+
+private class InMemorySelectedCafeStore(initial: String?) : SelectedCafeStore {
+    private val selected = MutableStateFlow(initial)
+
+    override fun observeSelectedCafeId(): Flow<String?> = selected
+
+    override suspend fun saveSelectedCafeId(cafeId: String) {
+        selected.value = cafeId
     }
 }
 

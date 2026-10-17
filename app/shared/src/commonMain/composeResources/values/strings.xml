@@ -45,4 +45,7 @@
     <string name="cafe_picker_selected">Wybrana</string>
     <string name="cafe_picker_empty_title">Brak kawiarni</string>
     <string name="cafe_picker_empty_message">Nie mamy teraz żadnego lokalu do pokazania. Spróbuj ponownie za chwilę.</string>
+
+    <!-- Intro (KAFE-42) -->
+    <string name="brand_name">Kafe</string>
 </resources>

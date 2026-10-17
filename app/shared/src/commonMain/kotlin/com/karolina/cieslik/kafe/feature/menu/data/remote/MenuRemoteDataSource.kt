@@ -8,6 +8,6 @@ interface MenuRemoteDataSource {
 
     suspend fun fetchMenu(): Result<MenuDto, DataError.Remote>
 
-    /** Mapa productId -> dostępność w lokalu. Brak wpisu oznacza produkt dostępny. */
-    suspend fun fetchAvailability(cafeId: String): Result<Map<String, Boolean>, DataError.Remote>
+    /** Braki produktów, rozmiarów i opcji modyfikatorów w lokalu. Brak wpisu oznacza „dostępne”. */
+    suspend fun fetchAvailability(cafeId: String): Result<AvailabilityDto, DataError.Remote>
 }

@@ -1,21 +1,10 @@
 package com.karolina.cieslik.kafe.feature.cafe.data
 
-import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.OpeningHoursDto
-import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.OpeningHours
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 
-// KAFE-6: Mapowanie DTO -> domena. Błędne wpisy godzin otwarcia są pomijane.
-internal fun CafeDto.toDomain() = Cafe(
-    id = id,
-    name = name,
-    address = address,
-    lat = lat,
-    lng = lng,
-    openingHours = openingHours.mapNotNull { it.toDomainOrNull() },
-)
-
+// KAFE-6: Parsowanie godzin otwarcia (wspólne dla DTO i encji Room). Błędne wpisy są pomijane.
 internal fun OpeningHoursDto.toDomainOrNull(): OpeningHours? {
     val weekday = Weekday.entries.firstOrNull { it.name.equals(day, ignoreCase = true) } ?: return null
     val opensAt = opens.toMinuteOfDayOrNull() ?: return null

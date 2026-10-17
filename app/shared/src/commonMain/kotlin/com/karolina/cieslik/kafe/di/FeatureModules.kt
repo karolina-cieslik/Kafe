@@ -1,10 +1,14 @@
 package com.karolina.cieslik.kafe.di
 
-import com.karolina.cieslik.kafe.feature.cafe.data.InMemoryCafeRepository
+import com.karolina.cieslik.kafe.feature.cafe.data.OfflineFirstCafeRepository
+import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeLocalDataSource
+import com.karolina.cieslik.kafe.feature.cafe.data.local.RoomCafeLocalDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
-import com.karolina.cieslik.kafe.feature.menu.data.InMemoryMenuRepository
+import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
+import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
+import com.karolina.cieslik.kafe.feature.menu.data.local.RoomMenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuRemoteDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSource
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
@@ -17,7 +21,8 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-// KAFE-6: Moduły DI feature'ów. Źródła seed zostaną podmienione na Firebase/Room bez zmian w domenie.
+// KAFE-6: Moduły DI feature'ów. Lokalnie Room (DAO z databaseModule), zdalnie na razie seed – Firebase podmieni
+// tylko *RemoteDataSource, bez zmian w domenie i prezentacji.
 val IoDispatcher = named("IoDispatcher")
 
 val dispatchersModule = module {
@@ -26,12 +31,14 @@ val dispatchersModule = module {
 
 val cafeModule = module {
     single<CafeRemoteDataSource> { SeedCafeRemoteDataSource() }
-    single<CafeRepository> { InMemoryCafeRepository(remote = get()) }
+    single<CafeLocalDataSource> { RoomCafeLocalDataSource(dao = get()) }
+    single<CafeRepository> { OfflineFirstCafeRepository(local = get(), remote = get()) }
 }
 
 val menuModule = module {
     single<MenuRemoteDataSource> { SeedMenuRemoteDataSource() }
-    single<MenuRepository> { InMemoryMenuRepository(remote = get()) }
+    single<MenuLocalDataSource> { RoomMenuLocalDataSource(dao = get()) }
+    single<MenuRepository> { OfflineFirstMenuRepository(local = get(), remote = get()) }
     factory { GetMenuForCafe(menuRepository = get()) }
     viewModel {
         MenuViewModel(

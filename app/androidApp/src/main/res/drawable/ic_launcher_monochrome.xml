@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- KAFE-42: Logo Kafe – filiżanka z parą w bezpiecznej strefie ikony adaptacyjnej (108×108).
+     Ścieżki muszą zgadzać się z KafeLogo (app/shared, commonMain). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Skala 0,8 wokół środka: całe logo mieści się w okręgu r=33 (maska ikony i splasha). -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.8"
+        android:scaleY="0.8">
+        <path android:pathData="M30,44 L70,44 L67,68 Q66,76 58,76 L42,76 Q34,76 33,68 Z" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M69,50 Q80,50 80,58 Q80,66 68,66" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M26,82 L78,82" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" />
+        <path android:pathData="M42,38 C38,34 46,30 42,26" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" />
+        <path android:pathData="M50,38 C46,34 54,30 50,26" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" />
+        <path android:pathData="M58,38 C54,34 62,30 58,26" android:strokeColor="#FF000000" android:strokeWidth="4" android:strokeLineCap="round" />
+    </group>
+</vector>

@@ -8,26 +8,26 @@ import kotlin.test.assertNull
 class ResultTest {
 
     @Test
-    fun `map transforms Success data`() {
+    fun mapTransformsSuccessData() {
         val result: Result<Int, DataError> = Result.Success(2)
 
         assertEquals(Result.Success("4"), result.map { (it * 2).toString() })
     }
 
     @Test
-    fun `map keeps Failure untouched`() {
+    fun mapKeepsFailureUntouched() {
         val result: Result<Int, DataError> = Result.Failure(DataError.Remote.SERVER)
 
         assertEquals(Result.Failure(DataError.Remote.SERVER), result.map { it * 2 })
     }
 
     @Test
-    fun `asEmptyResult drops data`() {
+    fun asEmptyResultDropsData() {
         assertEquals(Result.Success(Unit), Result.Success(42).asEmptyResult())
     }
 
     @Test
-    fun `onSuccess and onFailure invoke only matching branch`() {
+    fun onSuccessAndOnFailureInvokeOnlyMatchingBranch() {
         var data: Int? = null
         var error: DataError? = null
 

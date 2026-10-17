@@ -34,7 +34,7 @@ class SafeCallTest {
     private val jsonHeaders = headersOf(HttpHeaders.ContentType, "application/json")
 
     @Test
-    fun `200 with valid body returns Success`() = runTest {
+    fun status200WithValidBodyReturnsSuccess() = runTest {
         val client = client { respond("""{"id":1,"name":"Flat white"}""", HttpStatusCode.OK, jsonHeaders) }
 
         val result = safeCall<CoffeeDto> { client.get("https://kafe.test/coffee/1") }
@@ -43,7 +43,7 @@ class SafeCallTest {
     }
 
     @Test
-    fun `200 with malformed body returns SERIALIZATION`() = runTest {
+    fun status200WithMalformedBodyReturnsSerialization() = runTest {
         val client = client { respond("""{"id":"not-a-number"}""", HttpStatusCode.OK, jsonHeaders) }
 
         val result = safeCall<CoffeeDto> { client.get("https://kafe.test/coffee/1") }
@@ -52,7 +52,7 @@ class SafeCallTest {
     }
 
     @Test
-    fun `http status codes are mapped to remote errors`() = runTest {
+    fun httpStatusCodesAreMappedToRemoteErrors() = runTest {
         val expected = mapOf(
             HttpStatusCode.Unauthorized to DataError.Remote.UNAUTHORIZED,
             HttpStatusCode.NotFound to DataError.Remote.NOT_FOUND,
@@ -73,7 +73,7 @@ class SafeCallTest {
     }
 
     @Test
-    fun `request timeout returns REQUEST_TIMEOUT`() = runTest {
+    fun requestTimeoutReturnsRequestTimeout() = runTest {
         val result = safeCall<CoffeeDto> {
             throw HttpRequestTimeoutException("https://kafe.test/coffee", 1_000)
         }
@@ -82,21 +82,21 @@ class SafeCallTest {
     }
 
     @Test
-    fun `unresolved address returns NO_INTERNET`() = runTest {
+    fun unresolvedAddressReturnsNoInternet() = runTest {
         val result = safeCall<CoffeeDto> { throw UnresolvedAddressException() }
 
         assertEquals(Result.Failure(DataError.Remote.NO_INTERNET), result)
     }
 
     @Test
-    fun `unexpected exception returns UNKNOWN`() = runTest {
+    fun unexpectedExceptionReturnsUnknown() = runTest {
         val result = safeCall<CoffeeDto> { throw IllegalStateException("boom") }
 
         assertEquals(Result.Failure(DataError.Remote.UNKNOWN), result)
     }
 
     @Test
-    fun `cancellation is rethrown`() = runTest {
+    fun cancellationIsRethrown() = runTest {
         assertFailsWith<CancellationException> {
             safeCall<CoffeeDto> { throw CancellationException("cancelled") }
         }

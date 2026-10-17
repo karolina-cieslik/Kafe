@@ -32,7 +32,7 @@ class HttpClientFactoryTest {
         HttpClientFactory.create(MockEngine(handler), config)
 
     @Test
-    fun `relative path is resolved against base url`() = runTest {
+    fun relativePathIsResolvedAgainstBaseUrl() = runTest {
         var request: HttpRequestData? = null
         val client = client { requestData ->
             request = requestData
@@ -45,7 +45,7 @@ class HttpClientFactoryTest {
     }
 
     @Test
-    fun `unknown fields and enum values do not break parsing`() = runTest {
+    fun unknownFieldsAndEnumValuesDoNotBreakParsing() = runTest {
         val body = """{"id":1,"name":"Latte","size":"XXL","roastery":"Kafe Lab"}"""
         val client = client { respond(body, HttpStatusCode.OK, jsonHeaders) }
 
@@ -55,7 +55,7 @@ class HttpClientFactoryTest {
     }
 
     @Test
-    fun `server error is returned as Failure instead of exception`() = runTest {
+    fun serverErrorIsReturnedAsFailureInsteadOfException() = runTest {
         val client = client { respond("", HttpStatusCode.InternalServerError) }
 
         val result = safeCall<CoffeeDto> { client.get("coffees/1") }
@@ -64,7 +64,7 @@ class HttpClientFactoryTest {
     }
 
     @Test
-    fun `slow response returns REQUEST_TIMEOUT`() = runTest {
+    fun slowResponseReturnsRequestTimeout() = runTest {
         val client = client(config.copy(requestTimeoutMillis = 100)) {
             delay(5_000)
             respond("", HttpStatusCode.OK)

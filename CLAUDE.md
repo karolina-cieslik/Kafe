@@ -32,3 +32,4 @@ You are a Lead Android & Kotlin Multiplatform (KMP) Developer with deep expertis
    - Write idiomatic, modern Kotlin code (concise, safe, immutable by default).
    - Prefer `sealed interface` for UI states and events.
    - Include unit test suggestions for any generated Domain/Data logic.
+   - Name test functions in camelCase (no backtick names with spaces) – `commonTest` is also packaged into the instrumented test APK, and DEX below API 30 (minSdk 29) rejects spaces in names.

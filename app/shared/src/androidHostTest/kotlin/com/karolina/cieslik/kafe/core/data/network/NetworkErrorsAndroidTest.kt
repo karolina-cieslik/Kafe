@@ -13,21 +13,21 @@ import kotlin.test.assertEquals
 class NetworkErrorsAndroidTest {
 
     @Test
-    fun `unknown host returns NO_INTERNET`() = runTest {
+    fun unknownHostReturnsNoInternet() = runTest {
         val result = safeCall<String> { throw UnknownHostException("kafe.test") }
 
         assertEquals(Result.Failure(DataError.Remote.NO_INTERNET), result)
     }
 
     @Test
-    fun `connect exception returns NO_INTERNET`() = runTest {
+    fun connectExceptionReturnsNoInternet() = runTest {
         val result = safeCall<String> { throw ConnectException("Failed to connect") }
 
         assertEquals(Result.Failure(DataError.Remote.NO_INTERNET), result)
     }
 
     @Test
-    fun `socket timeout returns REQUEST_TIMEOUT`() = runTest {
+    fun socketTimeoutReturnsRequestTimeout() = runTest {
         val result = safeCall<String> { throw SocketTimeoutException("timeout") }
 
         assertEquals(Result.Failure(DataError.Remote.REQUEST_TIMEOUT), result)

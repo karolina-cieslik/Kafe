@@ -36,4 +36,13 @@
     <string name="product_detail_quantity">Liczba sztuk</string>
     <string name="product_detail_add_to_cart">Dodaj do koszyka</string>
     <string name="product_detail_added_to_cart">Dodano do koszyka: %1$s</string>
+
+    <!-- Wybór lokalu (KAFE-29) -->
+    <string name="cafe_picker_title">Wybierz kawiarnię</string>
+    <string name="cafe_picker_welcome_subtitle">Pokażemy menu i dostępność produktów w wybranym lokalu. Zmienisz go w każdej chwili.</string>
+    <string name="cafe_picker_open">Otwarte</string>
+    <string name="cafe_picker_closed">Zamknięte</string>
+    <string name="cafe_picker_selected">Wybrana</string>
+    <string name="cafe_picker_empty_title">Brak kawiarni</string>
+    <string name="cafe_picker_empty_message">Nie mamy teraz żadnego lokalu do pokazania. Spróbuj ponownie za chwilę.</string>
 </resources>

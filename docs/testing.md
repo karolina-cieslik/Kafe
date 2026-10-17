@@ -76,6 +76,9 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 - Elementy znajdujemy po tekstach z zasobów (UI po polsku), `contentDescription` albo tagach `MenuTestTags`. Elementy siatki poza ekranem przewijamy przez `performScrollToNode` na `MenuTestTags.GRID`.
 - Compose resources działają w Robolectric dzięki `withHostTest { isIncludeAndroidResources = true }`.
 - Przy pierwszym uruchomieniu Robolectric pobiera z Maven obraz `android-all` (ok. 150 MB) do `~/.m2`. CI cache'uje ten katalog.
+- **Przypięty pasek na dole (Scaffold bottomBar, edge-to-edge):** treść przewija się pod paskiem, więc `performScrollTo()` potrafi zostawić element pod nim i `performClick()` trafi w pasek (np. w „Dodaj do koszyka”). W `ProductDetailScreenTest` jest helper `scrollAboveBottomBar()`, który po `performScrollTo` dosuwa element nad górną krawędź paska.
+- **Pomiar tekstu (`hasVisualOverflow`, „Czytaj więcej”) wymaga `@GraphicsMode(GraphicsMode.Mode.NATIVE)`.** W domyślnym trybie LEGACY Robolectric nie mierzy tekstu, więc przepełnienie nigdy nie występuje.
+- Nawigację testujemy w `KafeNavHostTest`: `rememberNavController()` przechwycony w `setContent`, ViewModele z fake'ami podstawione przez `startKoin` w `@Before` (`stopKoin` w `@After`), systemowe wstecz przez `activity.onBackPressedDispatcher` (`createAndroidComposeRule<ComponentActivity>()`).
 - Na później: screenshot testy previewów (Compose Preview Screenshot Testing z AGP) jako tani test regresji wizualnej.
 
 ## Znane problemy

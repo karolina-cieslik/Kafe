@@ -26,6 +26,7 @@ data class KafeSpacing(
     val iconLarge: Dp = 48.dp,
     val addButton: Dp = 32.dp,
     val cardImageHeight: Dp = 128.dp,
+    val heroImageHeight: Dp = 240.dp,
 )
 
 internal val LocalKafeSpacing = staticCompositionLocalOf { KafeSpacing() }

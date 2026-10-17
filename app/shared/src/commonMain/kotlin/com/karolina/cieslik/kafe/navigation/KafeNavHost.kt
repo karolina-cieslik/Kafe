@@ -7,8 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerRoute
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
+import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
 
 // KAFE-41: Graf nawigacji. NavController i ekran startowy są parametrami, żeby testy mogły podać własny
 // kontroler (TestNavHostController), a KAFE-31 – start na CafePicker przy pierwszym uruchomieniu.
@@ -34,17 +36,15 @@ fun KafeNavHost(
             )
         }
         composable<KafeRoute.ProductDetail> { entry ->
-            // TODO KAFE-9: ProductDetailRoute z ProductDetailViewModel.
-            PlaceholderScreen(
-                title = "Produkt: ${entry.toRoute<KafeRoute.ProductDetail>().productId}",
-                onBack = { navController.popBackStack() },
+            ProductDetailRoute(
+                productId = entry.toRoute<KafeRoute.ProductDetail>().productId,
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable<KafeRoute.CafePicker> {
-            // TODO KAFE-29: CafePickerRoute z CafePickerViewModel.
-            PlaceholderScreen(
-                title = "Wybór lokalu",
-                onBack = { navController.popBackStack() },
+            CafePickerRoute(
+                onCafeChosen = { navController.navigateAfterCafeChosen() },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

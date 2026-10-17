@@ -2,6 +2,7 @@ package com.karolina.cieslik.kafe
 
 import android.provider.Settings
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
@@ -125,6 +126,23 @@ class AppStartUiTest {
         composeRule.mainClock.advanceTimeBy(300 + 100)
         composeRule.mainClock.autoAdvance = true
         composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
+    }
+
+    // Odtworzenie stanu (obrót, powrót do odtworzonej aktywności) nie odtwarza intro – tylko zimny start.
+    @Test
+    fun introIsNotShownAgainAfterStateRestoration() {
+        cafes.selectedId.value = "krakow"
+        val appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        val restorationTester = StateRestorationTester(composeRule)
+        composeRule.mainClock.autoAdvance = false
+        restorationTester.setContent { App(appStartViewModel = appStartViewModel) }
+        finishIntroAndCrossfade()
+
+        restorationTester.emulateSavedInstanceStateRestore()
+        composeRule.mainClock.advanceTimeByFrame()
 
         composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()
         composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()

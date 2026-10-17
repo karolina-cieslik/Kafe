@@ -78,7 +78,8 @@ class AppStartUiTest {
 
     private fun setApp() {
         composeRule.mainClock.autoAdvance = false
-        composeRule.setContent { App(appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)) }
+        val appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        composeRule.setContent { App(appStartViewModel = appStartViewModel) }
     }
 
     /** Intro (≈1300 ms) + crossfade (300 ms); potem intro z nieskończoną animacją znika i można wrócić do auto. */

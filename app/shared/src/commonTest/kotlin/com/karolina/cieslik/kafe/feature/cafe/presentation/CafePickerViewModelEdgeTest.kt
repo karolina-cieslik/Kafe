@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.datetime.TimeZone
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -94,6 +93,21 @@ class CafePickerViewModelEdgeTest {
         assertEquals("Dziś 0:00–1:00", content.cafes.single().openingHoursLabel)
     }
 
+    @Test
+    fun overnightCafeAfterClosingShowsTodaysLabelAndSaturdayNoonShowsFullRange() = runViewModelTest { context ->
+        val overnight = listOf(cafe("a", hours = listOf(OpeningHours(Weekday.SATURDAY, 18 * 60, 2 * 60))))
+
+        // Niedziela 2:00 (zima) – już zamknięte, w niedzielę brak godzin.
+        val sundayAfterClosing = contentAt(context.dispatcher, context::track, "2026-12-06T01:00:00Z", overnight).cafes.single()
+        assertFalse(sundayAfterClosing.isOpenNow)
+        assertEquals(CAFE_CLOSED_TODAY, sundayAfterClosing.openingHoursLabel)
+
+        // Sobota 12:00 – zamknięte, etykieta z pełnym zakresem przez północ.
+        val saturdayNoon = contentAt(context.dispatcher, context::track, "2026-12-05T11:00:00Z", overnight).cafes.single()
+        assertFalse(saturdayNoon.isOpenNow)
+        assertEquals("Dziś 18:00–2:00", saturdayNoon.openingHoursLabel)
+    }
+
     // --- Sortowanie ---
 
     @Test
@@ -111,7 +125,6 @@ class CafePickerViewModelEdgeTest {
 
     // --- Spójność etykiety ze statusem ---
 
-    @Ignore // KAFE-29 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun overnightCafeOpenNowIsNotLabelledClosedToday() = runViewModelTest { context ->
         // Sobota 18:00–2:00, w niedzielę zamknięte. Niedziela 1:00 (zima) – lokal wciąż otwarty od soboty.
@@ -121,6 +134,7 @@ class CafePickerViewModelEdgeTest {
 
         assertTrue(cafeUi.isOpenNow)
         assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")
+        assertEquals("Do 2:00", cafeUi.openingHoursLabel)
     }
 }
 

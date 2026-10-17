@@ -56,6 +56,7 @@ internal object ProductDetailPreviewData {
         quantity = 1,
         totalPriceLabel = "18,50 zł",
         canAddToCart = true,
+        canDecreaseQuantity = false,
         infoMessage = null,
     )
 
@@ -67,6 +68,7 @@ internal object ProductDetailPreviewData {
         ),
         quantity = 2,
         totalPriceLabel = "61,00 zł",
+        canDecreaseQuantity = true,
     )
 
     val unavailable = content.copy(

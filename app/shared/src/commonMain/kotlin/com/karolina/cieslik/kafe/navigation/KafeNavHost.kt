@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerRoute
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
@@ -41,10 +42,9 @@ fun KafeNavHost(
             )
         }
         composable<KafeRoute.CafePicker> {
-            // TODO KAFE-29: CafePickerRoute z CafePickerViewModel.
-            PlaceholderScreen(
-                title = "Wybór lokalu",
-                onBack = { navController.popBackStack() },
+            CafePickerRoute(
+                onCafeChosen = { navController.navigateAfterCafeChosen() },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

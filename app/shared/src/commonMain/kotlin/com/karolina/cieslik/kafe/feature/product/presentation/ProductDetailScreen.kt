@@ -56,8 +56,6 @@ import kafe.app.shared.generated.resources.product_detail_title
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-private const val MIN_QUANTITY = 1
-
 // KAFE-9: Stabilne tagi dla testów UI.
 object ProductDetailTestTags {
     const val LOADING = "productDetailLoading"
@@ -196,7 +194,8 @@ private fun ProductDetailContent(
         SectionDivider()
         QuantityRow(
             quantity = state.quantity,
-            enabled = state.isAvailable,
+            canIncrease = state.isAvailable && state.canIncreaseQuantity,
+            canDecrease = state.isAvailable && state.canDecreaseQuantity,
             onChange = { onAction(ProductDetailAction.QuantityChanged(it)) },
         )
     }
@@ -250,7 +249,8 @@ private fun ModifierGroup(
 @Composable
 private fun QuantityRow(
     quantity: Int,
-    enabled: Boolean,
+    canIncrease: Boolean,
+    canDecrease: Boolean,
     onChange: (delta: Int) -> Unit,
 ) {
     val label = stringResource(Res.string.product_detail_quantity)
@@ -264,8 +264,8 @@ private fun QuantityRow(
             label = label,
             onDecrease = { onChange(-1) },
             onIncrease = { onChange(+1) },
-            canDecrease = enabled && quantity > MIN_QUANTITY,
-            canIncrease = enabled,
+            canDecrease = canDecrease,
+            canIncrease = canIncrease,
             size = KafeStepperSize.Large,
         )
     }

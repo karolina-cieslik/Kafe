@@ -103,6 +103,9 @@ data class KafeExtendedColors(
     val promo: Color,
     val onPromo: Color,
     val rating: Color,
+    /** KAFE-42: Tło marki (splash, intro) – kawowe w obu motywach, jak ikona aplikacji. */
+    val brand: Color,
+    val onBrand: Color,
 )
 
 internal val KafeLightExtendedColors = KafeExtendedColors(
@@ -114,6 +117,8 @@ internal val KafeLightExtendedColors = KafeExtendedColors(
     promo = KafePalette.Promo,
     onPromo = KafePalette.White,
     rating = KafePalette.Rating,
+    brand = KafePalette.Coffee,
+    onBrand = KafePalette.Cream,
 )
 
 internal val KafeDarkExtendedColors = KafeExtendedColors(
@@ -125,4 +130,6 @@ internal val KafeDarkExtendedColors = KafeExtendedColors(
     promo = KafePalette.Promo,
     onPromo = KafePalette.White,
     rating = KafePalette.Rating,
+    brand = KafePalette.Coffee,
+    onBrand = KafePalette.Cream,
 )

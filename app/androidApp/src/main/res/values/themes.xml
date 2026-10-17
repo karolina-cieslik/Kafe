@@ -5,4 +5,11 @@
         <item name="android:windowBackground">@color/kafe_window_background</item>
     </style>
     <color name="kafe_window_background">#FFF9F9F9</color>
+
+    <!-- KAFE-42: Systemowy splash (core-splashscreen) – filiżanka na kawowym tle, potem Theme.Kafe. -->
+    <style name="Theme.Kafe.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/kafe_brand</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Kafe</item>
+    </style>
 </resources>

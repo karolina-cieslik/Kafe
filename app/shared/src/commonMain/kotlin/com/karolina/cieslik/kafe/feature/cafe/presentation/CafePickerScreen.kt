@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -41,7 +40,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeE
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeErrorState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeLoadingState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeTopBar
-import com.karolina.cieslik.kafe.core.presentation.designsystem.system.StatusBarAppearance
+import com.karolina.cieslik.kafe.core.presentation.designsystem.system.SystemBarsAppearance
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import kafe.app.shared.generated.resources.Res
 import kafe.app.shared.generated.resources.cafe_picker_closed
@@ -76,7 +75,7 @@ fun CafePickerScreen(
     onAction: (CafePickerAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    StatusBarAppearance(darkIcons = KafeTheme.colors.background.luminance() > 0.5f)
+    SystemBarsAppearance(darkStatusBarIcons = KafeTheme.isLight, darkNavigationBarIcons = KafeTheme.isLight)
     val isFirstLaunch = (state as? CafePickerUiState.Content)?.isFirstLaunch == true
     Scaffold(
         topBar = {

@@ -14,7 +14,8 @@
         android:theme="@style/Theme.Kafe">
         <activity
             android:exported="true"
-            android:name=".MainActivity">
+            android:name=".MainActivity"
+            android:theme="@style/Theme.Kafe.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

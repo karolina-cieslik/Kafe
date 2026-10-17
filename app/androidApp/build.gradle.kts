@@ -14,6 +14,8 @@ dependencies {
     implementation(project(":app:shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
@@ -29,6 +31,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        // KAFE-2: Adres API z gradle property `kafe.apiBaseUrl` (np. w ~/.gradle/gradle.properties); placeholder do czasu backendu.
+        val apiBaseUrl = providers.gradleProperty("kafe.apiBaseUrl").getOrElse("https://api.kafe.invalid/")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
     packaging {
         resources {
@@ -50,5 +56,6 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }

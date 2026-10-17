@@ -8,7 +8,7 @@ Ten opis powstał w ramach KAFE-27.
 |---|---|---|---|
 | Domena (czysty Kotlin) | `core/src/commonTest` | `:core:testAndroidHostTest` | JVM, lokalnie i na CI |
 | Data / presentation (wspólne) | `app/shared/src/commonTest` | `:app:shared:testAndroidHostTest` | JVM, lokalnie i na CI |
-| Tylko Android, host | `app/shared/src/androidHostTest` | `:app:shared:testAndroidHostTest` | JVM, lokalnie i na CI |
+| Tylko Android, host + UI Compose (Robolectric) | `app/shared/src/androidHostTest` | `:app:shared:testAndroidHostTest` | JVM, lokalnie i na CI |
 | Instrumentalne (np. Room DAO) | `app/shared/src/androidDeviceTest` | `:app:shared:connectedAndroidDeviceTest` | urządzenie lub emulator, **nie na CI** |
 | iOS | `iosTest` | `:app:shared:iosSimulatorArm64Test` | tylko macOS, **nie na CI** |
 
@@ -49,11 +49,35 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 - Domyślnie używamy `StandardTestDispatcher`. Korutyny nie startują wtedy od razu, więc kolejność emisji jest deterministyczna, a do przesuwania czasu służy `advanceUntilIdle()`. `UnconfinedTestDispatcher` stosujemy tylko wtedy, gdy test świadomie sprawdza wyłącznie stan końcowy.
 - W kodzie produkcyjnym nie używamy `Dispatchers.IO` ani `Dispatchers.Default` na sztywno. Dispatcher wstrzykujemy przez konstruktor lub Koin.
 
-## Testy UI (Compose): pomysły na później
+## Testy UI (Compose) na Robolectric
 
-- Compose Multiplatform ma `runComposeUiTest` (`compose.uiTest`), ale na targecie Android host wymaga Robolectric. Bez urządzenia działa natywnie tylko na targecie desktop JVM, którego nie mamy.
-- Propozycja:
-  1. Testy UI `ProductCard` i `MenuScreen` jako `androidDeviceTest` z `createComposeRule()`. Uruchamiamy je ręcznie na urządzeniu, poza CI.
-  2. Ewentualnie Robolectric w `androidHostTest`, żeby testy UI działały na CI. Do oceny, gdy pojawią się ekrany.
-  3. Screenshot testy previewów (Compose Preview Screenshot Testing od AGP) jako tani test regresji wizualnej.
-- Ekrany pozostają bezstanowe (`MenuScreen(state, onAction)`), więc większość logiki da się pokryć testami ViewModelu na JVM.
+- Testy Compose działają na JVM w `app/shared/src/androidHostTest` (Robolectric 4.16 + `androidx.compose.ui:ui-test-junit4`). Uruchamia je ten sam task `:app:shared:testAndroidHostTest`, więc chodzą też w CI.
+- Szablon klasy:
+
+  ```kotlin
+  @RunWith(AndroidJUnit4::class)
+  @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "w411dp-h891dp")
+  class MenuScreenTest {
+      @get:Rule
+      val composeRule = createComposeRule() // androidx.compose.ui.test.junit4.v2
+
+      @Test
+      fun retryButtonSendsRetry() {
+          composeRule.setContent { KafeTheme(darkTheme = false) { MenuScreen(state, onAction = { actions += it }) } }
+          composeRule.onNodeWithText("Spróbuj ponownie").performClick()
+          ...
+      }
+  }
+  ```
+
+- `ROBOLECTRIC_SDK` (`core/testing/RobolectricConfig.kt`) = 35. Robolectric nie musi wspierać compileSdk projektu (37), więc testy UI chodzą na stałym, wspieranym API.
+- Używamy `createComposeRule` z pakietu `junit4.v2` (StandardTestDispatcher). Stary `junit4.createComposeRule` jest deprecated.
+- Ekrany są bezstanowe (`MenuScreen(state, onAction)`): test ustawia stan i zbiera akcje do listy. Logikę stanów testujemy w ViewModelu, a w UI tylko renderowanie i mapowanie kliknięć na akcje.
+- Elementy znajdujemy po tekstach z zasobów (UI po polsku), `contentDescription` albo tagach `MenuTestTags`. Elementy siatki poza ekranem przewijamy przez `performScrollToNode` na `MenuTestTags.GRID`.
+- Compose resources działają w Robolectric dzięki `withHostTest { isIncludeAndroidResources = true }`.
+- Przy pierwszym uruchomieniu Robolectric pobiera z Maven obraz `android-all` (ok. 150 MB) do `~/.m2`. CI cache'uje ten katalog.
+- Na później: screenshot testy previewów (Compose Preview Screenshot Testing z AGP) jako tani test regresji wizualnej.
+
+## Znane problemy
+
+- **`Money(Long.MIN_VALUE).format()`** zwraca niepoprawny tekst (`--92 233…,-8 zł`), bo `-grosze` przepełnia `Long`. W praktyce nieosiągalne (kwoty w groszach są o rzędy wielkości mniejsze). Zostawione bez poprawki na decyzję koordynatora (KAFE-6). Brak testu, żeby nie utrwalać błędnego zachowania.

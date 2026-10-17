@@ -41,6 +41,13 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
 
+      # KAFE-27: Robolectric pobiera obrazy android-all do ~/.m2 przy pierwszym teście UI.
+      - name: Cache Robolectric
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ hashFiles('gradle/libs.versions.toml') }}
+
       - name: Assemble debug
         run: ./gradlew :app:androidApp:assembleDebug
 

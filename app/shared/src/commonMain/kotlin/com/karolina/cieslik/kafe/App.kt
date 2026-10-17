@@ -5,10 +5,9 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
-import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
+import com.karolina.cieslik.kafe.navigation.KafeNavHost
 
-// KAFE-25 / KAFE-6: Korzeń UI – motyw Kafe i ekran menu. Ekrany produktu i wyboru lokalu
-// jeszcze nie istnieją, więc nawigacja z menu to na razie no-op.
+// KAFE-25 / KAFE-41: Korzeń UI – motyw Kafe i graf nawigacji.
 @Composable
 fun App() {
     setSingletonImageLoaderFactory { context ->
@@ -17,9 +16,6 @@ fun App() {
             .build()
     }
     KafeTheme {
-        MenuRoute(
-            onNavigateToProduct = { /* TODO: ekran szczegółów produktu */ },
-            onNavigateToCafePicker = { /* TODO: wybór lokalu (epik KAFE-22) */ },
-        )
+        KafeNavHost()
     }
 }

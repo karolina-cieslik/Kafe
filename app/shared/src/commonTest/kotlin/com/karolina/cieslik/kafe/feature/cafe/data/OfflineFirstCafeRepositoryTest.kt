@@ -52,6 +52,7 @@ class OfflineFirstCafeRepositoryTest {
     @Test
     fun firstCafeIsSelectedByDefault() = runTest {
         val repository = OfflineFirstCafeRepository(FakeLocal(), FakeRemote(listOf(cafeDto("a"), cafeDto("b"))))
+        repository.refresh()
 
         assertEquals("a", repository.observeSelectedCafe().first()?.id)
     }
@@ -59,6 +60,7 @@ class OfflineFirstCafeRepositoryTest {
     @Test
     fun selectedCafeFollowsSelectionAndFallsBackToFirst() = runTest {
         val repository = OfflineFirstCafeRepository(FakeLocal(), FakeRemote(listOf(cafeDto("a"), cafeDto("b"))))
+        repository.refresh()
 
         repository.selectCafe("b")
         assertEquals("b", repository.observeSelectedCafe().first()?.id)
@@ -68,27 +70,22 @@ class OfflineFirstCafeRepositoryTest {
     }
 
     @Test
-    fun noCafesMeansNoSelection() = runTest {
-        assertNull(OfflineFirstCafeRepository(FakeLocal(), FakeRemote(emptyList())).observeSelectedCafe().first())
-    }
-
-    @Test
-    fun cachedCafesAreEmittedWhenRefreshFails() = runTest {
-        val remote = FakeRemote(emptyList(), error = DataError.Remote.NO_INTERNET)
-        val repository = OfflineFirstCafeRepository(FakeLocal(initial = listOf(cafe("a"))), remote)
-
-        assertEquals("Zapamiętana a", repository.observeCafes().first().single().name)
-    }
-
-    @Test
-    fun backgroundRefreshRunsOncePerProcessAfterSuccess() = runTest {
+    fun withoutSavedCafesThereIsNoSelectionAndObservingDoesNotFetch() = runTest {
         val remote = FakeRemote(listOf(cafeDto("a")))
         val repository = OfflineFirstCafeRepository(FakeLocal(), remote)
 
-        repository.observeCafes().first()
-        repository.observeSelectedCafe().first()
+        assertEquals(emptyList(), repository.observeCafes().first())
+        assertNull(repository.observeSelectedCafe().first())
+        assertEquals(0, remote.fetchCount)
+    }
 
-        assertEquals(1, remote.fetchCount)
+    @Test
+    fun failedRefreshReturnsErrorAndKeepsSavedCafes() = runTest {
+        val remote = FakeRemote(emptyList(), error = DataError.Remote.NO_INTERNET)
+        val repository = OfflineFirstCafeRepository(FakeLocal(initial = listOf(cafe("a"))), remote)
+
+        assertEquals(Result.Failure(DataError.Remote.NO_INTERNET), repository.refresh())
+        assertEquals("Zapamiętana a", repository.observeCafes().first().single().name)
     }
 
     @Test

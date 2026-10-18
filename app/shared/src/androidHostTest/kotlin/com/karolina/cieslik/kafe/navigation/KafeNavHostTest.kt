@@ -5,6 +5,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -24,6 +25,9 @@ import com.karolina.cieslik.kafe.feature.menu.presentation.cafe
 import com.karolina.cieslik.kafe.feature.menu.presentation.category
 import com.karolina.cieslik.kafe.feature.menu.presentation.menu
 import com.karolina.cieslik.kafe.feature.menu.presentation.product
+import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
+import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
+import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
 import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -64,6 +68,16 @@ class KafeNavHostTest {
             modules(
                 module {
                     viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus), Dispatchers.Main) }
+                    viewModel { (productId: String) ->
+                        ProductDetailViewModel(
+                            productId = productId,
+                            cafeRepository = cafes,
+                            menuRepository = menus,
+                            getProductDetails = GetProductDetails(menus),
+                            priceCalculator = PriceCalculator(),
+                            dispatcher = Dispatchers.Main,
+                        )
+                    }
                 },
             )
         }
@@ -111,7 +125,7 @@ class KafeNavHostTest {
 
         assertCurrentRoute<KafeRoute.ProductDetail>()
         assertEquals("espresso", navController.currentBackStackEntry!!.toRoute<KafeRoute.ProductDetail>().productId)
-        composeRule.onNodeWithText("Produkt: espresso").assertIsDisplayed()
+        composeRule.onNodeWithText("Szczegóły").assertIsDisplayed()
     }
 
     @Test
@@ -133,7 +147,7 @@ class KafeNavHostTest {
 
         composeRule.onNodeWithTag(MenuTestTags.product("croissant")).performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Wróć").performClick()
+        composeRule.onNodeWithContentDescription("Wstecz").performClick()
         composeRule.waitForIdle()
 
         assertCurrentRoute<KafeRoute.Menu>()

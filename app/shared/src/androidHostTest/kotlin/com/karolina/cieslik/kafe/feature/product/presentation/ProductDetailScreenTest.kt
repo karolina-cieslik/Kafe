@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-// KAFE-9 / KAFE-10 / KAFE-11: ProductDetailScreen – rozmiary z pełną ceną, modyfikatory i limity, liczba sztuk, cena, akcje.
+/** ProductDetailScreen: rozmiary z pełną ceną, modyfikatory i limity, liczba sztuk, cena i akcje. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "w411dp-h891dp")
 class ProductDetailScreenTest {
@@ -62,8 +62,6 @@ class ProductDetailScreenTest {
         return this
     }
 
-    // --- Stany ---
-
     @Test
     fun loadingShowsLoadingTag() {
         setScreen(ProductDetailUiState.Loading)
@@ -81,8 +79,6 @@ class ProductDetailScreenTest {
 
         assertEquals(listOf<ProductDetailAction>(ProductDetailAction.Retry), actions)
     }
-
-    // --- KAFE-9: nazwa, opis, rozmiary ---
 
     @Test
     fun contentShowsNameAndDescription() {
@@ -139,8 +135,6 @@ class ProductDetailScreenTest {
 
         composeRule.onNodeWithTag(ProductDetailTestTags.size("S")).assertDoesNotExist()
     }
-
-    // --- KAFE-10: modyfikatory ---
 
     @Test
     fun milkOptionsShowSurchargeAndDefaultCowMilkIsSelected() {
@@ -206,8 +200,6 @@ class ProductDetailScreenTest {
 
         assertTrue(actions.isEmpty())
     }
-
-    // --- Liczba sztuk i cena (KAFE-11) ---
 
     @Test
     fun quantityStepperSendsQuantityChanged() {
@@ -282,8 +274,6 @@ class ProductDetailScreenTest {
         assertTrue(actions.isEmpty())
     }
 
-    // --- Produkt niedostępny ---
-
     @Test
     fun unavailableProductShowsBadgeInfoAndDisablesOptions() {
         setScreen(ProductDetailPreviewData.unavailable)
@@ -296,8 +286,6 @@ class ProductDetailScreenTest {
         composeRule.onNodeWithTag(ProductDetailTestTags.ADD_TO_CART).assertIsNotEnabled()
     }
 
-    // --- Nawigacja i opis ---
-
     @Test
     fun backArrowSendsBackClicked() {
         setScreen(ProductDetailPreviewData.content)
@@ -307,7 +295,7 @@ class ProductDetailScreenTest {
         assertEquals(listOf<ProductDetailAction>(ProductDetailAction.BackClicked), actions)
     }
 
-    // Pomiar przepełnienia tekstu wymaga natywnej grafiki – w trybie LEGACY Robolectric nie mierzy tekstu.
+    /** Pomiar przepełnienia tekstu wymaga natywnej grafiki – w trybie LEGACY Robolectric nie mierzy tekstu. */
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     @Test
     fun longDescriptionCanBeExpandedAndCollapsed() {

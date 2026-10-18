@@ -7,10 +7,13 @@ import coil3.request.crossfade
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 
-// KAFE-25 / KAFE-6: Korzeń UI – motyw Kafe i ekran menu. Ekrany produktu i wyboru lokalu
-// jeszcze nie istnieją, więc nawigacja z menu to na razie no-op.
+/**
+ * Korzeń UI wspólny dla platform – motyw Kafe i ekran menu.
+ * Ekrany produktu i wyboru lokalu jeszcze nie istnieją, więc nawigacja z menu to na razie no-op.
+ */
 @Composable
 fun App() {
+    // Jeden ImageLoader Coila dla całej aplikacji; crossfade łagodzi pojawianie się zdjęć produktów.
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .crossfade(true)
@@ -18,8 +21,8 @@ fun App() {
     }
     KafeTheme {
         MenuRoute(
-            onNavigateToProduct = { /* TODO: ekran szczegółów produktu */ },
-            onNavigateToCafePicker = { /* TODO: wybór lokalu (epik KAFE-22) */ },
+            onNavigateToProduct = { /* TODO(KAFE-9): ekran szczegółów produktu */ },
+            onNavigateToCafePicker = { /* TODO(KAFE-29): wybór lokalu */ },
         )
     }
 }

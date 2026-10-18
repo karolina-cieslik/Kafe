@@ -33,8 +33,12 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      # KAFE-27: ubuntu-latest ma preinstalowany Android SDK (ANDROID_HOME) z zaakceptowanymi licencjami;
+      # brakującą platformę (compileSdk 37) i build-tools AGP pobiera sam przy pierwszym buildzie.
+      - name: Android SDK (diagnostyka)
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" || true
 
       - name: Gradle (cache)
         uses: gradle/actions/setup-gradle@v4
@@ -50,6 +54,11 @@ jobs:
 
       - name: Assemble debug
         run: ./gradlew :app:androidApp:assembleDebug
+
+      # KAFE-27 (R-2): testy urządzeniowe tylko kompilujemy (APK testowe) – bez emulatora na CI,
+      # ale zmiana DAO / modułu Koin nie zepsuje ich niezauważenie.
+      - name: Kompilacja testów urządzeniowych
+        run: ./gradlew :app:shared:assembleAndroidDeviceTest
 
       - name: Testy JVM
         run: >-

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- KAFE-25 / KAFE-6: Teksty UI (PL). -->
+<!-- Teksty UI (PL). -->
 <resources>
     <!-- Design system -->
     <string name="ds_product_unavailable">Chwilowo niedostępny</string>
@@ -10,7 +10,7 @@
     <string name="ds_loading">Ładowanie…</string>
     <string name="ds_error_title">Coś poszło nie tak</string>
 
-    <!-- Menu (KAFE-6) -->
+    <!-- Menu -->
     <string name="menu_location_label">Twoja kawiarnia</string>
     <string name="menu_change_cafe">Zmień kawiarnię</string>
     <string name="menu_search_placeholder">Szukaj kawy</string>

@@ -15,7 +15,7 @@ Ten opis powstał w ramach KAFE-27.
 Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 
 ```
-./gradlew :app:androidApp:assembleDebug :core:testAndroidHostTest :app:shared:testAndroidHostTest :app:androidApp:testDebugUnitTest :app:androidApp:lintDebug
+./gradlew :app:androidApp:assembleDebug :app:shared:assembleAndroidDeviceTest :core:testAndroidHostTest :app:shared:testAndroidHostTest :app:androidApp:testDebugUnitTest :app:androidApp:lintDebug
 ```
 
 ## Konwencje

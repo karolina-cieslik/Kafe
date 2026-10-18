@@ -13,11 +13,19 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
-// KAFE-27: Kontekst testu ViewModelu – dispatcher do wstrzyknięcia i rejestr VM do posprzątania po teście.
+/**
+ * KAFE-27: Kontekst testu ViewModelu przekazywany do ciała [runViewModelTest].
+ *
+ * @property dispatcher dispatcher testu – ten sam, który podmienia `Dispatchers.Main`. Wstrzykuj go do ViewModelu
+ * (parametr `dispatcher`), żeby cały test dzielił jeden scheduler i wirtualny czas (`advanceUntilIdle()`).
+ */
 class ViewModelTestContext(val dispatcher: TestDispatcher) {
     private val viewModels = mutableListOf<ViewModel>()
 
-    /** Rejestruje VM; po teście jego viewModelScope jest anulowany, zanim przywrócimy Dispatchers.Main. */
+    /**
+     * Rejestruje [viewModel] do posprzątania i zwraca go bez zmian (`val vm = context.track(MenuViewModel(...))`).
+     * Po teście jego `viewModelScope` jest anulowany, zanim przywrócimy `Dispatchers.Main`.
+     */
     fun <VM : ViewModel> track(viewModel: VM): VM = viewModel.also { viewModels += it }
 
     internal fun clearViewModels() {
@@ -26,10 +34,19 @@ class ViewModelTestContext(val dispatcher: TestDispatcher) {
     }
 }
 
-// KAFE-27: Uruchamia test z Dispatchers.Main podmienionym na TestDispatcher (viewModelScope używa Main).
-// Dispatcher z kontekstu wstrzykuj do ViewModelu, żeby cały test dzielił jeden scheduler i wirtualny czas.
-// VM utworzone w teście przekazuj przez track() – subskrypcje stateIn/shareIn żyją w viewModelScope
-// i bez anulowania odwołałyby się do Main już po resetMain.
+/**
+ * KAFE-27: Uruchamia test ViewModelu w `runTest` z `Dispatchers.Main` podmienionym na [testDispatcher]
+ * (z niego korzysta `viewModelScope`).
+ *
+ * Każdy VM utworzony w teście przekazuj przez [ViewModelTestContext.track]. Subskrypcje `stateIn`/`shareIn`
+ * żyją w `viewModelScope`, a bez anulowania po teście sięgnęłyby do Main już po `resetMain`
+ * („Dispatchers.Main accessed after resetMain”). Sprzątanie i `resetMain` wykonują się także wtedy,
+ * gdy test rzuci wyjątek.
+ *
+ * @param testDispatcher domyślnie [StandardTestDispatcher] – korutyny nie startują od razu, więc kolejność emisji
+ * jest deterministyczna.
+ * @return [TestResult] z `runTest`; zwracaj go wprost z funkcji `@Test` (`fun x() = runViewModelTest { … }`).
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun runViewModelTest(
     testDispatcher: TestDispatcher = StandardTestDispatcher(),

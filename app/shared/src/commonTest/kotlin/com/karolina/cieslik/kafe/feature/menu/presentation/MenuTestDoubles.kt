@@ -17,14 +17,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-// KAFE-6: Fake'i i buildery do testów MenuViewModel.
+// KAFE-6: Fake'i i buildery do testów warstwy prezentacji (MenuViewModel, nawigacja, ekrany).
 
+/** Lokal testowy bez godzin otwarcia; nazwa domyślnie „Kafe <id>”. */
 internal fun cafe(id: String, name: String = "Kafe $id") =
     Cafe(id = id, name = name, address = "ul. Testowa 1", lat = 0.0, lng = 0.0, openingHours = emptyList())
 
+/** Kategoria menu; [sortOrder] decyduje o kolejności (AC 3 KAFE-6), nazwa domyślnie równa id. */
 internal fun category(id: String, sortOrder: Int = 0, name: String = id) =
     Category(id = id, name = name, sortOrder = sortOrder)
 
+/** Aktywny produkt z jednym rozmiarem S (250 ml) w pełnej cenie [priceGrosze] (domyślnie 12,00 zł). */
 internal fun product(
     id: String,
     categoryId: String,
@@ -43,12 +46,17 @@ internal fun product(
     isActive = true,
 )
 
+/** Menu sieci w kontekście lokalu; [unavailableProductIds] – produkty niedostępne w tym lokalu. */
 internal fun menu(
     categories: List<Category>,
     products: List<Product>,
     unavailableProductIds: Set<String> = emptySet(),
 ) = Menu(categories = categories, products = products, unavailableProductIds = unavailableProductIds)
 
+/**
+ * Repozytorium z jednym lokalem: [selectedCafe] to zarazem wybrany lokal i cała lista (pusta przy `null`).
+ * Zmiana [selectedCafe] w teście symuluje zmianę lokalu; `refresh()` zawsze kończy się sukcesem bez zmian.
+ */
 internal class FakeCafeRepository(selected: Cafe?) : CafeRepository {
     val selectedCafe = MutableStateFlow(selected)
 
@@ -64,9 +72,16 @@ internal class FakeCafeRepository(selected: Cafe?) : CafeRepository {
 }
 
 /**
- * [cached] – zapamiętane menu per lokal (null = brak cache).
- * [menuAfterRefresh] – menu zapisywane do cache po udanym refresh.
- * [refreshGate] – gdy ustawiony, refresh czeka na complete(), co pozwala obserwować stan „w toku”.
+ * Repozytorium menu sterowane z testu (offline-first jak OfflineFirstMenuRepository, bez sieci).
+ *
+ * `observeMenu(cafeId)` to gorący StateFlow per lokal: emituje od razu zapamiętane menu (`null` = brak cache),
+ * a potem każdą zmianę z `refresh()` lub [setCached].
+ *
+ * @param cached zapamiętane menu per lokal na start.
+ * @property menuAfterRefresh menu zapisywane do cache po udanym `refresh()`.
+ * @property refreshResult wynik każdego `refresh()` (np. `Result.Failure(DataError.Remote.NO_INTERNET)`).
+ * @property refreshGate gdy ustawiony, `refresh()` czeka na `complete()` – pozwala obserwować stan „w toku”.
+ * @property refreshCalls id lokali w kolejności wywołań `refresh()`.
  */
 internal class FakeMenuRepository(
     cached: Map<String, Menu?> = emptyMap(),
@@ -79,6 +94,7 @@ internal class FakeMenuRepository(
 
     private fun flowFor(cafeId: String) = flows.getOrPut(cafeId) { MutableStateFlow(null) }
 
+    /** Podmienia zapamiętane menu lokalu – symuluje zmianę w bazie (np. odświeżenie z innego ekranu). */
     fun setCached(cafeId: String, menu: Menu?) {
         flowFor(cafeId).value = menu
     }

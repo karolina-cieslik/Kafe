@@ -54,6 +54,7 @@ internal object ProductDetailPreviewData {
         ),
         modifierGroups = listOf(milk, syrup, shots),
         quantity = 1,
+        canDecreaseQuantity = false,
         totalPriceLabel = "18,50 zł",
         canAddToCart = true,
         infoMessage = null,
@@ -66,6 +67,7 @@ internal object ProductDetailPreviewData {
             shots.copy(options = shots.options.map { it.copy(quantity = 4, canIncrease = false) }),
         ),
         quantity = 2,
+        canDecreaseQuantity = true,
         totalPriceLabel = "61,00 zł",
     )
 

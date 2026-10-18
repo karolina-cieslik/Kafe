@@ -233,7 +233,27 @@ class ProductDetailScreenTest {
         setScreen(ProductDetailPreviewData.content)
 
         composeRule.onNodeWithContentDescription("Liczba sztuk: 1").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Zmniejsz: Liczba sztuk").assertIsNotEnabled()
+        composeRule.onNodeWithContentDescription("Zmniejsz: Liczba sztuk").assertIsNotEnabled().performClick()
+        composeRule.onNodeWithContentDescription("Zwiększ: Liczba sztuk").assertIsEnabled()
+
+        assertTrue(actions.none { it is ProductDetailAction.QuantityChanged })
+    }
+
+    @Test
+    fun quantityCannotBeIncreasedAboveTwenty() {
+        setScreen(
+            ProductDetailPreviewData.content.copy(
+                quantity = 20,
+                canIncreaseQuantity = false,
+                canDecreaseQuantity = true,
+            ),
+        )
+
+        composeRule.onNodeWithContentDescription("Liczba sztuk: 20").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Zwiększ: Liczba sztuk").assertIsNotEnabled().performClick()
+        composeRule.onNodeWithContentDescription("Zmniejsz: Liczba sztuk").assertIsEnabled()
+
+        assertTrue(actions.none { it is ProductDetailAction.QuantityChanged })
     }
 
     @Test

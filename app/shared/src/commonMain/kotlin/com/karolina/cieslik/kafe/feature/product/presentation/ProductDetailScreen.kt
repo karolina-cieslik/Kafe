@@ -56,9 +56,6 @@ import kafe.app.shared.generated.resources.product_detail_title
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Najmniejsza liczba sztuk produktu – „−” przy tej wartości jest wyłączony. */
-private const val MIN_QUANTITY = 1
-
 /** Stabilne tagi ekranu szczegółów produktu dla testów UI (Robolectric i instrumentacyjnych). */
 object ProductDetailTestTags {
     /** Wskaźnik w stanie ładowania. */
@@ -225,7 +222,8 @@ private fun ProductDetailContent(
         SectionDivider()
         QuantityRow(
             quantity = state.quantity,
-            enabled = state.isAvailable,
+            canIncrease = state.isAvailable && state.canIncreaseQuantity,
+            canDecrease = state.isAvailable && state.canDecreaseQuantity,
             onChange = { onAction(ProductDetailAction.QuantityChanged(it)) },
         )
     }
@@ -280,11 +278,15 @@ private fun ModifierGroup(
     }
 }
 
-/** Wiersz liczby sztuk – nagłówek i duży stepper; minimum to [MIN_QUANTITY], bez górnego limitu. */
+/**
+ * Wiersz liczby sztuk – nagłówek i duży stepper. Limity (1–20 sztuk) liczy ViewModel; ekran tylko pokazuje
+ * [canIncrease] / [canDecrease] ze stanu, żeby reguła była w jednym miejscu.
+ */
 @Composable
 private fun QuantityRow(
     quantity: Int,
-    enabled: Boolean,
+    canIncrease: Boolean,
+    canDecrease: Boolean,
     onChange: (delta: Int) -> Unit,
 ) {
     val label = stringResource(Res.string.product_detail_quantity)
@@ -298,8 +300,8 @@ private fun QuantityRow(
             label = label,
             onDecrease = { onChange(-1) },
             onIncrease = { onChange(+1) },
-            canDecrease = enabled && quantity > MIN_QUANTITY,
-            canIncrease = enabled,
+            canDecrease = canDecrease,
+            canIncrease = canIncrease,
             size = KafeStepperSize.Large,
         )
     }

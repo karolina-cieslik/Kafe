@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
  * @property iconLarge rozmiar ikony ilustrującej stan (pusty, błąd).
  * @property addButton rozmiar widocznego przycisku „+” na karcie produktu (obszar dotyku jest większy).
  * @property cardImageHeight wysokość zdjęcia na karcie produktu.
+ * @property heroImageHeight wysokość dużego zdjęcia na górze szczegółów produktu.
  */
 @Immutable
 data class KafeSpacing(

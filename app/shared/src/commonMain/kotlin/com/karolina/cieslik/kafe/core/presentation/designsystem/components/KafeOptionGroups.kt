@@ -37,7 +37,15 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val DISABLED_ALPHA = 0.4f
 
-// KAFE-25 / KAFE-9: Opcja w grupie modyfikatorów. trailingLabel to dopłata, np. „+2,00 zł”.
+/**
+ * Opcja w grupie jednokrotnego wyboru ([KafeChoiceGroup]).
+ *
+ * @property id identyfikator opcji zwracany w `onOptionClick`.
+ * @property label nazwa opcji, np. „Mleko owsiane”.
+ * @property trailingLabel dopłata, np. „+2,00 zł”; `null` = bez dopłaty (nic nie jest wyświetlane).
+ * @property isEnabled `false` = opcja chwilowo niedostępna – przygaszona i nieklikalna.
+ * @property isSelected czy opcja jest zaznaczona.
+ */
 @Immutable
 data class ChoiceOptionUi(
     val id: String,
@@ -47,6 +55,17 @@ data class ChoiceOptionUi(
     val isSelected: Boolean = false,
 )
 
+/**
+ * Opcja w grupie z licznikami ([KafeQuantityGroup]).
+ *
+ * @property id identyfikator opcji zwracany w `onQuantityChange`.
+ * @property label nazwa opcji, np. „Dodatkowe espresso”; trafia też do opisów dostępności steppera.
+ * @property trailingLabel dopłata za sztukę, np. „+3,00 zł”; `null` = bez dopłaty.
+ * @property quantity wybrana liczba sztuk.
+ * @property canIncrease czy można dodać sztukę (`false` po osiągnięciu limitu opcji lub grupy).
+ * @property canDecrease czy można odjąć sztukę (`false` przy zerze lub minimum).
+ * @property isEnabled `false` = opcja chwilowo niedostępna – przygaszona, oba przyciski wyłączone.
+ */
 @Immutable
 data class QuantityOptionUi(
     val id: String,
@@ -58,8 +77,17 @@ data class QuantityOptionUi(
     val isEnabled: Boolean = true,
 )
 
-// KAFE-25 / KAFE-9: Grupa jednokrotnego wyboru (np. mleko). W grupie opcjonalnej ponowne kliknięcie
-// zaznaczonej opcji ją odznacza – decyzję podejmuje VM, komponent tylko zgłasza kliknięcie.
+/**
+ * Grupa jednokrotnego wyboru modyfikatora (np. mleko) – nagłówek i lista opcji z przyciskami radiowymi.
+ * Komponent tylko zgłasza kliknięcie; o tym, co ono znaczy, decyduje ViewModel (np. w grupie opcjonalnej
+ * ponowne kliknięcie zaznaczonej opcji ją odznacza).
+ *
+ * @param title nazwa grupy, ogłaszana przez TalkBack jako nagłówek.
+ * @param isRequired czy wybór jest wymagany – w nagłówku „Wymagane” albo „Opcjonalne”.
+ * @param options opcje w kolejności wyświetlania.
+ * @param onOptionClick wywoływane z id stukniętej dostępnej opcji, także już zaznaczonej.
+ * @param optionTestTag opcjonalna funkcja tworząca tag testowy wiersza opcji z jej id.
+ */
 @Composable
 fun KafeChoiceGroup(
     title: String,
@@ -102,8 +130,17 @@ fun KafeChoiceGroup(
     }
 }
 
-// KAFE-25 / KAFE-9: Grupa z licznikami (np. dodatkowe shoty 0–4). Gdy któraś opcja osiąga limit,
-// podpowiedź limitu („maks. 4”) zmienia kolor na akcent i jest ogłaszana przez TalkBack.
+/**
+ * Grupa modyfikatorów z licznikami (np. dodatkowe shoty 0–4) – nagłówek i wiersze ze [KafeStepper].
+ * Gdy któraś wybrana opcja osiąga limit (nie da się jej zwiększyć), podpowiedź limitu („maks. 4”) zmienia
+ * kolor na akcent i jest ogłaszana przez TalkBack.
+ *
+ * @param title nazwa grupy, ogłaszana jako nagłówek.
+ * @param isRequired czy wybór jest wymagany – w nagłówku „Wymagane” albo „Opcjonalne”.
+ * @param limitLabel podpowiedź limitu, np. „maks. 4”; `null` = grupa bez limitu.
+ * @param options opcje w kolejności wyświetlania.
+ * @param onQuantityChange wywoływane z id opcji i zmianą (`+1` / `-1`) po kliknięciu aktywnego „+” / „−”.
+ */
 @Composable
 fun KafeQuantityGroup(
     title: String,
@@ -144,7 +181,14 @@ fun KafeQuantityGroup(
     }
 }
 
-// KAFE-25 / KAFE-9: Nagłówek sekcji formularza produktu: tytuł + „Wymagane/Opcjonalne” + opcjonalna podpowiedź.
+/**
+ * Nagłówek sekcji formularza produktu: tytuł, oznaczenie „Wymagane” / „Opcjonalne” i podpowiedź po prawej.
+ *
+ * @param title tytuł sekcji, ogłaszany jako nagłówek.
+ * @param isRequired `true` = „Wymagane”, `false` = „Opcjonalne”, `null` = bez oznaczenia (np. sekcja rozmiaru).
+ * @param hint podpowiedź po prawej (np. limit); zmiana jest ogłaszana przez TalkBack.
+ * @param isHintEmphasized `true` wyróżnia podpowiedź kolorem akcentu (np. po osiągnięciu limitu).
+ */
 @Composable
 fun KafeGroupHeader(
     title: String,
@@ -187,6 +231,7 @@ fun KafeGroupHeader(
     }
 }
 
+/** Nazwa opcji (do dwóch linii, zajmuje dostępne miejsce) i dopłata po prawej. */
 @Composable
 private fun RowScope.OptionLabels(label: String, trailingLabel: String?) {
     Text(

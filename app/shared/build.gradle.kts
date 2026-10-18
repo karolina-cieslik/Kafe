@@ -84,9 +84,18 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
             implementation(libs.ktor.client.mock)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.test)
+        }
+        // KAFE-27: Testy Compose na JVM (Robolectric) – uruchamiane w CI razem z testAndroidHostTest.
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.robolectric)
+            implementation(libs.androidx.testExt.junit)
+            implementation(libs.androidx.compose.uiTest.junit4)
+            implementation(libs.androidx.compose.uiTest.manifest)
         }
         getByName("androidDeviceTest").dependencies {
             implementation(libs.kotlin.test)

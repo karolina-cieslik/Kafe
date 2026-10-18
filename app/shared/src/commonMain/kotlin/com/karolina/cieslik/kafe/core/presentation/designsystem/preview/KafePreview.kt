@@ -7,7 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-25: Opakowanie previewów – motyw (jasny/ciemny wg uiMode z @PreviewLightDark) i tło.
+/**
+ * KAFE-25: Opakowanie previewów – nakłada [KafeTheme] (jasny lub ciemny zgodnie z uiMode, np. z
+ * `@PreviewLightDark`) i tło `background`, bo sam preview komponentu jest przezroczysty.
+ *
+ * @param withPadding czy dodać margines wokół treści; `false` dla całych ekranów.
+ * @param content podglądany komponent lub ekran.
+ */
 @Composable
 fun KafePreview(
     withPadding: Boolean = true,

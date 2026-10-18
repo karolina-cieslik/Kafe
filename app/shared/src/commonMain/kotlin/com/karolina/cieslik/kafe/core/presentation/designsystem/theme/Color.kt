@@ -92,7 +92,19 @@ internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
     onError = KafePalette.Espresso,
 )
 
-// KAFE-25: Kolory spoza ColorScheme Material3 – nagłówek ekranu, promo, ocena.
+/**
+ * KAFE-25: Kolory spoza [ColorScheme] Material3, dostępne przez [KafeTheme.extendedColors].
+ * Mają osobne wartości dla jasnego i ciemnego motywu.
+ *
+ * @property header tło ciemnego nagłówka ekranu (np. nagłówek menu z wyszukiwarką).
+ * @property headerGradientEnd drugi kolor gradientu nagłówka – kończy przejście od [header].
+ * @property onHeader tekst i ikony na [header].
+ * @property onHeaderVariant drugorzędny tekst na [header] (etykiety, podpowiedzi w polach).
+ * @property headerField tło pól (np. wyszukiwarki) umieszczonych na [header].
+ * @property promo tło oznaczeń promocyjnych.
+ * @property onPromo tekst na [promo].
+ * @property rating kolor gwiazdki oceny.
+ */
 @Immutable
 data class KafeExtendedColors(
     val header: Color,

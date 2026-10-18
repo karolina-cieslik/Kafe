@@ -12,7 +12,14 @@ import androidx.compose.runtime.staticCompositionLocalOf
 
 internal val LocalKafeExtendedColors = staticCompositionLocalOf { KafeLightExtendedColors }
 
-// KAFE-25: Motyw aplikacji – MaterialTheme + rozszerzenia (kolory nagłówka/promo, odstępy) przez CompositionLocal.
+/**
+ * KAFE-25: Motyw aplikacji – [MaterialTheme] z kolorami, typografią i kształtami Kafe oraz rozszerzenia
+ * ([KafeExtendedColors], [KafeSpacing]) udostępniane przez CompositionLocal.
+ * Owija cały korzeń UI i każdy preview; ekrany odczytują wartości przez obiekt [KafeTheme].
+ *
+ * @param darkTheme czy użyć ciemnego motywu; domyślnie zgodnie z ustawieniem systemu.
+ * @param content treść, która dostaje motyw.
+ */
 @Composable
 fun KafeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -31,6 +38,10 @@ fun KafeTheme(
     }
 }
 
+/**
+ * KAFE-25: Jedyny punkt dostępu ekranów i komponentów do tokenów motywu – zamiast bezpośrednich odwołań
+ * do [MaterialTheme] czy palety. Działa tylko wewnątrz composable [KafeTheme].
+ */
 object KafeTheme {
     val colors: ColorScheme
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme

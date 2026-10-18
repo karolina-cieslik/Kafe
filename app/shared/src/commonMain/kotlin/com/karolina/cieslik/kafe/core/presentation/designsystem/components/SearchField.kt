@@ -74,13 +74,14 @@ object SearchFieldDefaults {
 private const val DISABLED_ALPHA = 0.6f
 
 /**
- * KAFE-25: Jednoliniowe pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia (widocznym, gdy jest tekst).
+ * KAFE-25: Jednoliniowe pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia (widocznym, gdy pole
+ * jest aktywne i niepuste).
  * Klawisz „Szukaj” na klawiaturze tylko ją chowa – wyniki filtrują się już w trakcie pisania.
  *
  * @param query aktualny tekst; pole jest sterowane z zewnątrz (stan trzyma ViewModel).
  * @param onQueryChange wywoływane przy każdej zmianie tekstu oraz z pustym tekstem po stuknięciu „wyczyść”.
  * @param placeholder podpowiedź widoczna przy pustym polu.
- * @param enabled `false` blokuje edycję i przygasza pole (np. gdy menu się jeszcze ładuje).
+ * @param enabled `false` blokuje edycję, ukrywa przycisk czyszczenia i przygasza pole (np. gdy menu się jeszcze ładuje).
  * @param colors kolory pola – [SearchFieldDefaults.onBackground] lub [SearchFieldDefaults.onHeader].
  */
 @Composable

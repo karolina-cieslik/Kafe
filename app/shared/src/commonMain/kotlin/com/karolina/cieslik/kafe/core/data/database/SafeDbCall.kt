@@ -5,7 +5,11 @@ import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.Result
 import kotlinx.coroutines.CancellationException
 
-// KAFE-2: Odpowiednik safeCall dla bazy – wyjątki SQLite mapowane na DataError.Local.
+/**
+ * Odpowiednik `safeCall` dla bazy: wykonuje [execute] i zamienia wyjątki na [DataError.Local]
+ * ([DataError.Local.DISK_FULL] przy pełnym dysku, w pozostałych przypadkach [DataError.Local.UNKNOWN]).
+ * CancellationException jest przepuszczany dalej, żeby nie łamać structured concurrency.
+ */
 suspend inline fun <T> safeDbCall(execute: () -> T): Result<T, DataError.Local> =
     try {
         Result.Success(execute())
@@ -15,12 +19,16 @@ suspend inline fun <T> safeDbCall(execute: () -> T): Result<T, DataError.Local> 
         Result.Failure(e.toLocalError())
     }
 
+/** Mapuje wyjątek bazy na [DataError.Local]; publiczne dla inline [safeDbCall]. */
 @PublishedApi
 internal fun Throwable.toLocalError(): DataError.Local = when {
     this is SQLiteException && isDiskFullMessage(message) -> DataError.Local.DISK_FULL
     else -> DataError.Local.UNKNOWN
 }
 
-// Kod SQLITE_FULL (13) – BundledSQLiteDriver zwraca np. "Error code: 13, message: database or disk is full".
+/**
+ * Rozpoznaje błąd SQLITE_FULL (kod 13) po treści komunikatu, bo SQLiteException nie ma pola z kodem.
+ * BundledSQLiteDriver zwraca np. "Error code: 13, message: database or disk is full".
+ */
 internal fun isDiskFullMessage(message: String?): Boolean =
     message != null && ("SQLITE_FULL" in message || "disk is full" in message || "Error code: 13," in message)

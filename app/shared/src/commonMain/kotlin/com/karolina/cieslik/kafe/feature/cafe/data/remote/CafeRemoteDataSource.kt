@@ -6,7 +6,16 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 
-// KAFE-6: DTO i zdalne źródło lokali (docelowo /cafes w Firebase Realtime DB).
+/**
+ * Lokal z API; docelowo węzeł `/cafes` w Firebase Realtime DB, na razie dane seed.
+ *
+ * @property id identyfikator lokalu, np. `krakow-rynek`.
+ * @property name nazwa wyświetlana.
+ * @property address adres w jednej linii.
+ * @property lat szerokość geograficzna (WGS84, stopnie).
+ * @property lng długość geograficzna (WGS84, stopnie).
+ * @property openingHours godziny otwarcia; brak pola = pusta lista, czyli lokal bez godzin (zamknięty).
+ */
 @Serializable
 data class CafeDto(
     val id: String,
@@ -17,7 +26,13 @@ data class CafeDto(
     val openingHours: List<OpeningHoursDto> = emptyList(),
 )
 
-/** day: MONDAY…SUNDAY, opens/closes: „HH:mm”. */
+/**
+ * Godziny otwarcia w jednym dniu, w czasie lokalnym lokalu.
+ *
+ * @property day dzień tygodnia MONDAY…SUNDAY (wielkość liter bez znaczenia); nieznany dzień jest pomijany.
+ * @property opens godzina otwarcia „HH:mm”.
+ * @property closes godzina zamknięcia „HH:mm”.
+ */
 @Serializable
 data class OpeningHoursDto(
     val day: String,
@@ -25,10 +40,17 @@ data class OpeningHoursDto(
     val closes: String,
 )
 
+/** Zdalne źródło lokali sieci. */
 interface CafeRemoteDataSource {
+    /** Wszystkie lokale sieci w kolejności ze źródła; [DataError.Remote] przy błędzie sieci. */
     suspend fun fetchCafes(): Result<List<CafeDto>, DataError.Remote>
 }
 
+/**
+ * Lokale seed w pamięci do czasu podłączenia backendu; nigdy nie zwraca błędu.
+ *
+ * @param latency sztuczne opóźnienie odpowiedzi, żeby było widać stan ładowania.
+ */
 class SeedCafeRemoteDataSource(
     private val latency: Duration = Duration.ZERO,
 ) : CafeRemoteDataSource {

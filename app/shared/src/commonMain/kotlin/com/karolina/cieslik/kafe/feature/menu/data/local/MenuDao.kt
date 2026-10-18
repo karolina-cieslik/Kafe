@@ -9,18 +9,23 @@ import androidx.room.Upsert
 import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataEntity
 import kotlinx.coroutines.flow.Flow
 
-// KAFE-6: DAO menu. Zapis menu sieci, dostępności lokalu i znaczników synchronizacji w jednej transakcji,
-// żeby obserwatorzy nie zobaczyli nowego menu ze starą dostępnością.
+/**
+ * DAO menu sieci i dostępności w lokalach; klasa abstrakcyjna, żeby zapis wielu tabel mógł być jedną metodą
+ * @Transaction. Zapytania `observe*` emitują od razu i ponownie po każdej zmianie swojej tabeli.
+ */
 @Dao
 abstract class MenuDao {
 
+    /** Wszystkie kategorie sieci, bez sortowania (sortuje domena). */
     @Query("SELECT * FROM menu_categories")
     abstract fun observeCategories(): Flow<List<CategoryEntity>>
 
+    /** Wszystkie produkty z rozmiarami; relacja czytana w jednej transakcji. */
     @Transaction
     @Query("SELECT * FROM menu_products")
     abstract fun observeProducts(): Flow<List<ProductWithSizes>>
 
+    /** Wpisy dostępności w lokalu [cafeId]; produkt bez wpisu jest dostępny. */
     @Query("SELECT * FROM menu_product_availability WHERE cafeId = :cafeId")
     abstract fun observeAvailability(cafeId: String): Flow<List<ProductAvailabilityEntity>>
 
@@ -28,6 +33,14 @@ abstract class MenuDao {
     @Query("SELECT COUNT(*) FROM sync_metadata WHERE resourceKey IN (:resourceKeys)")
     abstract fun observeSyncedCount(resourceKeys: List<String>): Flow<Int>
 
+    /**
+     * Zastępuje menu sieci w całości i dostępność w lokalu [cafeId], a na końcu zapisuje oba znaczniki
+     * synchronizacji.
+     *
+     * Jedna transakcja: przerwany zapis jest wycofywany i zostaje poprzednie menu, a obserwatorzy dostają
+     * powiadomienie dopiero po zatwierdzeniu całości. Pełne zastąpienie usuwa produkty, których nie ma już
+     * w menu. Dostępność innych lokali zostaje bez zmian.
+     */
     @Transaction
     open suspend fun replaceMenuForCafe(
         cafeId: String,
@@ -37,6 +50,8 @@ abstract class MenuDao {
         availability: List<ProductAvailabilityEntity>,
         syncedAtEpochMillis: Long,
     ) {
+        // Najpierw tabele podrzędne (rozmiary, produkty), potem kategorie. Kluczy obcych nie ma, ale ta kolejność
+        // zadziała też po ich dodaniu.
         deleteAllSizes()
         deleteAllProducts()
         deleteAllCategories()
@@ -45,6 +60,11 @@ abstract class MenuDao {
         insertSizes(sizes)
         deleteAvailability(cafeId)
         insertAvailability(availability)
+        // Znaczniki na końcu: observeMenu przestaje zwracać null dopiero, gdy menu i dostępność są zapisane.
+        // TODO(KAFE-6): R-1 – odczyt nie jest spójny z zapisem: observeMenu łączy (combine) cztery osobne zapytania,
+        // które po transakcji wykonują się ponownie każde osobno, więc może wyemitować stan pośredni (np. nowe kategorie
+        // bez produktów albo nowe menu ze starą dostępnością). Poprawka: jeden przepływ-wyzwalacz i odczyt wszystkich
+        // tabel w jednej transakcji.
         upsertSyncMetadata(SyncMetadataEntity(MenuSyncKeys.MENU, syncedAtEpochMillis))
         upsertSyncMetadata(SyncMetadataEntity(MenuSyncKeys.availability(cafeId), syncedAtEpochMillis))
     }

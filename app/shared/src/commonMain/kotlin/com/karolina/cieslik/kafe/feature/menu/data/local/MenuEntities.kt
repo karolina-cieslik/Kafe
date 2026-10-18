@@ -6,8 +6,14 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
-// KAFE-6: Encje Room menu sieci i dostępności per lokal. Menu jest zawsze zastępowane w całości,
-// więc produkty usunięte z menu po odświeżeniu znikają (przypadek brzegowy z KAFE-6).
+/**
+ * Kategoria menu sieci w tabeli `menu_categories`. Menu jest zawsze zastępowane w całości, więc kategorie
+ * i produkty usunięte z menu znikają po odświeżeniu.
+ *
+ * @property id identyfikator z API.
+ * @property name nazwa wyświetlana.
+ * @property sortOrder pozycja w menu ustalona przez sieć.
+ */
 @Entity(tableName = "menu_categories")
 data class CategoryEntity(
     @PrimaryKey val id: String,
@@ -15,6 +21,17 @@ data class CategoryEntity(
     val sortOrder: Int,
 )
 
+/**
+ * Produkt menu sieci w tabeli `menu_products`; rozmiary są w osobnej tabeli.
+ *
+ * @property id identyfikator z API.
+ * @property categoryId kategoria produktu; indeks pod filtrowanie po kategorii.
+ * @property name nazwa wyświetlana.
+ * @property description opis; null albo pusty, gdy brak (pusty zamieniany na null przy odczycie).
+ * @property imageUrl adres zdjęcia; null albo pusty, gdy brak.
+ * @property sortOrder pozycja w kategorii ustalona przez sieć.
+ * @property isActive false dla produktów poza ofertą (np. sezonowych poza sezonem).
+ */
 @Entity(tableName = "menu_products", indices = [Index("categoryId")])
 data class ProductEntity(
     @PrimaryKey val id: String,
@@ -26,7 +43,14 @@ data class ProductEntity(
     val isActive: Boolean,
 )
 
-/** code = nazwa SizeCode (S/M/L); cena pełna w groszach. */
+/**
+ * Rozmiar produktu w tabeli `menu_product_sizes` – jeden wiersz na produkt i kod rozmiaru.
+ *
+ * @property productId produkt, którego dotyczy rozmiar.
+ * @property code nazwa SizeCode wielkimi literami (S/M/L); nieznany kod jest pomijany przy odczycie.
+ * @property volumeMl pojemność w mililitrach; null dla produktów bez pojemności.
+ * @property priceGrosze pełna cena w groszach (nie dopłata); ujemna jest pomijana przy odczycie.
+ */
 @Entity(tableName = "menu_product_sizes", primaryKeys = ["productId", "code"])
 data class ProductSizeEntity(
     val productId: String,
@@ -35,6 +59,13 @@ data class ProductSizeEntity(
     val priceGrosze: Long,
 )
 
+/**
+ * Dostępność produktu w lokalu w tabeli `menu_product_availability`. Produkt bez wiersza jest dostępny.
+ *
+ * @property cafeId lokal.
+ * @property productId produkt.
+ * @property isAvailable false, gdy produkt jest chwilowo niedostępny w lokalu.
+ */
 @Entity(tableName = "menu_product_availability", primaryKeys = ["cafeId", "productId"])
 data class ProductAvailabilityEntity(
     val cafeId: String,
@@ -42,6 +73,12 @@ data class ProductAvailabilityEntity(
     val isAvailable: Boolean,
 )
 
+/**
+ * Wynik relacji Room: produkt z rozmiarami.
+ *
+ * @property product wiersz produktu.
+ * @property sizes rozmiary produktu, w dowolnej kolejności.
+ */
 data class ProductWithSizes(
     @Embedded val product: ProductEntity,
     @Relation(parentColumn = "id", entityColumn = "productId")

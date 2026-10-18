@@ -27,7 +27,7 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            // KAFE-6: Flow w interfejsach repozytoriów – api, bo typ jest częścią publicznego kontraktu domeny.
+            // Flow w interfejsach repozytoriów – api, bo typ jest częścią publicznego kontraktu domeny.
             api(libs.kotlinx.coroutines.core)
         }
         commonTest.dependencies {

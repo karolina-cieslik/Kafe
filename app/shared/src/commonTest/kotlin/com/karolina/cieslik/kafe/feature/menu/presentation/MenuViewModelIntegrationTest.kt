@@ -12,12 +12,12 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
-import com.karolina.cieslik.kafe.feature.menu.data.local.CategoryEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
-import com.karolina.cieslik.kafe.feature.menu.data.local.ProductEntity
-import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupWithOptions
+import com.karolina.cieslik.kafe.feature.menu.data.local.toMenu
+import com.karolina.cieslik.kafe.feature.menu.data.local.toSnapshot
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductWithSizes
-import com.karolina.cieslik.kafe.feature.menu.data.local.toDomain
+import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSource
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
@@ -34,7 +34,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.time.Duration
 
-// KAFE-6: MenuViewModel na repozytoriach offline-first z lokalnymi źródłami w pamięci i danymi seed – AC 1–5, 7 end-to-end bez UI.
+/** MenuViewModel na repozytoriach offline-first z lokalnymi źródłami w pamięci i danymi seed, end-to-end bez UI. */
 class MenuViewModelIntegrationTest {
 
     private val offlineCafes = object : CafeRemoteDataSource {
@@ -76,7 +76,6 @@ class MenuViewModelIntegrationTest {
 
         val content = assertIs<MenuUiState.Content>(viewModel.state.value)
         assertEquals("Kafe Rynek", content.cafeName)
-        // AC 3: kolejność sieci; AC 4: „Herbaty” bez produktów ukryte.
         assertEquals(listOf("Kawy klasyczne", "Przelewy", "Sezonowe", "Przekąski"), content.categories.map { it.name })
     }
 
@@ -113,11 +112,10 @@ class MenuViewModelIntegrationTest {
         val content = assertIs<MenuUiState.Content>(setup.viewModel.state.value)
         assertEquals("Kafe Długa", content.cafeName)
         val unavailable = content.categories.flatMap { it.products }.filterNot { it.isAvailable }.map { it.id }.toSet()
-        assertEquals(setOf("chemex", "cheesecake", "flat-white"), unavailable)
+        assertEquals(setOf("cappuccino", "chemex", "cheesecake", "flat-white"), unavailable)
         assertFalse(content.isRefreshing)
     }
 
-    // AC 7: pierwsze uruchomienie bez sieci – nie da się pobrać lokali, więc nie ma też menu.
     @Test
     fun cafeListFailureWithoutCacheShowsConnectionError() = runViewModelTest { context ->
         val (viewModel) = context.createViewModel(cafeRemote = offlineCafes)
@@ -172,28 +170,21 @@ private class InMemoryMenuLocal : MenuLocalDataSource {
     override suspend fun saveMenu(
         cafeId: String,
         menu: MenuDto,
-        availability: Map<String, Boolean>,
+        availability: AvailabilityDto,
         syncedAtEpochMillis: Long,
     ): EmptyResult<DataError.Local> {
-        val domain = Menu(
-            categories = menu.categories.map { CategoryEntity(it.id, it.name, it.sortOrder).toDomain() },
-            products = menu.products.map { product ->
-                ProductWithSizes(
-                    product = ProductEntity(
-                        id = product.id,
-                        categoryId = product.categoryId,
-                        name = product.name,
-                        description = product.description,
-                        imageUrl = product.imageUrl,
-                        sortOrder = product.sortOrder,
-                        isActive = product.active,
-                    ),
-                    sizes = product.sizes.map { ProductSizeEntity(product.id, it.code.uppercase(), it.volumeMl, it.priceGrosze) },
-                ).toDomain()
+        val snapshot = menu.toSnapshot(cafeId, availability)
+        val sizesByProduct = snapshot.sizes.groupBy { it.productId }
+        val groupsByProduct = snapshot.productModifierGroups.groupBy { it.productId }
+        val optionsByGroup = snapshot.modifierOptions.groupBy { it.groupId }
+        menus.value += cafeId to toMenu(
+            categories = snapshot.categories,
+            products = snapshot.products.map {
+                ProductWithSizes(it, sizesByProduct[it.id].orEmpty(), groupsByProduct[it.id].orEmpty())
             },
-            unavailableProductIds = availability.filterValues { !it }.keys,
+            groups = snapshot.modifierGroups.map { ModifierGroupWithOptions(it, optionsByGroup[it.id].orEmpty()) },
+            availability = snapshot.availability,
         )
-        menus.value += cafeId to domain
         return Result.Success(Unit)
     }
 }

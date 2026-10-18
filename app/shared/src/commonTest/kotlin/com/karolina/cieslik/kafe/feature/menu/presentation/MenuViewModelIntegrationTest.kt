@@ -12,12 +12,12 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
-import com.karolina.cieslik.kafe.feature.menu.data.local.CategoryEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
-import com.karolina.cieslik.kafe.feature.menu.data.local.ProductEntity
-import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupWithOptions
+import com.karolina.cieslik.kafe.feature.menu.data.local.toMenu
+import com.karolina.cieslik.kafe.feature.menu.data.local.toSnapshot
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductWithSizes
-import com.karolina.cieslik.kafe.feature.menu.data.local.toDomain
+import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSource
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
@@ -113,7 +113,8 @@ class MenuViewModelIntegrationTest {
         val content = assertIs<MenuUiState.Content>(setup.viewModel.state.value)
         assertEquals("Kafe Długa", content.cafeName)
         val unavailable = content.categories.flatMap { it.products }.filterNot { it.isAvailable }.map { it.id }.toSet()
-        assertEquals(setOf("chemex", "cheesecake", "flat-white"), unavailable)
+        // Seed v3 (KAFE-9): cappuccino w Gdańsku nie ma żadnego dostępnego rozmiaru, więc jest niedostępne.
+        assertEquals(setOf("cappuccino", "chemex", "cheesecake", "flat-white"), unavailable)
         assertFalse(content.isRefreshing)
     }
 
@@ -169,31 +170,25 @@ private class InMemoryMenuLocal : MenuLocalDataSource {
 
     override fun observeMenu(cafeId: String): Flow<Menu?> = menus.map { it[cafeId] }
 
+    // Te same mappery co RoomMenuLocalDataSource: DTO -> encje (toSnapshot) -> domena (toMenu).
     override suspend fun saveMenu(
         cafeId: String,
         menu: MenuDto,
-        availability: Map<String, Boolean>,
+        availability: AvailabilityDto,
         syncedAtEpochMillis: Long,
     ): EmptyResult<DataError.Local> {
-        val domain = Menu(
-            categories = menu.categories.map { CategoryEntity(it.id, it.name, it.sortOrder).toDomain() },
-            products = menu.products.map { product ->
-                ProductWithSizes(
-                    product = ProductEntity(
-                        id = product.id,
-                        categoryId = product.categoryId,
-                        name = product.name,
-                        description = product.description,
-                        imageUrl = product.imageUrl,
-                        sortOrder = product.sortOrder,
-                        isActive = product.active,
-                    ),
-                    sizes = product.sizes.map { ProductSizeEntity(product.id, it.code.uppercase(), it.volumeMl, it.priceGrosze) },
-                ).toDomain()
+        val snapshot = menu.toSnapshot(cafeId, availability)
+        val sizesByProduct = snapshot.sizes.groupBy { it.productId }
+        val groupsByProduct = snapshot.productModifierGroups.groupBy { it.productId }
+        val optionsByGroup = snapshot.modifierOptions.groupBy { it.groupId }
+        menus.value += cafeId to toMenu(
+            categories = snapshot.categories,
+            products = snapshot.products.map {
+                ProductWithSizes(it, sizesByProduct[it.id].orEmpty(), groupsByProduct[it.id].orEmpty())
             },
-            unavailableProductIds = availability.filterValues { !it }.keys,
+            groups = snapshot.modifierGroups.map { ModifierGroupWithOptions(it, optionsByGroup[it.id].orEmpty()) },
+            availability = snapshot.availability,
         )
-        menus.value += cafeId to domain
         return Result.Success(Unit)
     }
 }

@@ -22,7 +22,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-// KAFE-6: Encje, DAO i lokalne źródło lokali sieci (Room jako źródło prawdy).
+/**
+ * Lokal sieci w tabeli `cafes`.
+ *
+ * @property id identyfikator lokalu z API.
+ * @property name nazwa wyświetlana.
+ * @property address adres w jednej linii.
+ * @property lat szerokość geograficzna (WGS84, stopnie).
+ * @property lng długość geograficzna (WGS84, stopnie).
+ * @property position kolejność lokali ze źródła, od 0 – pierwszy jest domyślnie wybrany.
+ */
 @Entity(tableName = "cafes")
 data class CafeEntity(
     @PrimaryKey val id: String,
@@ -30,11 +39,18 @@ data class CafeEntity(
     val address: String,
     val lat: Double,
     val lng: Double,
-    /** Kolejność lokali ze źródła – pierwszy jest domyślnie wybrany. */
     val position: Int,
 )
 
-/** Godziny jak w API („HH:mm”), parsowane przy odczycie tym samym mapperem co DTO. */
+/**
+ * Godziny otwarcia lokalu w tabeli `cafe_opening_hours` – jeden wiersz na dzień.
+ * Trzymane jak w API („HH:mm”) i parsowane przy odczycie tym samym mapperem co DTO.
+ *
+ * @property cafeId lokal, którego dotyczą godziny.
+ * @property day dzień tygodnia wielkimi literami: MONDAY…SUNDAY.
+ * @property opens godzina otwarcia „HH:mm” czasu lokalnego.
+ * @property closes godzina zamknięcia „HH:mm” czasu lokalnego.
+ */
 @Entity(tableName = "cafe_opening_hours", primaryKeys = ["cafeId", "day"])
 data class OpeningHoursEntity(
     val cafeId: String,
@@ -43,32 +59,53 @@ data class OpeningHoursEntity(
     val closes: String,
 )
 
+/**
+ * Wynik relacji Room: lokal z godzinami otwarcia.
+ *
+ * @property cafe wiersz lokalu.
+ * @property openingHours godziny otwarcia lokalu, w dowolnej kolejności.
+ */
 data class CafeWithOpeningHours(
     @Embedded val cafe: CafeEntity,
     @Relation(parentColumn = "id", entityColumn = "cafeId")
     val openingHours: List<OpeningHoursEntity>,
 )
 
+/** DAO lokali; klasa abstrakcyjna, żeby zapis wielu tabel mógł być jedną metodą @Transaction. */
 @Dao
 abstract class CafeDao {
 
+    /**
+     * Lokale z godzinami w kolejności ze źródła. Relacja czytana w jednej transakcji.
+     * Emituje od razu i ponownie po każdej zmianie tabel `cafes` lub `cafe_opening_hours`.
+     */
     @Transaction
     @Query("SELECT * FROM cafes ORDER BY position")
     abstract fun observeCafes(): Flow<List<CafeWithOpeningHours>>
 
+    /** 1, gdy lokale były już zapisane, 0 – gdy jeszcze nigdy. Emituje po każdej zmianie `sync_metadata`. */
     @Query("SELECT COUNT(*) FROM sync_metadata WHERE resourceKey = :resourceKey")
     abstract fun observeSyncedCount(resourceKey: String = CAFES_SYNC_KEY): Flow<Int>
 
+    /**
+     * Zastępuje wszystkie lokale nowymi i zapisuje znacznik synchronizacji.
+     *
+     * Jedna transakcja: przerwany zapis jest wycofywany i zostają stare lokale, a obserwatorzy dostają
+     * powiadomienie dopiero po zatwierdzeniu całości.
+     */
     @Transaction
     open suspend fun replaceCafes(
         cafes: List<CafeEntity>,
         openingHours: List<OpeningHoursEntity>,
         syncedAtEpochMillis: Long,
     ) {
+        // Najpierw tabela podrzędna, potem lokale. Kluczy obcych nie ma, ale ta kolejność zadziała też po ich
+        // dodaniu. Pełne zastąpienie usuwa lokale, których nie ma już w źródle.
         deleteAllOpeningHours()
         deleteAllCafes()
         insertCafes(cafes)
         insertOpeningHours(openingHours)
+        // Znacznik na końcu: observeCafes przestaje zwracać null dopiero, gdy dane są już zapisane.
         upsertSyncMetadata(SyncMetadataEntity(CAFES_SYNC_KEY, syncedAtEpochMillis))
     }
 
@@ -87,21 +124,38 @@ abstract class CafeDao {
     @Upsert
     protected abstract suspend fun upsertSyncMetadata(metadata: SyncMetadataEntity)
 
+    /** Stałe DAO lokali. */
     companion object {
+        /** Klucz znacznika synchronizacji lokali w `sync_metadata`. */
         const val CAFES_SYNC_KEY = "cafes"
     }
 }
 
+/** Lokalne źródło lokali (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM. */
 interface CafeLocalDataSource {
 
-    /** null, gdy lokale nie zostały jeszcze nigdy zapisane. */
+    /**
+     * Zapamiętane lokale; null, gdy nie zostały jeszcze nigdy zapisane, pusta lista – gdy źródło nie miało lokali.
+     * Emituje od razu i ponownie po każdym zapisie; kolejne identyczne wartości są pomijane.
+     */
     fun observeCafes(): Flow<List<Cafe>?>
 
+    /**
+     * Zastępuje zapamiętane lokale [cafes]; [syncedAtEpochMillis] to czas zapisu w ms od epoki (UTC).
+     *
+     * @return sukces albo [DataError.Local] przy błędzie bazy; wtedy zostają poprzednie lokale.
+     */
     suspend fun saveCafes(cafes: List<CafeDto>, syncedAtEpochMillis: Long): EmptyResult<DataError.Local>
 }
 
+/** [CafeLocalDataSource] na Room. */
 class RoomCafeLocalDataSource(private val dao: CafeDao) : CafeLocalDataSource {
 
+    // TODO(KAFE-6): R-1 – niespójny odczyt przez combine, jak w RoomMenuLocalDataSource.observeMenu.
+    /**
+     * Znane ograniczenie (R-1): dwa osobne zapytania w combine mogą po pierwszym zapisie wyemitować stan pośredni
+     * (znacznik już jest, lokali jeszcze nie), czyli na moment pustą listę zamiast lokali.
+     */
     override fun observeCafes(): Flow<List<Cafe>?> =
         combine(dao.observeSyncedCount(), dao.observeCafes()) { syncedCount, cafes ->
             if (syncedCount == 0) null else cafes.map { it.toDomain() }
@@ -113,6 +167,7 @@ class RoomCafeLocalDataSource(private val dao: CafeDao) : CafeLocalDataSource {
                 cafes = cafes.mapIndexed { index, cafe ->
                     CafeEntity(cafe.id, cafe.name, cafe.address, cafe.lat, cafe.lng, position = index)
                 },
+                // Jeden wpis na dzień (klucz główny cafeId + day); przy duplikatach zostaje pierwszy.
                 openingHours = cafes.flatMap { cafe ->
                     cafe.openingHours
                         .distinctBy { it.day.uppercase() }

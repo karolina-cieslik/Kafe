@@ -10,8 +10,15 @@ import androidx.navigation.toRoute
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 
-// KAFE-41: Graf nawigacji. NavController i ekran startowy są parametrami, żeby testy mogły podać własny
-// kontroler (TestNavHostController), a KAFE-31 – start na CafePicker przy pierwszym uruchomieniu.
+/**
+ * Graf nawigacji aplikacji.
+ *
+ * Przejścia z menu używają launchSingleTop, więc szybkie podwójne kliknięcie nie otwiera ekranu dwa razy.
+ * Powrót zdejmuje ekran ze stosu, a menu zachowuje swój stan.
+ *
+ * @param navController kontroler nawigacji; parametr, żeby testy mogły podać TestNavHostController.
+ * @param startDestination ekran startowy; parametr, żeby pierwsze uruchomienie mogło zacząć od wyboru lokalu.
+ */
 @Composable
 fun KafeNavHost(
     modifier: Modifier = Modifier,
@@ -34,14 +41,14 @@ fun KafeNavHost(
             )
         }
         composable<KafeRoute.ProductDetail> { entry ->
-            // TODO KAFE-9: ProductDetailRoute z ProductDetailViewModel.
+            // TODO(KAFE-9): ProductDetailRoute z ProductDetailViewModel.
             PlaceholderScreen(
                 title = "Produkt: ${entry.toRoute<KafeRoute.ProductDetail>().productId}",
                 onBack = { navController.popBackStack() },
             )
         }
         composable<KafeRoute.CafePicker> {
-            // TODO KAFE-29: CafePickerRoute z CafePickerViewModel.
+            // TODO(KAFE-29): CafePickerRoute z CafePickerViewModel.
             PlaceholderScreen(
                 title = "Wybór lokalu",
                 onBack = { navController.popBackStack() },

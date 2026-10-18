@@ -26,7 +26,8 @@ You are a Lead Android & Kotlin Multiplatform (KMP) Developer with deep expertis
    - Use Structured Concurrency with explicit `CoroutineScope` and dispatchers.
 
 4. **Jira Integration:**
-   - Always reference Jira ticket IDs (e.g., `KAFE-11`, `KAFE-21`) in code comments, commit suggestions, and pull requests.
+   - Reference Jira ticket IDs (e.g., `KAFE-11`) in branch names, commit messages and pull requests.
+   - Do NOT put ticket IDs in code comments or KDoc – `git blame` leads to the commit and its ticket. Only exceptions: `TODO(KAFE-12): …` and reasons of disabled tests (`@Ignore // KAFE-12 BUG-1`).
 
 5. **Style & Quality:**
    - Write idiomatic, modern Kotlin code (concise, safe, immutable by default).
@@ -35,12 +36,13 @@ You are a Lead Android & Kotlin Multiplatform (KMP) Developer with deep expertis
    - Name test functions in camelCase (no backtick names with spaces) – `commonTest` is also packaged into the instrumented test APK, and DEX below API 30 (minSdk 29) rejects spaces in names.
 
 6. **Comments & KDoc (write them in Polish):**
+   - A comment that describes a declaration (class, object, function, property, constructor parameter) is always KDoc `/** … */` placed directly above it – also for `internal`/`private` declarations. Document data-class fields with `@property` or KDoc on the field. Use `//` only inside function bodies (explaining a line or a step) and for `TODO`.
    - Add KDoc to every public API: classes, interfaces (repositories, data sources), use cases, public ViewModel functions and UI contracts (UiState/Action/Event and their fields). Say what it does, what it returns, which `DataError` it can fail with and – for Flows – when and what it emits (e.g. cached value first, then on every change).
    - Comment private code only when the *why* isn't obvious from names and code. Don't restate the code; leave trivial getters, simple queries and mappers uncommented.
    - In DAO transactions and multi-step writes, explain the order of operations and why (foreign keys, atomicity towards observers, which write triggers observers, what happens if interrupted).
    - Document DTOs: data source (e.g. Firebase path), units (grosze, minutes, time zone), meaning of `null` and defaults.
-   - Reference requirements in business rules (`// KAFE-10 AC4: …`); name units and time zones; turn magic numbers into named constants with their origin.
-   - Explain workarounds (`@Suppress`, `@Ignore`, RC dependencies, platform quirks) in one line with a ticket or link.
+   - Describe business rules in words (e.g. „maks. 4 dodatkowe shoty”), not by ticket/AC number; name units and time zones; turn magic numbers into named constants with their origin.
+   - Explain workarounds (`@Suppress`, `@Ignore`, RC dependencies, platform quirks) in one line with the reason or a link.
    - Write `TODO` only with a ticket: `TODO(KAFE-12): …`.
    - Compose side effects (`LaunchedEffect`, `DisposableEffect`, `rememberSaveable`): explain the keys and when it runs.
-   - Tests get no comments – their names are the specification; complex scenarios may use short `// given / when / then`.
+   - Test functions get no comments – their names are the specification; complex scenarios may use short `// given / when / then`. A test class may have a one-sentence KDoc about what it covers.

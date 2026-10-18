@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 
-// KAFE-41: Tymczasowy ekran dla tras, których ekrany jeszcze powstają (KAFE-9, KAFE-29).
+/** Tymczasowy ekran dla tras, których właściwe ekrany jeszcze powstają: tytuł i przycisk „Wróć”. */
 @Composable
 internal fun PlaceholderScreen(
     title: String,
@@ -28,4 +28,5 @@ internal fun PlaceholderScreen(
     }
 }
 
+/** Tag testowy ekranu zastępczego. */
 internal const val PLACEHOLDER_TEST_TAG = "placeholder_screen"

@@ -4,7 +4,10 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.OpeningHoursDto
 import com.karolina.cieslik.kafe.feature.cafe.domain.OpeningHours
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 
-// KAFE-6: Parsowanie godzin otwarcia (wspólne dla DTO i encji Room). Błędne wpisy są pomijane.
+/**
+ * Parsowanie godzin otwarcia, wspólne dla DTO i encji Room. Zwraca null dla nieznanego dnia albo
+ * niepoprawnej godziny – błędny wpis jest pomijany zamiast wywracać cały lokal.
+ */
 internal fun OpeningHoursDto.toDomainOrNull(): OpeningHours? {
     val weekday = Weekday.entries.firstOrNull { it.name.equals(day, ignoreCase = true) } ?: return null
     val opensAt = opens.toMinuteOfDayOrNull() ?: return null

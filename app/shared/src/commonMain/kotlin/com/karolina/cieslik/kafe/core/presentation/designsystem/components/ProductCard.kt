@@ -40,8 +40,20 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val UNAVAILABLE_CONTENT_ALPHA = 0.5f
 
-// KAFE-25: Karta produktu w siatce menu. Niedostępny produkt: zdjęcie w skali szarości, przygaszona
-// treść, etykieta „Chwilowo niedostępny” i brak „+”; karta pozostaje klikalna (podgląd szczegółów).
+/**
+ * Karta produktu w siatce menu – zdjęcie, nazwa, podtytuł, cena i przycisk „+”.
+ *
+ * Niedostępny produkt ([isAvailable] = `false`): zdjęcie w skali szarości, przygaszona treść, etykieta
+ * „Chwilowo niedostępny” i brak „+”. Karta nadal jest klikalna, żeby dało się podejrzeć szczegóły.
+ *
+ * @param name nazwa produktu; za długa jest ucinana wielokropkiem.
+ * @param subtitle krótki opis pod nazwą; `null` zostawia pustą linię, żeby karty w siatce miały równą wysokość.
+ * @param priceLabel sformatowana cena, np. „12,00 zł” (bez „od”).
+ * @param imageUrl adres zdjęcia; `null` = placeholder z ikoną kawy.
+ * @param isAvailable czy produkt można teraz zamówić w wybranym lokalu.
+ * @param onClick wywoływane po stuknięciu karty (przejście do szczegółów).
+ * @param onAddClick wywoływane po stuknięciu „+”; tylko dla dostępnego produktu.
+ */
 @Composable
 fun ProductCard(
     name: String,
@@ -171,7 +183,10 @@ private fun UnavailableBadge(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-// KAFE-25: Szkielet karty na czas pierwszego ładowania menu (pulsująca przezroczystość).
+/**
+ * Szkielet karty produktu na czas pierwszego ładowania menu – ten sam układ co [ProductCard],
+ * z pulsującą przezroczystością. Ukryty przed TalkBackiem (stan ładowania ogłasza ekran).
+ */
 @Composable
 fun ProductCardSkeleton(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "skeleton")

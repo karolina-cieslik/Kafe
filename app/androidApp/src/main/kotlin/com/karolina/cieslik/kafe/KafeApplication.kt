@@ -6,7 +6,7 @@ import com.karolina.cieslik.kafe.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 
-// KAFE-2: Start DI dla Androida.
+/** Aplikacja Android: startuje DI z adresem API z BuildConfig; logi Koina i HTTP tylko w buildzie debug. */
 class KafeApplication : Application() {
 
     override fun onCreate() {

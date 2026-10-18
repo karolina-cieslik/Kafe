@@ -3,6 +3,7 @@ package com.karolina.cieslik.kafe.core.data.network
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.darwin.Darwin
 
+/** Darwin (NSURLSession) z dozwolonym użyciem danych komórkowych. */
 actual fun platformHttpEngine(): HttpClientEngine = Darwin.create {
     configureRequest {
         setAllowsCellularAccess(true)

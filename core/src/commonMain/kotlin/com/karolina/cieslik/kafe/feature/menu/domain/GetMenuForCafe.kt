@@ -3,24 +3,47 @@ package com.karolina.cieslik.kafe.feature.menu.domain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// KAFE-6: Menu gotowe do wyświetlenia – sekcje w kolejności sieci, bez pustych kategorii, z dostępnością w lokalu.
+/**
+ * Menu gotowe do wyświetlenia – sekcje w kolejności sieci, bez pustych kategorii, z dostępnością w lokalu.
+ *
+ * @property sections niepuste kategorie w kolejności sieci.
+ */
 data class CafeMenu(val sections: List<MenuSection>)
 
+/**
+ * Kategoria menu z widocznymi produktami.
+ *
+ * @property category kategoria sieci.
+ * @property items co najmniej jeden produkt, w kolejności sieci.
+ */
 data class MenuSection(val category: Category, val items: List<MenuItem>)
 
+/**
+ * Produkt na liście menu.
+ *
+ * @property product produkt z menu sieci.
+ * @property isAvailable false, gdy produkt jest chwilowo niedostępny w wybranym lokalu (UI go wyszarza).
+ */
 data class MenuItem(val product: Product, val isAvailable: Boolean)
 
+/** Przypadek użycia: menu sieci przefiltrowane i posortowane do wyświetlenia w lokalu. */
 class GetMenuForCafe(private val menuRepository: MenuRepository) {
 
+    /**
+     * Obserwuje menu dla lokalu [cafeId].
+     *
+     * Zimny Flow: emituje przy każdej emisji [MenuRepository.observeMenu], czyli od razu stan z bazy
+     * i ponownie po każdym zapisie menu. Emituje null, gdy menu nie zostało jeszcze nigdy pobrane.
+     */
     operator fun invoke(cafeId: String): Flow<CafeMenu?> =
         menuRepository.observeMenu(cafeId).map { menu -> menu?.toCafeMenu() }
 }
 
 /**
- * Reguły AC KAFE-6:
- * - AC 3: kategorie i produkty sortowane po sortOrder (stabilnie – przy remisie zostaje kolejność ze źródła),
- * - AC 4: kategoria bez produktów jest pomijana,
- * - AC 5: nieaktywne produkty są pomijane, więc np. „Sezonowe” bez aktywnych produktów znika.
+ * Reguły wyświetlania menu:
+ * - kategorie i produkty sortowane po sortOrder (stabilnie – przy remisie zostaje kolejność ze źródła),
+ * - kategoria bez produktów jest pomijana,
+ * - nieaktywne produkty są pomijane, więc np. „Sezonowe” bez aktywnych produktów znika.
  * Produkt niedostępny w lokalu zostaje na liście (wyszarzony w UI), więc nie ukrywa kategorii.
  * Produkty bez rozmiarów (bez ceny) traktujemy jak błędne dane i pomijamy.
  */
@@ -46,7 +69,10 @@ internal fun Menu.toCafeMenu(): CafeMenu {
     return CafeMenu(sections)
 }
 
-/** KAFE-9: produkt ze wszystkimi rozmiarami niedostępnymi w lokalu jest niedostępny (spójnie ze szczegółami). */
+/**
+ * Produkt jest dostępny w lokalu, gdy nie ma go na liście braków i ma co najmniej jeden dostępny rozmiar.
+ * Wszystkie rozmiary niedostępne = produkt niedostępny; ta sama reguła obowiązuje na liście i w szczegółach.
+ */
 internal fun Menu.isAvailable(product: Product): Boolean {
     val unavailable = unavailableSizes[product.id].orEmpty()
     return product.id !in unavailableProductIds && product.sizes.any { it.code !in unavailable }

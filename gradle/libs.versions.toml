@@ -20,6 +20,7 @@ kotlinx-serialization = "1.11.0"
 ksp = "2.3.12"
 ktor = "3.6.0"
 material3 = "1.12.0-alpha03"
+# Wersja RC, bo tylko 2.10 jest zgodna z lifecycle 2.11.0 (decyzja w decisions.md); podbić przy stabilnej 2.10.0.
 navigation = "2.10.0-rc01"
 room = "2.8.5"
 sqlite = "2.7.1"

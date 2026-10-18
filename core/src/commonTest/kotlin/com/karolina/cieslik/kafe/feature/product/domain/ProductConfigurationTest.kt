@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
-/** Reguły konfiguracji produktu. */
+/** Reguły konfiguracji produktu; na końcu regresje od testera – odświeżenie menu w trakcie konfiguracji. */
 class ProductConfigurationTest {
 
     private val calculator = PriceCalculator()
@@ -153,7 +153,6 @@ class ProductConfigurationTest {
         assertNull(config.selectOption("syrup", "syrup-vanilla", later).validate(later))
     }
 
-    // Regresje od testera (KAFE-10, odświeżenie menu w trakcie konfiguracji).
     @Test
     fun validateDoesNotCrashWhenSelectedOptionWasRemovedFromGroup() {
         val config = ProductConfiguration.initial(details()).selectOption("syrup", "syrup-vanilla", details())

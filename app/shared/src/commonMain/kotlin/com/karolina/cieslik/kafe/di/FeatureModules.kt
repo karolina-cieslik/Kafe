@@ -58,7 +58,10 @@ val menuModule = module {
     }
 }
 
-// KAFE-9: productId przychodzi z trasy – w UI: koinViewModel { parametersOf(productId) }.
+/**
+ * Szczegóły produktu: przypadek użycia, kalkulator ceny i ProductDetailViewModel. productId przychodzi z trasy,
+ * więc w UI: `koinViewModel { parametersOf(productId) }`.
+ */
 val productModule = module {
     factory { GetProductDetails(menuRepository = get()) }
     factory { PriceCalculator() }

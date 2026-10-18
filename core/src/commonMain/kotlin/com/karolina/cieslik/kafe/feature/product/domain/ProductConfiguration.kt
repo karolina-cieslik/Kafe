@@ -87,10 +87,11 @@ data class ProductConfiguration(
     }
 
     /**
-     * KAFE-10 (przypadek brzegowy): dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają,
-     * niedostępne są odznaczane (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować),
-     * limit QUANTITY jest przycinany, a wymagana grupa bez wyboru dostaje opcję startową. Rozmiar spoza produktu
-     * wraca do startowego; niedostępny rozmiar zostaje (walidacja blokuje dodanie, jak w KAFE-9 AC6).
+     * Dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają, niedostępne są odznaczane
+     * (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować), limit QUANTITY jest
+     * przycinany (opcje w kolejności grupy), a wymagana grupa bez wyboru dostaje opcję startową. Grupy, których
+     * produkt już nie ma, znikają. Rozmiar spoza produktu wraca do startowego; niedostępny rozmiar zostaje,
+     * a dodanie blokuje [validate]. Liczba sztuk się nie zmienia.
      */
     fun normalizedFor(details: ProductDetails): Normalized {
         val start by lazy { initial(details) }
@@ -118,6 +119,12 @@ data class ProductConfiguration(
         return Normalized(configuration, deselected)
     }
 
+    /**
+     * Wynik [normalizedFor].
+     *
+     * @property configuration konfiguracja dopasowana do menu.
+     * @property deselectedOptions nazwy opcji odznaczonych, bo stały się niedostępne; pusta lista = bez zmian.
+     */
     data class Normalized(val configuration: ProductConfiguration, val deselectedOptions: List<String>)
 
     /** Cena wszystkich sztuk z dopłatami według [PriceCalculator]; liczy tylko opcje istniejące w grupach produktu. */

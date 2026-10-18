@@ -26,6 +26,9 @@ sealed interface ProductDetailUiState {
      * @property sizes rozmiary; jeden element = produkt jednorozmiarowy, UI ukrywa wybór rozmiaru.
      * @property modifierGroups grupy modyfikatorów w kolejności wyświetlania.
      * @property quantity liczba sztuk.
+     * @property canIncreaseQuantity przycisk „+” przy liczbie sztuk aktywny – poniżej limitu 20 sztuk;
+     * domyślnie true dla zgodności wstecz z pierwszą wersją kontraktu.
+     * @property canDecreaseQuantity przycisk „−” przy liczbie sztuk aktywny – powyżej 1 sztuki; domyślnie true.
      * @property totalPriceLabel cena za wszystkie sztuki z dopłatami, np. „27,00 zł”.
      * @property canAddToCart konfiguracja jest poprawna i produkt można dodać do koszyka.
      * @property infoMessage np. powód, dla którego nie da się dodać do koszyka; null = brak komunikatu.
@@ -38,10 +41,8 @@ sealed interface ProductDetailUiState {
         val sizes: List<ProductSizeUi>,
         val modifierGroups: List<ModifierGroupUi>,
         val quantity: Int,
-        /** Limit liczby sztuk 1–20 (domyślne wartości – zgodność wstecz z pierwszą wersją kontraktu). */
         val canIncreaseQuantity: Boolean = true,
         val canDecreaseQuantity: Boolean = true,
-        /** Cena za wszystkie sztuki z dopłatami, np. „27,00 zł” (KAFE-11). */
         val totalPriceLabel: String,
         val canAddToCart: Boolean,
         val infoMessage: String? = null,

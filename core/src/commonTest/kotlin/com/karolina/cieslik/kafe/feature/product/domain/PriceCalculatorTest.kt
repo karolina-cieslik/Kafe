@@ -4,7 +4,7 @@ import com.karolina.cieslik.kafe.core.domain.Money
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-11: Wzór ceny pozycji.
+/** Wzór ceny pozycji. */
 class PriceCalculatorTest {
 
     private val calculator = PriceCalculator()

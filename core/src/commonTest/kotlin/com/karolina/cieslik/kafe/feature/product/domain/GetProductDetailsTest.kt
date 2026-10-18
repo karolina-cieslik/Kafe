@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-// KAFE-9: Wyszukanie produktu w menu lokalu.
+/** Wyszukanie produktu w menu lokalu. */
 class GetProductDetailsTest {
 
     private fun menu(

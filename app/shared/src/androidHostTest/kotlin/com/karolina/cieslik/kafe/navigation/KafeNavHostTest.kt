@@ -38,7 +38,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.robolectric.annotation.Config
 
-// KAFE-41: Nawigacja Menu -> ProductDetail(productId) i Menu -> CafePicker oraz powrót z zachowanym stanem menu (Robolectric).
+/** Nawigacja Menu → ProductDetail(productId) i Menu → CafePicker oraz powrót z zachowanym stanem menu. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "w411dp-h891dp")
 class KafeNavHostTest {
@@ -178,7 +178,6 @@ class KafeNavHostTest {
         assertEquals(null, navController.previousBackStackEntry)
     }
 
-    // KAFE-31: pierwsze uruchomienie bez wybranego lokalu zaczyna od wyboru lokalu.
     @Test
     fun cafePickerAsStartDestinationIsShownFirst() {
         setNavHost(startDestination = KafeRoute.CafePicker)

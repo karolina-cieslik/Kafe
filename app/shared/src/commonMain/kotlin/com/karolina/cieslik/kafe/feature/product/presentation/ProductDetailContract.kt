@@ -100,8 +100,10 @@ data class ModifierGroupUi(
  * @property isAvailable opcja dostępna w lokalu.
  * @property isSelected SINGLE: opcja wybrana; QUANTITY: quantity > 0.
  * @property quantity ilość opcji; dla SINGLE 0 albo 1.
- * @property canIncrease przycisk „+” aktywny (QUANTITY: limit grupy nieosiągnięty i opcja dostępna).
- * @property canDecrease przycisk „−” aktywny (QUANTITY: ilość > 0).
+ * @property canIncrease QUANTITY: przycisk „+” aktywny – limit grupy nieosiągnięty i opcja dostępna.
+ * SINGLE: opcję można zaznaczyć – jest dostępna i jeszcze niewybrana.
+ * @property canDecrease QUANTITY: przycisk „−” aktywny – ilość > 0. SINGLE: opcję można odznaczyć – jest wybrana,
+ * a grupa jest opcjonalna.
  */
 data class ModifierOptionUi(
     val id: String,

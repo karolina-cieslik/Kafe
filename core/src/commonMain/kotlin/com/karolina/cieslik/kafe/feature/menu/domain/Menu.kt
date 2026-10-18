@@ -25,6 +25,8 @@ data class Category(
  * @property imageUrl adres zdjęcia; null, gdy produkt nie ma zdjęcia (UI pokazuje zastępczą grafikę).
  * @property sizes dostępne rozmiary z pełnymi cenami; pusta lista oznacza błędne dane.
  * @property sortOrder pozycja w kategorii ustalona przez sieć; rosnąco.
+ * @property defaultSize rozmiar wybrany na start konfiguracji; null = pierwszy dostępny w lokalu.
+ * @property modifierGroupIds grupy modyfikatorów produktu w kolejności wyświetlania (id z [Menu.modifierGroups]).
  */
 data class Product(
     val id: String,
@@ -36,9 +38,7 @@ data class Product(
     val sortOrder: Int,
     /** Produkt aktywny w menu sieci (np. sezonowy poza sezonem = false). Nieaktywne nie są pokazywane. */
     val isActive: Boolean,
-    /** KAFE-9 AC3: rozmiar wybrany na start; null = pierwszy dostępny. */
     val defaultSize: SizeCode? = null,
-    /** KAFE-10: grupy modyfikatorów produktu w kolejności wyświetlania (id z [Menu.modifierGroups]). */
     val modifierGroupIds: List<String> = emptyList(),
 ) {
     /** Cena bazowa na liście = najtańszy rozmiar; null tylko dla błędnych danych bez rozmiarów. */
@@ -68,15 +68,15 @@ enum class SizeCode { S, M, L }
  * @property categories wszystkie kategorie sieci, także puste.
  * @property products wszystkie produkty sieci, także nieaktywne.
  * @property unavailableProductIds identyfikatory produktów niedostępnych w lokalu.
+ * @property modifierGroups wszystkie grupy modyfikatorów sieci.
+ * @property unavailableSizes rozmiary niedostępne w lokalu: productId -> kody rozmiarów.
+ * @property unavailableOptionIds opcje modyfikatorów niedostępne w lokalu (id opcji).
  */
 data class Menu(
     val categories: List<Category>,
     val products: List<Product>,
     val unavailableProductIds: Set<String>,
-    /** KAFE-10: wszystkie grupy modyfikatorów sieci. */
     val modifierGroups: List<ModifierGroup> = emptyList(),
-    /** KAFE-9 AC6: niedostępne rozmiary, productId -> kody. */
     val unavailableSizes: Map<String, Set<SizeCode>> = emptyMap(),
-    /** KAFE-10: niedostępne opcje modyfikatorów (id opcji). */
     val unavailableOptionIds: Set<String> = emptySet(),
 )

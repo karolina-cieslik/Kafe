@@ -1,42 +1,69 @@
 package com.karolina.cieslik.kafe.feature.product.presentation
 
-// KAFE-9 / KAFE-10 / KAFE-11: Kontrakt ekranu szczegółów produktu (uzgodniony z ui).
-// Wszystkie etykiety (ceny, pojemności, limity) są już sformatowane – UI ich nie liczy.
+/**
+ * Stan ekranu szczegółów produktu; kontrakt uzgodniony z ui. Wszystkie etykiety (ceny, pojemności, limity)
+ * są już sformatowane – UI ich nie liczy.
+ */
 sealed interface ProductDetailUiState {
 
+    /** Menu lokalu nie zostało jeszcze pobrane. */
     data object Loading : ProductDetailUiState
 
+    /**
+     * Produktu nie da się pokazać (np. zniknął z menu).
+     *
+     * @property message gotowy komunikat dla użytkownika.
+     */
     data class Error(val message: String) : ProductDetailUiState
 
+    /**
+     * Produkt z bieżącą konfiguracją.
+     *
+     * @property name nazwa produktu.
+     * @property description opis; null, gdy brak.
+     * @property imageUrl adres zdjęcia; null = grafika zastępcza.
+     * @property isAvailable produkt dostępny w wybranym lokalu.
+     * @property sizes rozmiary; jeden element = produkt jednorozmiarowy, UI ukrywa wybór rozmiaru.
+     * @property modifierGroups grupy modyfikatorów w kolejności wyświetlania.
+     * @property quantity liczba sztuk.
+     * @property totalPriceLabel cena za wszystkie sztuki z dopłatami, np. „27,00 zł”.
+     * @property canAddToCart konfiguracja jest poprawna i produkt można dodać do koszyka.
+     * @property infoMessage np. powód, dla którego nie da się dodać do koszyka; null = brak komunikatu.
+     */
     data class Content(
         val name: String,
         val description: String?,
         val imageUrl: String?,
-        /** Produkt dostępny w wybranym lokalu (KAFE-7). */
         val isAvailable: Boolean,
-        /** Jeden element = produkt jednorozmiarowy, UI ukrywa wybór rozmiaru. */
         val sizes: List<ProductSizeUi>,
         val modifierGroups: List<ModifierGroupUi>,
         val quantity: Int,
-        /** Cena za wszystkie sztuki z dopłatami, np. „27,00 zł” (KAFE-11). */
         val totalPriceLabel: String,
         val canAddToCart: Boolean,
-        /** Np. powód, dla którego nie da się dodać do koszyka; null = brak komunikatu. */
         val infoMessage: String? = null,
     ) : ProductDetailUiState
 }
 
+/**
+ * Rozmiar na ekranie produktu.
+ *
+ * @property code kod rozmiaru, np. "S" / "M" / "L" – wraca w [ProductDetailAction.SizeSelected].
+ * @property label nazwa rozmiaru, np. „Średni”.
+ * @property volumeLabel np. „350 ml”; null, gdy produkt nie ma pojemności.
+ * @property priceLabel pełna cena produktu w tym rozmiarze, np. „14,00 zł”.
+ * @property isAvailable rozmiar dostępny w lokalu.
+ * @property isSelected rozmiar wybrany.
+ */
 data class ProductSizeUi(
-    /** Kod rozmiaru, np. "S" / "M" / "L" – wraca w [ProductDetailAction.SizeSelected]. */
     val code: String,
     val label: String,
-    /** Np. „350 ml”; null, gdy produkt nie ma pojemności. */
     val volumeLabel: String?,
     val priceLabel: String,
     val isAvailable: Boolean,
     val isSelected: Boolean,
 )
 
+/** Sposób wyboru opcji w grupie – decyduje o kontrolce w UI. */
 enum class ModifierGroupTypeUi {
     /** Wybór jednej opcji (np. mleko, syrop). */
     SINGLE,
@@ -45,46 +72,77 @@ enum class ModifierGroupTypeUi {
     QUANTITY,
 }
 
+/**
+ * Grupa modyfikatorów na ekranie produktu.
+ *
+ * @property id identyfikator grupy – wraca w akcjach opcji.
+ * @property name nazwa grupy, np. „Mleko”.
+ * @property type sposób wyboru opcji.
+ * @property isRequired grupa wymagana (UI może oznaczyć ją jako obowiązkową).
+ * @property limitLabel np. „maks. 4”; null, gdy nie ma czego pokazać.
+ * @property options opcje w kolejności wyświetlania.
+ */
 data class ModifierGroupUi(
     val id: String,
     val name: String,
     val type: ModifierGroupTypeUi,
     val isRequired: Boolean,
-    /** Np. „maks. 4”; null, gdy nie ma czego pokazać. */
     val limitLabel: String?,
     val options: List<ModifierOptionUi>,
 )
 
+/**
+ * Opcja modyfikatora na ekranie produktu.
+ *
+ * @property id identyfikator opcji – wraca w akcjach.
+ * @property name nazwa opcji, np. „Owsiane”.
+ * @property surchargeLabel „+2,00 zł” albo „bez dopłaty” – dopłata za jedną sztukę opcji.
+ * @property isAvailable opcja dostępna w lokalu.
+ * @property isSelected SINGLE: opcja wybrana; QUANTITY: quantity > 0.
+ * @property quantity ilość opcji; dla SINGLE 0 albo 1.
+ * @property canIncrease przycisk „+” aktywny (QUANTITY: limit grupy nieosiągnięty i opcja dostępna).
+ * @property canDecrease przycisk „−” aktywny (QUANTITY: ilość > 0).
+ */
 data class ModifierOptionUi(
     val id: String,
     val name: String,
-    /** „+2,00 zł” albo „bez dopłaty”. */
     val surchargeLabel: String,
     val isAvailable: Boolean,
-    /** SINGLE: opcja wybrana; QUANTITY: quantity > 0. */
     val isSelected: Boolean,
-    /** SINGLE: 0 albo 1. */
     val quantity: Int,
     val canIncrease: Boolean,
     val canDecrease: Boolean,
 )
 
+/** Akcje użytkownika na ekranie produktu. */
 sealed interface ProductDetailAction {
+    /** Wybór rozmiaru [code] (z [ProductSizeUi.code]). */
     data class SizeSelected(val code: String) : ProductDetailAction
 
     /** SINGLE: wybór opcji; w grupie opcjonalnej ponowny wybór zaznaczonej opcji ją odznacza. */
     data class OptionSelected(val groupId: String, val optionId: String) : ProductDetailAction
 
-    /** QUANTITY: delta +1 / -1. */
+    /** QUANTITY: zmiana ilości opcji o [delta] (+1 / -1). */
     data class OptionQuantityChanged(val groupId: String, val optionId: String, val delta: Int) : ProductDetailAction
 
+    /** Zmiana liczby sztuk o [delta] (+1 / -1). */
     data class QuantityChanged(val delta: Int) : ProductDetailAction
+
+    /** „Dodaj do koszyka”. */
     data object AddToCartClicked : ProductDetailAction
+
+    /** Strzałka wstecz. */
     data object BackClicked : ProductDetailAction
+
+    /** „Spróbuj ponownie” na ekranie błędu. */
     data object Retry : ProductDetailAction
 }
 
+/** Jednorazowe zdarzenia ekranu produktu – zbiera je route ekranu. */
 sealed interface ProductDetailEvent {
+    /** Produkt [productName] dodany do koszyka – UI pokazuje potwierdzenie. */
     data class AddedToCart(val productName: String) : ProductDetailEvent
+
+    /** Powrót do poprzedniego ekranu. */
     data object NavigateBack : ProductDetailEvent
 }

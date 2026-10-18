@@ -14,12 +14,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-// KAFE-6: Lokalne źródło menu (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM.
+/** Lokalne źródło menu (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM. */
 interface MenuLocalDataSource {
 
-    /** null, gdy menu sieci lub dostępność w lokalu nie zostały jeszcze zapisane. */
+    /**
+     * Menu sieci z dostępnością w lokalu [cafeId]; null, gdy menu sieci lub dostępność w lokalu nie zostały
+     * jeszcze zapisane. Emituje od razu i ponownie po każdej zmianie tabel menu; identyczne wartości pomija.
+     */
     fun observeMenu(cafeId: String): Flow<Menu?>
 
+    /**
+     * Zastępuje menu sieci [menu] i dostępność w lokalu [cafeId] ([availability]: productId -> dostępny).
+     * [syncedAtEpochMillis] to czas zapisu w ms od epoki (UTC).
+     *
+     * @return sukces albo [DataError.Local] przy błędzie bazy; wtedy zostaje poprzednie menu.
+     */
     suspend fun saveMenu(
         cafeId: String,
         menu: MenuDto,
@@ -28,14 +37,22 @@ interface MenuLocalDataSource {
     ): EmptyResult<DataError.Local>
 }
 
+/** [MenuLocalDataSource] na Room. */
 class RoomMenuLocalDataSource(private val dao: MenuDao) : MenuLocalDataSource {
 
+    // TODO(KAFE-6): R-1 – odczyt niespójny z atomowym zapisem; poprawka: jeden wyzwalacz + odczyt w transakcji.
+    /**
+     * Znane ograniczenie (R-1): zapis w [MenuDao.replaceMenuForCafe] jest atomowy, ale odczyt nie – combine łączy
+     * cztery osobne zapytania, które po transakcji wykonują się ponownie każde osobno. Może więc wyemitować stan
+     * pośredni, np. nowe kategorie bez produktów (pusta lista sekcji) albo nowe menu ze starą dostępnością.
+     */
     override fun observeMenu(cafeId: String): Flow<Menu?> = combine(
         dao.observeSyncedCount(listOf(MenuSyncKeys.MENU, MenuSyncKeys.availability(cafeId))),
         dao.observeCategories(),
         dao.observeProducts(),
         dao.observeAvailability(cafeId),
     ) { syncedCount, categories, products, availability ->
+        // Menu jest „zapamiętane” dopiero, gdy są oba znaczniki: menu sieci i dostępności w tym lokalu.
         if (syncedCount < 2) {
             null
         } else {

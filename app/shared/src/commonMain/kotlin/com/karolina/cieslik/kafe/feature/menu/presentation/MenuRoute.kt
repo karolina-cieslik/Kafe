@@ -8,7 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
-// KAFE-6: Podpina MenuViewModel do bezstanowego MenuScreen i zamienia MenuEvent na nawigację.
+/**
+ * KAFE-6: Wejście do ekranu menu z grafu nawigacji – podpina [MenuViewModel] do bezstanowego [MenuScreen]
+ * i zamienia jednorazowe [MenuEvent] na nawigację.
+ *
+ * @param onNavigateToProduct wywoływane z id produktu po stuknięciu karty lub „+” (event [MenuEvent.NavigateToProduct]).
+ * @param onNavigateToCafePicker wywoływane po wybraniu „Zmień kawiarnię” (event [MenuEvent.NavigateToCafePicker]).
+ * @param viewModel domyślnie z Koina; parametr ułatwia podmianę w testach.
+ */
 @Composable
 fun MenuRoute(
     onNavigateToProduct: (productId: String) -> Unit,
@@ -20,6 +27,8 @@ fun MenuRoute(
     val currentOnNavigateToProduct by rememberUpdatedState(onNavigateToProduct)
     val currentOnNavigateToCafePicker by rememberUpdatedState(onNavigateToCafePicker)
 
+    // Zbieranie eventów startuje raz na instancję ViewModelu – zmiana lambd nawigacji go nie restartuje,
+    // bo wywołujemy je przez rememberUpdatedState (zawsze najnowsze).
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {

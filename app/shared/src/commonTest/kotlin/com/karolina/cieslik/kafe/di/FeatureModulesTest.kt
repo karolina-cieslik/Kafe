@@ -21,8 +21,10 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 
-// KAFE-6: Graf DI feature'ów menu i lokali. Room (DAO) sprawdza KoinGraphTest na urządzeniu,
-// tu lokalne źródła są podmienione, żeby test działał na JVM.
+/**
+ * Graf DI feature'ów. Room (DAO) sprawdza KoinGraphTest na urządzeniu, tu lokalne źródła są podmienione,
+ * żeby test działał na JVM.
+ */
 class FeatureModulesTest {
 
     private val fakeLocalModule = module {

@@ -89,9 +89,10 @@ data class ProductConfiguration(
     /**
      * Dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają, niedostępne są odznaczane
      * (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować), limit QUANTITY jest
-     * przycinany (opcje w kolejności grupy), a wymagana grupa bez wyboru dostaje opcję startową. Grupy, których
-     * produkt już nie ma, znikają. Rozmiar spoza produktu wraca do startowego; niedostępny rozmiar zostaje,
-     * a dodanie blokuje [validate]. Liczba sztuk się nie zmienia.
+     * przycinany (opcje w kolejności grupy). Wymagana grupa SINGLE bez wyboru dostaje opcję startową, a wymagana
+     * grupa QUANTITY zostaje pusta i blokuje dodanie ([validate]). Grupy, których produkt już nie ma, znikają.
+     * Rozmiar spoza produktu wraca do startowego; niedostępny rozmiar zostaje, a dodanie blokuje [validate].
+     * Liczba sztuk się nie zmienia.
      */
     fun normalizedFor(details: ProductDetails): Normalized {
         val start by lazy { initial(details) }

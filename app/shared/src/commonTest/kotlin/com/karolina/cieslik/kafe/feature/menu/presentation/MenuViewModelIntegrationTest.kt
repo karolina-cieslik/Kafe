@@ -34,7 +34,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.time.Duration
 
-// KAFE-6: MenuViewModel na repozytoriach offline-first z lokalnymi źródłami w pamięci i danymi seed – AC 1–5, 7 end-to-end bez UI.
+/** MenuViewModel na repozytoriach offline-first z lokalnymi źródłami w pamięci i danymi seed, end-to-end bez UI. */
 class MenuViewModelIntegrationTest {
 
     private val offlineCafes = object : CafeRemoteDataSource {
@@ -76,7 +76,6 @@ class MenuViewModelIntegrationTest {
 
         val content = assertIs<MenuUiState.Content>(viewModel.state.value)
         assertEquals("Kafe Rynek", content.cafeName)
-        // AC 3: kolejność sieci; AC 4: „Herbaty” bez produktów ukryte.
         assertEquals(listOf("Kawy klasyczne", "Przelewy", "Sezonowe", "Przekąski"), content.categories.map { it.name })
     }
 
@@ -113,12 +112,10 @@ class MenuViewModelIntegrationTest {
         val content = assertIs<MenuUiState.Content>(setup.viewModel.state.value)
         assertEquals("Kafe Długa", content.cafeName)
         val unavailable = content.categories.flatMap { it.products }.filterNot { it.isAvailable }.map { it.id }.toSet()
-        // Seed v3 (KAFE-9): cappuccino w Gdańsku nie ma żadnego dostępnego rozmiaru, więc jest niedostępne.
         assertEquals(setOf("cappuccino", "chemex", "cheesecake", "flat-white"), unavailable)
         assertFalse(content.isRefreshing)
     }
 
-    // AC 7: pierwsze uruchomienie bez sieci – nie da się pobrać lokali, więc nie ma też menu.
     @Test
     fun cafeListFailureWithoutCacheShowsConnectionError() = runViewModelTest { context ->
         val (viewModel) = context.createViewModel(cafeRemote = offlineCafes)
@@ -170,7 +167,6 @@ private class InMemoryMenuLocal : MenuLocalDataSource {
 
     override fun observeMenu(cafeId: String): Flow<Menu?> = menus.map { it[cafeId] }
 
-    // Te same mappery co RoomMenuLocalDataSource: DTO -> encje (toSnapshot) -> domena (toMenu).
     override suspend fun saveMenu(
         cafeId: String,
         menu: MenuDto,

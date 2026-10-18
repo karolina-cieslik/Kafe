@@ -143,11 +143,12 @@ class MenuViewModelIntegrationTest {
     }
 }
 
+/** Zdalne źródło lokali z podmienialnym [delegate] – symuluje odzyskanie sieci między próbami (Retry). */
 private class SwitchableCafeRemote(var delegate: CafeRemoteDataSource) : CafeRemoteDataSource {
     override suspend fun fetchCafes(): Result<List<CafeDto>, DataError.Remote> = delegate.fetchCafes()
 }
 
-// Lokalne źródła w pamięci zamiast Room. Menu mapujemy przez te same mappery encji co RoomMenuLocalDataSource.
+/** Lokalne źródło lokali w pamięci zamiast Room; `null` do pierwszego zapisu (lokale nigdy nie pobrane). */
 private class InMemoryCafeLocal : CafeLocalDataSource {
     private val cafes = MutableStateFlow<List<Cafe>?>(null)
 
@@ -159,6 +160,10 @@ private class InMemoryCafeLocal : CafeLocalDataSource {
     }
 }
 
+/**
+ * Lokalne źródło menu w pamięci zamiast Room. Zapis idzie przez te same mappery encji co
+ * RoomMenuLocalDataSource, więc test integracyjny sprawdza też mapowanie DTO -> encje -> domena.
+ */
 private class InMemoryMenuLocal : MenuLocalDataSource {
     private val menus = MutableStateFlow<Map<String, Menu>>(emptyMap())
 

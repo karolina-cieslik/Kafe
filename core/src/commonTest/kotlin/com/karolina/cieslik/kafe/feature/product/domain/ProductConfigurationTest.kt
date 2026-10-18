@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
-// KAFE-9 / KAFE-10 / KAFE-11: Reguły konfiguracji produktu.
+/** Reguły konfiguracji produktu. */
 class ProductConfigurationTest {
 
     private val calculator = PriceCalculator()

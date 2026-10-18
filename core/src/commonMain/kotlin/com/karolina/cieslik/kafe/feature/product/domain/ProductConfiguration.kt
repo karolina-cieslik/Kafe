@@ -104,14 +104,14 @@ data class ProductConfiguration(
         /** Najmniejsza liczba sztuk w pozycji. */
         const val MIN_QUANTITY = 1
 
-        /** Największa liczba sztuk w jednej pozycji, (decyzja produktowa). */
+        /** Największa liczba sztuk w jednej pozycji – limit 1–20 sztuk na pozycję. */
         const val MAX_QUANTITY = 20
 
         /**
          * Konfiguracja startowa, 1 sztuka.
          *
          * Rozmiar: domyślny rozmiar produktu, jeśli jest dostępny w lokalu; w przeciwnym razie pierwszy dostępny
-         * w kolejności S → M → L; gdy żaden nie jest dostępny – domyślny, a bez domyślnego pierwszy z listy
+         * w kolejności S → M → L (tę kolejność rozmiarów zapewnia mapper danych); gdy żaden nie jest dostępny – domyślny, a bez domyślnego pierwszy z listy
          * (dodanie i tak zablokuje [validate]).
          * Grupy SINGLE: opcja domyślna, jeśli jest dostępna; grupa wymagana bez dostępnej opcji domyślnej –
          * pierwsza dostępna; grupa opcjonalna – nic. Grupy QUANTITY startują od zera.

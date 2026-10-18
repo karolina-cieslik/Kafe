@@ -2,7 +2,10 @@ package com.karolina.cieslik.kafe.core.data.network
 
 import kotlinx.serialization.json.Json
 
-// KAFE-2: Defensywna konfiguracja JSON – nowe pola lub wartości enumów w API nie psują parsowania.
+/**
+ * Defensywna konfiguracja JSON: nieznane pola są pomijane, nieznane wartości enumów i null w polach
+ * niepustych zamieniane na wartości domyślne, a null nie jest zapisywany przy serializacji.
+ */
 val KafeJson: Json = Json {
     ignoreUnknownKeys = true
     coerceInputValues = true

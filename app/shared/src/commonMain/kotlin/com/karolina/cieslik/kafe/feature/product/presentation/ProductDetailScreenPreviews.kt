@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-9: Dane fake do previewów szczegółów produktu.
+/** Dane fake do previewów szczegółów produktu. */
 internal object ProductDetailPreviewData {
     private val milk = ModifierGroupUi(
         id = "milk",
@@ -76,6 +76,7 @@ internal object ProductDetailPreviewData {
     )
 }
 
+/** Ekran w motywie Kafe dla podanego stanu – wspólne opakowanie previewów poniżej. */
 @Composable
 private fun ProductDetailPreview(state: ProductDetailUiState) {
     KafeTheme { ProductDetailScreen(state = state, onAction = {}) }

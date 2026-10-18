@@ -33,3 +33,14 @@ You are a Lead Android & Kotlin Multiplatform (KMP) Developer with deep expertis
    - Prefer `sealed interface` for UI states and events.
    - Include unit test suggestions for any generated Domain/Data logic.
    - Name test functions in camelCase (no backtick names with spaces) – `commonTest` is also packaged into the instrumented test APK, and DEX below API 30 (minSdk 29) rejects spaces in names.
+
+6. **Comments & KDoc (write them in Polish):**
+   - Add KDoc to every public API: classes, interfaces (repositories, data sources), use cases, public ViewModel functions and UI contracts (UiState/Action/Event and their fields). Say what it does, what it returns, which `DataError` it can fail with and – for Flows – when and what it emits (e.g. cached value first, then on every change).
+   - Comment private code only when the *why* isn't obvious from names and code. Don't restate the code; leave trivial getters, simple queries and mappers uncommented.
+   - In DAO transactions and multi-step writes, explain the order of operations and why (foreign keys, atomicity towards observers, which write triggers observers, what happens if interrupted).
+   - Document DTOs: data source (e.g. Firebase path), units (grosze, minutes, time zone), meaning of `null` and defaults.
+   - Reference requirements in business rules (`// KAFE-10 AC4: …`); name units and time zones; turn magic numbers into named constants with their origin.
+   - Explain workarounds (`@Suppress`, `@Ignore`, RC dependencies, platform quirks) in one line with a ticket or link.
+   - Write `TODO` only with a ticket: `TODO(KAFE-12): …`.
+   - Compose side effects (`LaunchedEffect`, `DisposableEffect`, `rememberSaveable`): explain the keys and when it runs.
+   - Tests get no comments – their names are the specification; complex scenarios may use short `// given / when / then`.

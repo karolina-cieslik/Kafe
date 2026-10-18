@@ -7,9 +7,12 @@ import coil3.request.crossfade
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import com.karolina.cieslik.kafe.navigation.KafeNavHost
 
-// KAFE-25 / KAFE-41: Korzeń UI – motyw Kafe i graf nawigacji.
+/**
+ * Korzeń UI wspólny dla platform – motyw Kafe i graf nawigacji ([KafeNavHost]).
+ */
 @Composable
 fun App() {
+    // Jeden ImageLoader Coila dla całej aplikacji; crossfade łagodzi pojawianie się zdjęć produktów.
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .crossfade(true)

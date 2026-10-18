@@ -31,9 +31,19 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-// KAFE-9 / KAFE-10 / KAFE-11: Szczegóły i konfiguracja produktu w wybranym lokalu.
-// Dane pochodzą z zapamiętanego menu; gdy menu lokalu nie ma (np. wejście spoza menu), VM pobiera je raz,
-// a błąd kończy się stanem Error z Retry. Konfiguracja żyje tylko w VM – każde otwarcie startuje od domyślnych.
+/**
+ * Szczegóły i konfiguracja produktu [productId] w wybranym lokalu.
+ *
+ * Dane pochodzą z zapamiętanego menu; gdy menu lokalu nie ma (np. wejście spoza menu), VM pobiera je raz na
+ * lokal, a błąd kończy się stanem Error z „Spróbuj ponownie”. Konfiguracja żyje tylko w VM – każde otwarcie
+ * startuje od wartości domyślnych, a zmiana lokalu też zaczyna od nowa.
+ *
+ * Gdy menu zmieni się w trakcie konfiguracji (odświeżenie), wybór jest dopasowywany do nowego menu:
+ * niedostępne opcje są odznaczane i UI dostaje o tym komunikat w infoMessage.
+ *
+ * @param productId produkt z trasy nawigacji.
+ * @param dispatcher dispatcher odczytu i odświeżania danych; w testach testowy.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductDetailViewModel(
     private val productId: String,
@@ -48,12 +58,13 @@ class ProductDetailViewModel(
     private val configuration = MutableStateFlow<CafeConfiguration?>(null)
     private val refreshError = MutableStateFlow<CafeError?>(null)
 
-    // Dostęp tylko z wątku Main (viewModelScope / onAction).
+    /** Ostatni wynik wyszukania produktu; dostęp tylko z wątku Main (viewModelScope / onAction). */
     private var current: LookupOfCafe? = null
     private var refreshJob: Job? = null
     private var refreshedCafeId: String? = null
 
     private val eventChannel = Channel<ProductDetailEvent>(Channel.BUFFERED)
+    /** Jednorazowe zdarzenia (dodanie do koszyka, powrót); każde trafia do jednego kolektora. */
     val events: Flow<ProductDetailEvent> = eventChannel.receiveAsFlow()
 
     private val lookup: Flow<LookupOfCafe?> = cafeRepository.observeSelectedCafe()
@@ -75,9 +86,19 @@ class ProductDetailViewModel(
             }
         }
 
+    /**
+     * Stan ekranu. Zaczyna od [ProductDetailUiState.Loading], aktualizuje się po każdej zmianie lokalu, menu,
+     * konfiguracji i błędu odświeżenia. Obserwacja trwa jeszcze 5 s po zniknięciu ostatniego kolektora, żeby
+     * obrót ekranu nie gubił stanu.
+     */
     val state: StateFlow<ProductDetailUiState> = combine(lookup, configuration, refreshError, ::buildState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProductDetailUiState.Loading)
 
+    /**
+     * Obsługuje akcję użytkownika. Zmiany konfiguracji działają tylko, gdy produkt jest znaleziony; niedozwolone
+     * zmiany są ignorowane. Dodanie do koszyka emituje [ProductDetailEvent.AddedToCart] tylko dla poprawnej
+     * konfiguracji. Retry nie startuje drugiego pobierania, gdy jedno trwa.
+     */
     fun onAction(action: ProductDetailAction) {
         when (action) {
             is ProductDetailAction.SizeSelected -> {
@@ -97,8 +118,8 @@ class ProductDetailViewModel(
 
     private fun addToCart() {
         val (cafeId, details) = currentDetails() ?: return
-        if (effectiveConfiguration(configuration.value, cafeId, details).validate(details) != null) return
-        // KAFE-12: tu trafi zapis do koszyka; na razie tylko potwierdzenie dla UI (snackbar).
+        if (effectiveConfiguration(configuration.value, cafeId, details).configuration.validate(details) != null) return
+        // TODO(KAFE-12): zapis do koszyka; na razie tylko potwierdzenie dla UI (snackbar).
         sendEvent(ProductDetailEvent.AddedToCart(details.product.name))
     }
 
@@ -127,7 +148,7 @@ class ProductDetailViewModel(
 
     private fun updateConfiguration(change: ProductConfiguration.(ProductDetails) -> ProductConfiguration) {
         val (cafeId, details) = currentDetails() ?: return
-        val updated = effectiveConfiguration(configuration.value, cafeId, details).change(details)
+        val updated = effectiveConfiguration(configuration.value, cafeId, details).configuration.change(details)
         configuration.value = CafeConfiguration(cafeId, updated)
     }
 
@@ -137,16 +158,17 @@ class ProductDetailViewModel(
         return result.cafeId to found.details
     }
 
-    /** Zapisany wybór, jeśli pasuje do lokalu i produktu (rozmiar istnieje); w przeciwnym razie wartości domyślne. */
+    /**
+     * Zapisany wybór z tego lokalu dopasowany do aktualnego menu (po odświeżeniu niedostępne opcje są
+     * odznaczane, usunięte znikają); bez wyboru – wartości domyślne.
+     */
     private fun effectiveConfiguration(
         saved: CafeConfiguration?,
         cafeId: String,
         details: ProductDetails,
-    ): ProductConfiguration =
-        saved
-            ?.takeIf { saved -> saved.cafeId == cafeId && details.product.sizes.any { it.code == saved.configuration.size } }
-            ?.configuration
-            ?: ProductConfiguration.initial(details)
+    ): ProductConfiguration.Normalized =
+        saved?.takeIf { it.cafeId == cafeId }?.configuration?.normalizedFor(details)
+            ?: ProductConfiguration.Normalized(ProductConfiguration.initial(details), emptyList())
 
     private fun sendEvent(event: ProductDetailEvent) {
         viewModelScope.launch { eventChannel.send(event) }
@@ -170,8 +192,10 @@ class ProductDetailViewModel(
                     ?.let { ProductDetailUiState.Error(it.error.toProductErrorMessage()) }
                     ?: ProductDetailUiState.Loading
             ProductLookup.NotFound -> ProductDetailUiState.Error(PRODUCT_ERROR_NOT_FOUND)
-            is ProductLookup.Found ->
-                lookup.details.toContent(effectiveConfiguration(saved, result.cafeId, lookup.details), priceCalculator)
+            is ProductLookup.Found -> {
+                val effective = effectiveConfiguration(saved, result.cafeId, lookup.details)
+                lookup.details.toContent(effective.configuration, priceCalculator, effective.deselectedOptions)
+            }
         }
     }
 
@@ -183,6 +207,7 @@ class ProductDetailViewModel(
     private data class CafeError(val cafeId: String?, val error: DataError)
 }
 
+/** Komunikat błędu pobierania: osobny dla braku sieci i timeoutu, ogólny dla pozostałych błędów. */
 internal fun DataError.toProductErrorMessage(): String = when (this) {
     DataError.Remote.NO_INTERNET, DataError.Remote.REQUEST_TIMEOUT -> PRODUCT_ERROR_NO_CONNECTION
     else -> PRODUCT_ERROR_GENERIC

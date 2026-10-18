@@ -37,7 +37,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// KAFE-9 / KAFE-10 / KAFE-11: ProductDetailViewModel na fake'owych repozytoriach.
+/** ProductDetailViewModel na fake'owych repozytoriach; na końcu regresje od testera – odświeżenie menu w trakcie konfiguracji. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductDetailViewModelTest {
 
@@ -253,6 +253,44 @@ class ProductDetailViewModelTest {
         advanceUntilIdle()
 
         assertEquals("M", env.content.sizes.single { it.isSelected }.code)
+    }
+
+    @Test
+    fun selectedOptionBecomingUnavailableIsDeselectedWithInfo() = runVmTest { env ->
+        act(env, ProductDetailAction.OptionSelected("syrup", "syrup-vanilla"))
+
+        env.menus.menus.value = mapOf("a" to menu(unavailableOptionIds = setOf("syrup-vanilla")))
+        advanceUntilIdle()
+
+        val content = env.content
+        assertTrue(content.group("syrup").options.none { it.isSelected })
+        assertEquals("Opcja „Waniliowy” jest już niedostępna i została odznaczona.", content.infoMessage)
+        assertEquals("16,00 zł", content.totalPriceLabel)
+        assertTrue(content.canAddToCart)
+    }
+
+    @Test
+    fun refreshRemovingSelectedRequiredOptionRestoresDefault() = runVmTest { env ->
+        act(env, ProductDetailAction.OptionSelected("milk", "milk-oat"))
+
+        env.menus.menus.value = mapOf("a" to menu().copy(modifierGroups = listOf(milk.copy(options = milk.options.take(1)), shots, syrup)))
+        advanceUntilIdle()
+
+        assertEquals("milk-cow", env.content.group("milk").options.single { it.isSelected }.id)
+        assertEquals("16,00 zł", env.content.totalPriceLabel)
+        assertTrue(env.content.canAddToCart)
+    }
+
+    @Test
+    fun quantityButtonsFollowLimits() = runVmTest { env ->
+        assertFalse(env.content.canDecreaseQuantity)
+        assertTrue(env.content.canIncreaseQuantity)
+
+        act(env, ProductDetailAction.QuantityChanged(+100))
+
+        assertEquals(20, env.content.quantity)
+        assertFalse(env.content.canIncreaseQuantity)
+        assertTrue(env.content.canDecreaseQuantity)
     }
 
     private fun ProductDetailUiState.Content.group(id: String) = modifierGroups.single { it.id == id }

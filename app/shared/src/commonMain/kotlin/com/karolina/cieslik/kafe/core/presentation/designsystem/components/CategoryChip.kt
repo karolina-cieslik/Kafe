@@ -17,7 +17,14 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-25: Chip kategorii menu (jednokrotny wybór, zachowuje się jak zakładka).
+/**
+ * Chip kategorii menu. Kategorie to jednokrotny wybór, więc chip ma rolę zakładki (`Role.Tab`)
+ * i stan zaznaczenia czytany przez TalkBack.
+ *
+ * @param label nazwa kategorii, zawsze w jednej linii.
+ * @param selected czy to aktualnie wybrana kategoria – wybrany chip ma tło w kolorze `primary`.
+ * @param onClick wywoływane po stuknięciu, także w już wybrany chip (ekran sam decyduje, czy coś zmienić).
+ */
 @Composable
 fun CategoryChip(
     label: String,

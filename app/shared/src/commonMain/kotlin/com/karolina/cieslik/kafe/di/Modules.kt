@@ -9,11 +9,12 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 
-// KAFE-2: Moduły DI warstwy Data. Zależności platformowe (silnik HTTP, DatabaseFactory) dostarcza platformModule.
+/** Klient HTTP; zamykany razem z Koinem. Silnik HTTP dostarcza [platformModule]. */
 val networkModule = module {
     single<HttpClient> { HttpClientFactory.create(engine = get(), config = get()) } onClose { it?.close() }
 }
 
+/** Baza Room (zamykana razem z Koinem) i jej DAO. DatabaseFactory dostarcza [platformModule]. */
 val databaseModule = module {
     single<KafeDatabase> { get<DatabaseFactory>().create().buildKafeDatabase() } onClose { it?.close() }
     single { get<KafeDatabase>().syncMetadataDao() }
@@ -21,4 +22,5 @@ val databaseModule = module {
     single { get<KafeDatabase>().cafeDao() }
 }
 
+/** Zależności platformowe: silnik HTTP i DatabaseFactory. */
 expect val platformModule: Module

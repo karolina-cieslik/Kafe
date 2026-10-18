@@ -7,7 +7,11 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-// KAFE-6: Dane seed do czasu podłączenia Firebase. Opóźnienie symuluje sieć, żeby było widać stan ładowania.
+/**
+ * Dane seed do czasu podłączenia Firebase.
+ *
+ * @param latency opóźnienie pobrania menu (dostępność – ćwierć tego), żeby było widać stan ładowania.
+ */
 class SeedMenuRemoteDataSource(
     private val latency: Duration = 800.milliseconds,
 ) : MenuRemoteDataSource {
@@ -35,7 +39,7 @@ internal object SeedMenu {
     private const val SNACKS = "snacks"
     private const val TEA = "tea"
 
-    // KAFE-10: decyzje Karoliny – mleko jednokrotne, domyślnie krowie bez dopłaty; shoty 0–4; syrop opcjonalny.
+    /** Grupa mleka: jednokrotny wybór, wymagana, domyślnie krowie bez dopłaty (decyzja produktowa). */
     const val MILK = "milk"
     const val EXTRA_SHOTS = "extra-shots"
     const val SYRUP = "syrup"
@@ -78,12 +82,12 @@ internal object SeedMenu {
 
     val menu = MenuDto(
         categories = listOf(
-            // Celowo nie alfabetycznie – kolejność ustala sieć (AC 3).
+            // Celowo nie alfabetycznie – kolejność ustala sieć.
             CategoryDto(id = SNACKS, name = "Przekąski", sortOrder = 4),
             CategoryDto(id = CLASSIC, name = "Kawy klasyczne", sortOrder = 1),
             CategoryDto(id = SEASONAL, name = "Sezonowe", sortOrder = 3),
             CategoryDto(id = POUR_OVER, name = "Przelewy", sortOrder = 2),
-            // Kategoria bez produktów – ma się nie wyświetlić (AC 4).
+            // Kategoria bez produktów – ma się nie wyświetlić.
             CategoryDto(id = TEA, name = "Herbaty", sortOrder = 5),
         ),
         products = listOf(
@@ -122,7 +126,7 @@ internal object SeedMenu {
                 size("S", 250, 1700), size("M", 350, 1900), size("L", 450, 2100),
                 defaultSize = "M", modifiers = listOf(MILK, EXTRA_SHOTS),
             ),
-            // Produkt poza sezonem – nieaktywny, nie jest pokazywany (AC 5).
+            // Produkt poza sezonem – nieaktywny, nie jest pokazywany.
             product("lavender-lemonade", SEASONAL, "Lemoniada lawendowa", "Orzeźwiająca, letnia", 2, size("M", 400, 1400), active = false),
             product("croissant", SNACKS, "Croissant maślany", "Pieczony na miejscu", 1, size("S", null, 950)),
             product("cheesecake", SNACKS, "Sernik baskijski", "Kremowy, z karmelizowaną skórką", 2, size("S", null, 1600)),
@@ -131,7 +135,7 @@ internal object SeedMenu {
         modifierGroups = modifierGroups,
     )
 
-    // Klucze = id lokali z SeedCafes. Kraków ma wszystko, pozostałe lokale mają braki.
+    /** Braki per lokal; klucze = id lokali z SeedCafes. Kraków ma wszystko, pozostałe lokale mają braki. */
     val availability: Map<String, AvailabilityDto> = mapOf(
         SeedCafes.KRAKOW to AvailabilityDto(),
         SeedCafes.WARSZAWA to AvailabilityDto(

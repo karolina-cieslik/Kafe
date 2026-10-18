@@ -22,7 +22,15 @@ import androidx.compose.ui.unit.dp
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-25: Opcja rozmiaru napoju. priceLabel to PEŁNA cena w danym rozmiarze (nie dopłata), np. „14,00 zł”.
+/**
+ * KAFE-25: Opcja rozmiaru napoju dla [SizeSelector].
+ *
+ * @property id identyfikator rozmiaru zwracany w `onSelect`.
+ * @property label krótka nazwa, np. „M”.
+ * @property volumeLabel pojemność, np. „350 ml”; `null` = linia jest pomijana.
+ * @property priceLabel PEŁNA cena w tym rozmiarze (nie dopłata), np. „14,00 zł”.
+ * @property isAvailable `false` = opcja przygaszona i nieklikalna.
+ */
 @Immutable
 data class SizeOptionUi(
     val id: String,
@@ -32,7 +40,13 @@ data class SizeOptionUi(
     val isAvailable: Boolean = true,
 )
 
-// KAFE-25: Wybór rozmiaru S/M/L – grupa radiowa z pełną ceną pod każdą opcją.
+/**
+ * KAFE-25: Wybór rozmiaru (np. S/M/L) – grupa radiowa z opcjami równej szerokości i pełną ceną pod każdą.
+ *
+ * @param options opcje w kolejności wyświetlania.
+ * @param selectedId id wybranej opcji; `null` = nic nie jest wybrane.
+ * @param onSelect wywoływane z id stukniętej dostępnej opcji (także już wybranej).
+ */
 @Composable
 fun SizeSelector(
     options: List<SizeOptionUi>,

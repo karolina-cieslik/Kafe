@@ -18,8 +18,14 @@ import org.jetbrains.compose.resources.painterResource
 
 private val GrayscaleFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
-// KAFE-25: Zdjęcie produktu z Coil. Pod spodem zawsze leży placeholder z ikoną kawy, widoczny
-// przy braku URL, w trakcie ładowania i po błędzie. grayscale = produkt chwilowo niedostępny.
+/**
+ * KAFE-25: Zdjęcie produktu ładowane przez Coil. Pod spodem zawsze leży placeholder z ikoną kawy –
+ * widoczny przy braku adresu, w trakcie ładowania i po błędzie, więc nie ma pustego miejsca.
+ *
+ * @param imageUrl adres zdjęcia; `null` = sam placeholder.
+ * @param contentDescription opis dla TalkBacka; `null`, gdy obok jest już nazwa produktu (np. na karcie).
+ * @param grayscale `true` dla produktu chwilowo niedostępnego – zdjęcie i ikona w skali szarości.
+ */
 @Composable
 fun ProductImage(
     imageUrl: String?,

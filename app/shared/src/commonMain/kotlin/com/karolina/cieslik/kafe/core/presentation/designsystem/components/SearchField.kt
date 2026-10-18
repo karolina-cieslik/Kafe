@@ -35,7 +35,14 @@ import kafe.app.shared.generated.resources.ic_search
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-// KAFE-25: Kolory pola wyszukiwania – osobny wariant na ciemny nagłówek i na jasne tło.
+/**
+ * KAFE-25: Kolory [SearchField]. Gotowe warianty są w [SearchFieldDefaults].
+ *
+ * @property container tło pola.
+ * @property content wpisany tekst i ikony.
+ * @property placeholder podpowiedź widoczna przy pustym polu.
+ * @property cursor kolor kursora.
+ */
 data class SearchFieldColors(
     val container: Color,
     val content: Color,
@@ -43,7 +50,9 @@ data class SearchFieldColors(
     val cursor: Color,
 )
 
+/** KAFE-25: Warianty kolorów [SearchField] – na jasne tło ekranu i na ciemny nagłówek. */
 object SearchFieldDefaults {
+    /** Pole na tle `background` / `surface`. */
     @Composable
     fun onBackground() = SearchFieldColors(
         container = KafeTheme.colors.surfaceVariant,
@@ -52,6 +61,7 @@ object SearchFieldDefaults {
         cursor = KafeTheme.colors.primary,
     )
 
+    /** Pole na ciemnym nagłówku (`KafeTheme.extendedColors.header`), np. w menu. */
     @Composable
     fun onHeader() = SearchFieldColors(
         container = KafeTheme.extendedColors.headerField,
@@ -63,7 +73,16 @@ object SearchFieldDefaults {
 
 private const val DISABLED_ALPHA = 0.6f
 
-// KAFE-25: Pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia. „Szukaj” na klawiaturze chowa klawiaturę.
+/**
+ * KAFE-25: Jednoliniowe pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia (widocznym, gdy jest tekst).
+ * Klawisz „Szukaj” na klawiaturze tylko ją chowa – wyniki filtrują się już w trakcie pisania.
+ *
+ * @param query aktualny tekst; pole jest sterowane z zewnątrz (stan trzyma ViewModel).
+ * @param onQueryChange wywoływane przy każdej zmianie tekstu oraz z pustym tekstem po stuknięciu „wyczyść”.
+ * @param placeholder podpowiedź widoczna przy pustym polu.
+ * @param enabled `false` blokuje edycję i przygasza pole (np. gdy menu się jeszcze ładuje).
+ * @param colors kolory pola – [SearchFieldDefaults.onBackground] lub [SearchFieldDefaults.onHeader].
+ */
 @Composable
 fun SearchField(
     query: String,

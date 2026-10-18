@@ -18,7 +18,15 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-25: Główny przycisk akcji (np. „Zamów”, „Dodaj do koszyka”). W trakcie ładowania blokuje ponowne kliknięcie.
+/**
+ * KAFE-25: Główny przycisk akcji ekranu (np. „Zamów”, „Dodaj do koszyka”), wypełniony kolorem `primary`.
+ *
+ * @param text etykieta przycisku.
+ * @param onClick wywoływane po kliknięciu; nie jest wywoływane, gdy [enabled] = `false` lub [isLoading] = `true`.
+ * @param enabled czy akcja jest dostępna.
+ * @param isLoading trwa operacja wywołana przyciskiem – zamiast etykiety kręci się wskaźnik, a przycisk
+ * jest zablokowany, żeby nie dało się kliknąć drugi raz.
+ */
 @Composable
 fun KafePrimaryButton(
     text: String,
@@ -49,7 +57,13 @@ fun KafePrimaryButton(
     }
 }
 
-// KAFE-25: Akcja drugorzędna (np. „Spróbuj ponownie”, „Zmień kawiarnię”).
+/**
+ * KAFE-25: Przycisk akcji drugorzędnej (np. „Zmień kawiarnię”) – obrys i tekst w kolorze `primary`.
+ *
+ * @param text etykieta przycisku.
+ * @param onClick wywoływane po kliknięciu, gdy [enabled] = `true`.
+ * @param enabled czy akcja jest dostępna; wyłączony przycisk ma wyszarzony obrys.
+ */
 @Composable
 fun KafeSecondaryButton(
     text: String,

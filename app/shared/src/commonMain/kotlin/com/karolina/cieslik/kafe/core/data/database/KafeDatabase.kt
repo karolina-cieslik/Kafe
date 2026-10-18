@@ -16,8 +16,12 @@ import com.karolina.cieslik.kafe.feature.menu.data.local.ProductAvailabilityEnti
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
 
-// KAFE-2: Lokalna baza Room KMP – źródło prawdy w podejściu Offline-First.
-// KAFE-6: v2 – menu, dostępność per lokal i lokale (same nowe tabele, więc AutoMigration).
+/**
+ * Lokalna baza Room KMP – źródło prawdy w podejściu offline-first.
+ *
+ * Wersja 2 dodała menu, dostępność per lokal i lokale; to same nowe tabele, więc wystarcza AutoMigration.
+ * Schematy są eksportowane do `app/shared/schemas`.
+ */
 @Database(
     entities = [
         SyncMetadataEntity::class,
@@ -35,19 +39,28 @@ import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
 @ConstructedBy(KafeDatabaseConstructor::class)
 abstract class KafeDatabase : RoomDatabase() {
 
+    /** DAO znaczników synchronizacji. */
     abstract fun syncMetadataDao(): SyncMetadataDao
 
+    /** DAO menu sieci i dostępności w lokalach. */
     abstract fun menuDao(): MenuDao
 
+    /** DAO lokali sieci. */
     abstract fun cafeDao(): CafeDao
 
+    /** Stałe bazy. */
     companion object {
+        /** Nazwa pliku bazy na urządzeniu. */
         const val DATABASE_NAME = "kafe.db"
     }
 }
 
-// Implementację (actual) generuje kompilator Room przez KSP dla każdej platformy.
+/**
+ * Konstruktor bazy dla Room KMP. Implementację (actual) generuje Room przez KSP dla każdej platformy,
+ * dlatego `@Suppress` – IDE nie widzi wygenerowanego kodu i zgłasza brak actual.
+ */
 @Suppress("KotlinNoActualForExpect")
 expect object KafeDatabaseConstructor : RoomDatabaseConstructor<KafeDatabase> {
+    /** Tworzy instancję wygenerowanej implementacji [KafeDatabase]. */
     override fun initialize(): KafeDatabase
 }

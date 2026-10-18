@@ -23,11 +23,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 private const val INTRO_CROSSFADE_MS = 300
 
-// KAFE-25 / KAFE-41: Korzeń UI – motyw Kafe i graf nawigacji.
-// KAFE-31 / KAFE-42: Intro gra, dopóki animacja się nie skończy ORAZ AppStartViewModel nie poda ekranu startowego.
-// - introFinished w rememberSaveable: po obrocie / odtworzeniu procesu intro się nie powtarza (tylko zimny start).
-// - Ekran startowy jest „zatrzaśnięty” przy pierwszym Ready – późniejsza zmiana (np. po wyborze lokalu)
-//   nie tworzy grafu nawigacji od nowa; dalszą nawigację prowadzi już NavController.
+/**
+ * Korzeń UI wspólny dla platform – motyw Kafe, intro i graf nawigacji.
+ *
+ * Intro gra, dopóki jego animacja się nie skończy ORAZ [AppStartViewModel] nie poda ekranu startowego.
+ * Po odtworzeniu aktywności (zmiana motywu, obrót) aplikacja pokazuje się od razu, bez intro.
+ *
+ * @param appStartViewModel źródło ekranu startowego; domyślnie z Koina, parametr ułatwia podmianę w testach.
+ */
 @Composable
 fun App(appStartViewModel: AppStartViewModel = koinViewModel()) {
     setSingletonImageLoaderFactory { context ->
@@ -36,9 +39,17 @@ fun App(appStartViewModel: AppStartViewModel = koinViewModel()) {
             .build()
     }
     val appStart by appStartViewModel.state.collectAsStateWithLifecycle()
+    // W rememberSaveable, bo intro ma grać tylko przy zimnym starcie, nie po każdym odtworzeniu aktywności.
     var introFinished by rememberSaveable { mutableStateOf(false) }
-    var startDestination by remember { mutableStateOf<KafeRoute?>(null) }
+    // Ekran startowy jest „zatrzaśnięty” przy pierwszym Ready – późniejsza zmiana (np. po wyborze lokalu)
+    // nie tworzy grafu nawigacji od nowa; dalszą nawigację prowadzi już NavController.
+    // Wartość początkowa z bieżącego stanu: po odtworzeniu aktywności ViewModel jest już Ready, więc
+    // pierwsza kompozycja pokazuje aplikację od razu – bez klatki intro i bez przejścia Crossfade.
+    var startDestination by remember {
+        mutableStateOf((appStart as? AppStartState.Ready)?.startDestination)
+    }
 
+    // Klucz appStart: efekt rusza przy każdej zmianie stanu startu, ale ustawia ekran tylko raz.
     LaunchedEffect(appStart) {
         val ready = appStart as? AppStartState.Ready ?: return@LaunchedEffect
         if (startDestination == null) startDestination = ready.startDestination

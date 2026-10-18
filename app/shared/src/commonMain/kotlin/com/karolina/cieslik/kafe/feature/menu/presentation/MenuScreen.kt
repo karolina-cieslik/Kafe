@@ -82,11 +82,22 @@ private const val SKELETON_CHIPS = 3
 
 /** KAFE-6: Stabilne tagi ekranu menu dla testów UI (Robolectric i instrumentacyjnych). */
 object MenuTestTags {
+    /** Siatka szkieletów w stanie ładowania. */
     const val LOADING = "menuLoading"
+
+    /** Siatka produktów w stanie treści. */
     const val GRID = "menuGrid"
+
+    /** Przypięty nagłówek z lokalem i wyszukiwarką. */
     const val HEADER = "menuHeader"
+
+    /** Rząd chipów kategorii. */
     const val CATEGORIES = "menuCategories"
+
+    /** Karta produktu o danym id. */
     fun product(id: String) = "menuProduct_$id"
+
+    /** Chip kategorii o danym id. */
     fun category(id: String) = "menuCategory_$id"
 }
 
@@ -279,7 +290,7 @@ private fun LazyGridScope.products(category: CategoryUi, onAction: (MenuAction) 
     }
 }
 
-// Przypięty ciemny nagłówek: lokal + wyszukiwarka. Status bar wchodzi w jego tło.
+/** Przypięty ciemny nagłówek: lokal + wyszukiwarka. Pasek statusu wchodzi w jego tło. */
 @Composable
 private fun MenuHeader(
     cafeName: String?,
@@ -398,7 +409,7 @@ private fun CategoryChips(
     }
 }
 
-// Zajmuje tyle miejsca co chipy, żeby po załadowaniu siatka nie przeskakiwała.
+/** Zajmuje tyle miejsca co chipy, żeby po załadowaniu siatka nie przeskakiwała. */
 @Composable
 private fun CategoryChipsSkeleton() {
     val spacing = KafeTheme.spacing
@@ -420,7 +431,7 @@ private fun CategoryChipsSkeleton() {
     }
 }
 
-// Separator pod przypiętą częścią – widoczny tylko, gdy siatka jest przewinięta (treść „pod” paskiem).
+/** Separator pod przypiętą częścią – widoczny tylko, gdy siatka jest przewinięta (treść „pod” paskiem). */
 @Composable
 private fun ScrollEdgeDivider(visible: Boolean) {
     val alpha by animateFloatAsState(targetValue = if (visible) 1f else 0f, label = "scrollEdgeDivider")

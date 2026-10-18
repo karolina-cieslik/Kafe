@@ -9,6 +9,14 @@ import androidx.compose.ui.unit.dp
  * KAFE-25: Skala odstępów (siatka 4dp, od [xxs] do [xxxl]) i stałe rozmiary komponentów,
  * dostępne przez [KafeTheme.spacing].
  *
+ * @property xxs 2dp.
+ * @property xs 4dp.
+ * @property s 8dp – odstęp między chipami.
+ * @property m 12dp – odstęp między kartami w siatce.
+ * @property l 16dp.
+ * @property xl 24dp.
+ * @property xxl 32dp.
+ * @property xxxl 48dp.
  * @property screenHorizontal poziomy margines treści ekranu.
  * @property minTouchTarget minimalny obszar dotyku (48dp, wymóg dostępności).
  * @property buttonHeight wysokość głównych przycisków.
@@ -42,4 +50,5 @@ data class KafeSpacing(
     val cardImageHeight: Dp = 128.dp,
 )
 
+/** KAFE-25: Odstępy bieżącego motywu; ustawia je [KafeTheme]. */
 internal val LocalKafeSpacing = staticCompositionLocalOf { KafeSpacing() }

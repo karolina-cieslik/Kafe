@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-6: Dane fake do previewów ekranu menu.
+/** KAFE-6: Dane fake do previewów ekranu menu. */
 internal object MenuPreviewData {
     private val coffee = CategoryUi(
         id = "coffee",

@@ -6,8 +6,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// KAFE-25: Paleta bazowa inspirowana makietą (akcent kawowy, ciemny nagłówek, jasne tło).
-// Ekrany nie używają tych stałych bezpośrednio – tylko przez KafeTheme.colors / KafeTheme.extendedColors.
+/**
+ * KAFE-25: Paleta bazowa inspirowana makietą (akcent kawowy, ciemny nagłówek, jasne tło).
+ * Ekrany nie używają tych stałych bezpośrednio – tylko przez [KafeTheme.colors] / [KafeTheme.extendedColors].
+ */
 internal object KafePalette {
     val Coffee = Color(0xFFC67C4E)
     val CoffeeLight = Color(0xFFE3A57C)
@@ -40,6 +42,7 @@ internal object KafePalette {
     val ErrorDark = Color(0xFFFF8A80)
 }
 
+/** KAFE-25: Schemat Material3 jasnego motywu – kawowy `primary` na jasnym tle. */
 internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     primary = KafePalette.Coffee,
     onPrimary = KafePalette.White,
@@ -66,6 +69,7 @@ internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     onError = KafePalette.White,
 )
 
+/** KAFE-25: Schemat Material3 ciemnego motywu – jaśniejszy kawowy `primary`, żeby zachować kontrast na ciemnym tle. */
 internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
     primary = KafePalette.CoffeeLight,
     onPrimary = KafePalette.Espresso,
@@ -117,6 +121,7 @@ data class KafeExtendedColors(
     val rating: Color,
 )
 
+/** KAFE-25: [KafeExtendedColors] jasnego motywu. */
 internal val KafeLightExtendedColors = KafeExtendedColors(
     header = KafePalette.Espresso,
     headerGradientEnd = KafePalette.Charcoal,
@@ -128,6 +133,7 @@ internal val KafeLightExtendedColors = KafeExtendedColors(
     rating = KafePalette.Rating,
 )
 
+/** KAFE-25: [KafeExtendedColors] ciemnego motywu – nagłówek jaśniejszy od tła, żeby się od niego odcinał. */
 internal val KafeDarkExtendedColors = KafeExtendedColors(
     header = KafePalette.Graphite,
     headerGradientEnd = KafePalette.DarkSurface,

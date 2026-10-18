@@ -8,7 +8,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 
 /**
- * KAFE-25 / KAFE-6: Korzeń UI wspólny dla platform – motyw Kafe i ekran menu.
+ * Korzeń UI wspólny dla platform – motyw Kafe i ekran menu.
  * Ekrany produktu i wyboru lokalu jeszcze nie istnieją, więc nawigacja z menu to na razie no-op.
  */
 @Composable

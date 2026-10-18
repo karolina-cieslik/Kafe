@@ -7,7 +7,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * KAFE-25: Paleta bazowa inspirowana makietą (akcent kawowy, ciemny nagłówek, jasne tło).
+ * Paleta bazowa inspirowana makietą (akcent kawowy, ciemny nagłówek, jasne tło).
  * Ekrany nie używają tych stałych bezpośrednio – tylko przez [KafeTheme.colors] / [KafeTheme.extendedColors].
  */
 internal object KafePalette {
@@ -42,7 +42,7 @@ internal object KafePalette {
     val ErrorDark = Color(0xFFFF8A80)
 }
 
-/** KAFE-25: Schemat Material3 jasnego motywu – kawowy `primary` na jasnym tle. */
+/** Schemat Material3 jasnego motywu – kawowy `primary` na jasnym tle. */
 internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     primary = KafePalette.Coffee,
     onPrimary = KafePalette.White,
@@ -69,7 +69,7 @@ internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     onError = KafePalette.White,
 )
 
-/** KAFE-25: Schemat Material3 ciemnego motywu – jaśniejszy kawowy `primary`, żeby zachować kontrast na ciemnym tle. */
+/** Schemat Material3 ciemnego motywu – jaśniejszy kawowy `primary`, żeby zachować kontrast na ciemnym tle. */
 internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
     primary = KafePalette.CoffeeLight,
     onPrimary = KafePalette.Espresso,
@@ -97,7 +97,7 @@ internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
 )
 
 /**
- * KAFE-25: Kolory spoza [ColorScheme] Material3, dostępne przez [KafeTheme.extendedColors].
+ * Kolory spoza [ColorScheme] Material3, dostępne przez [KafeTheme.extendedColors].
  * Mają osobne wartości dla jasnego i ciemnego motywu.
  *
  * @property header tło ciemnego nagłówka ekranu (np. nagłówek menu z wyszukiwarką).
@@ -121,7 +121,7 @@ data class KafeExtendedColors(
     val rating: Color,
 )
 
-/** KAFE-25: [KafeExtendedColors] jasnego motywu. */
+/** [KafeExtendedColors] jasnego motywu. */
 internal val KafeLightExtendedColors = KafeExtendedColors(
     header = KafePalette.Espresso,
     headerGradientEnd = KafePalette.Charcoal,
@@ -133,7 +133,7 @@ internal val KafeLightExtendedColors = KafeExtendedColors(
     rating = KafePalette.Rating,
 )
 
-/** KAFE-25: [KafeExtendedColors] ciemnego motywu – nagłówek jaśniejszy od tła, żeby się od niego odcinał. */
+/** [KafeExtendedColors] ciemnego motywu – nagłówek jaśniejszy od tła, żeby się od niego odcinał. */
 internal val KafeDarkExtendedColors = KafeExtendedColors(
     header = KafePalette.Graphite,
     headerGradientEnd = KafePalette.DarkSurface,

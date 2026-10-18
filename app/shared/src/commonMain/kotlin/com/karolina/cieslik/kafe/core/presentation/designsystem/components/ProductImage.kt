@@ -19,7 +19,7 @@ import org.jetbrains.compose.resources.painterResource
 private val GrayscaleFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
 /**
- * KAFE-25: Zdjęcie produktu ładowane przez Coil. Pod spodem zawsze leży placeholder z ikoną kawy –
+ * Zdjęcie produktu ładowane przez Coil. Pod spodem zawsze leży placeholder z ikoną kawy –
  * widoczny przy braku adresu, w trakcie ładowania i po błędzie, więc nie ma pustego miejsca.
  *
  * @param imageUrl adres zdjęcia; `null` = sam placeholder.

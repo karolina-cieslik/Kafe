@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * KAFE-25: Górny pasek ekranów podrzędnych (szczegóły produktu, wybór lokalu, koszyk) z tytułem pośrodku.
+ * Górny pasek ekranów podrzędnych (szczegóły produktu, wybór lokalu, koszyk) z tytułem pośrodku.
  * Odstęp od paska statusu dodaje sam `CenterAlignedTopAppBar` (domyślne windowInsets).
  *
  * @param title tytuł ekranu; za długi jest ucinany wielokropkiem.

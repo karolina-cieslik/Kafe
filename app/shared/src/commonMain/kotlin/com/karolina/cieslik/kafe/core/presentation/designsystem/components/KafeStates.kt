@@ -35,7 +35,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * KAFE-25: Pełnoekranowy stan ładowania – wskaźnik pośrodku, a dla TalkBacka opis „Ładowanie”.
+ * Pełnoekranowy stan ładowania – wskaźnik pośrodku, a dla TalkBacka opis „Ładowanie”.
  * Stany pustki i błędu ([KafeEmptyState], [KafeErrorState]) mają wspólny układ: ikona, tytuł, opis, akcja.
  */
 @Composable
@@ -52,7 +52,7 @@ fun KafeLoadingState(modifier: Modifier = Modifier) {
 }
 
 /**
- * KAFE-25: Pełnoekranowy stan pustki (np. brak produktów w kategorii lub brak wyników wyszukiwania).
+ * Pełnoekranowy stan pustki (np. brak produktów w kategorii lub brak wyników wyszukiwania).
  *
  * @param title krótki nagłówek (ogłaszany przez TalkBack jako nagłówek).
  * @param message wyjaśnienie, co się stało lub co można zrobić.
@@ -84,7 +84,7 @@ fun KafeEmptyState(
 }
 
 /**
- * KAFE-25: Pełnoekranowy stan błędu z przyciskiem „Spróbuj ponownie”.
+ * Pełnoekranowy stan błędu z przyciskiem „Spróbuj ponownie”.
  *
  * @param message opis błędu dla użytkownika (np. brak połączenia).
  * @param onRetry wywoływane po kliknięciu „Spróbuj ponownie”.

@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * KAFE-25: Skala odstępów (siatka 4dp, od [xxs] do [xxxl]) i stałe rozmiary komponentów,
+ * Skala odstępów (siatka 4dp, od [xxs] do [xxxl]) i stałe rozmiary komponentów,
  * dostępne przez [KafeTheme.spacing].
  *
  * @property xxs 2dp.
@@ -50,5 +50,5 @@ data class KafeSpacing(
     val cardImageHeight: Dp = 128.dp,
 )
 
-/** KAFE-25: Odstępy bieżącego motywu; ustawia je [KafeTheme]. */
+/** Odstępy bieżącego motywu; ustawia je [KafeTheme]. */
 internal val LocalKafeSpacing = staticCompositionLocalOf { KafeSpacing() }

@@ -23,7 +23,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePrev
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
 /**
- * KAFE-25: Opcja rozmiaru napoju dla [SizeSelector].
+ * Opcja rozmiaru napoju dla [SizeSelector].
  *
  * @property id identyfikator rozmiaru zwracany w `onSelect`.
  * @property label krótka nazwa, np. „M”.
@@ -41,7 +41,7 @@ data class SizeOptionUi(
 )
 
 /**
- * KAFE-25: Wybór rozmiaru (np. S/M/L) – grupa radiowa z opcjami równej szerokości i pełną ceną pod każdą.
+ * Wybór rozmiaru (np. S/M/L) – grupa radiowa z opcjami równej szerokości i pełną ceną pod każdą.
  *
  * @param options opcje w kolejności wyświetlania.
  * @param selectedId id wybranej opcji; `null` = nic nie jest wybrane.

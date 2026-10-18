@@ -41,7 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val UNAVAILABLE_CONTENT_ALPHA = 0.5f
 
 /**
- * KAFE-25: Karta produktu w siatce menu – zdjęcie, nazwa, podtytuł, cena i przycisk „+”.
+ * Karta produktu w siatce menu – zdjęcie, nazwa, podtytuł, cena i przycisk „+”.
  *
  * Niedostępny produkt ([isAvailable] = `false`): zdjęcie w skali szarości, przygaszona treść, etykieta
  * „Chwilowo niedostępny” i brak „+”. Karta nadal jest klikalna, żeby dało się podejrzeć szczegóły.
@@ -184,7 +184,7 @@ private fun UnavailableBadge(text: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * KAFE-25: Szkielet karty produktu na czas pierwszego ładowania menu – ten sam układ co [ProductCard],
+ * Szkielet karty produktu na czas pierwszego ładowania menu – ten sam układ co [ProductCard],
  * z pulsującą przezroczystością. Ukryty przed TalkBackiem (stan ładowania ogłasza ekran).
  */
 @Composable

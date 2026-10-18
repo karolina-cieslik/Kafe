@@ -9,7 +9,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * KAFE-6: Wejście do ekranu menu z grafu nawigacji – podpina [MenuViewModel] do bezstanowego [MenuScreen]
+ * Wejście do ekranu menu z grafu nawigacji – podpina [MenuViewModel] do bezstanowego [MenuScreen]
  * i zamienia jednorazowe [MenuEvent] na nawigację.
  *
  * @param onNavigateToProduct wywoływane z id produktu po stuknięciu karty lub „+” (event [MenuEvent.NavigateToProduct]).

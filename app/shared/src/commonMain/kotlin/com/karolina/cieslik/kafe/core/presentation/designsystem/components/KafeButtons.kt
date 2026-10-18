@@ -19,7 +19,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePrev
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
 /**
- * KAFE-25: Główny przycisk akcji ekranu (np. „Zamów”, „Dodaj do koszyka”), wypełniony kolorem `primary`.
+ * Główny przycisk akcji ekranu (np. „Zamów”, „Dodaj do koszyka”), wypełniony kolorem `primary`.
  *
  * @param text etykieta przycisku.
  * @param onClick wywoływane po kliknięciu; nie jest wywoływane, gdy [enabled] = `false` lub [isLoading] = `true`.
@@ -58,7 +58,7 @@ fun KafePrimaryButton(
 }
 
 /**
- * KAFE-25: Przycisk akcji drugorzędnej (np. „Zmień kawiarnię”) – obrys i tekst w kolorze `primary`.
+ * Przycisk akcji drugorzędnej (np. „Zmień kawiarnię”) – obrys i tekst w kolorze `primary`.
  *
  * @param text etykieta przycisku.
  * @param onClick wywoływane po kliknięciu, gdy [enabled] = `true`.

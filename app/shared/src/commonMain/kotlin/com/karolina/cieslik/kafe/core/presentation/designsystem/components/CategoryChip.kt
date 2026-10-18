@@ -18,7 +18,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePrev
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
 /**
- * KAFE-25: Chip kategorii menu. Kategorie to jednokrotny wybór, więc chip ma rolę zakładki (`Role.Tab`)
+ * Chip kategorii menu. Kategorie to jednokrotny wybór, więc chip ma rolę zakładki (`Role.Tab`)
  * i stan zaznaczenia czytany przez TalkBack.
  *
  * @param label nazwa kategorii, zawsze w jednej linii.

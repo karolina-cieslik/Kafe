@@ -36,7 +36,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * KAFE-25: Kolory [SearchField]. Gotowe warianty są w [SearchFieldDefaults].
+ * Kolory [SearchField]. Gotowe warianty są w [SearchFieldDefaults].
  *
  * @property container tło pola.
  * @property content wpisany tekst i ikony.
@@ -50,7 +50,7 @@ data class SearchFieldColors(
     val cursor: Color,
 )
 
-/** KAFE-25: Warianty kolorów [SearchField] – na jasne tło ekranu i na ciemny nagłówek. */
+/** Warianty kolorów [SearchField] – na jasne tło ekranu i na ciemny nagłówek. */
 object SearchFieldDefaults {
     /** Pole na tle `background` / `surface`. */
     @Composable
@@ -74,7 +74,7 @@ object SearchFieldDefaults {
 private const val DISABLED_ALPHA = 0.6f
 
 /**
- * KAFE-25: Jednoliniowe pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia (widocznym, gdy pole
+ * Jednoliniowe pole wyszukiwania z ikoną lupy i przyciskiem czyszczenia (widocznym, gdy pole
  * jest aktywne i niepuste).
  * Klawisz „Szukaj” na klawiaturze tylko ją chowa – wyniki filtrują się już w trakcie pisania.
  *

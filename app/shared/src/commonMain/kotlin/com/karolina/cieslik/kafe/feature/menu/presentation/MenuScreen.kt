@@ -80,7 +80,7 @@ private const val GRID_COLUMNS = 2
 private const val SKELETON_ITEMS = 6
 private const val SKELETON_CHIPS = 3
 
-/** KAFE-6: Stabilne tagi ekranu menu dla testów UI (Robolectric i instrumentacyjnych). */
+/** Stabilne tagi ekranu menu dla testów UI (Robolectric i instrumentacyjnych). */
 object MenuTestTags {
     /** Siatka szkieletów w stanie ładowania. */
     const val LOADING = "menuLoading"
@@ -102,7 +102,7 @@ object MenuTestTags {
 }
 
 /**
- * KAFE-6: Ekran menu wybranego lokalu – bezstanowy, cały stan przychodzi w [state], a interakcje wychodzą
+ * Ekran menu wybranego lokalu – bezstanowy, cały stan przychodzi w [state], a interakcje wychodzą
  * jako [MenuAction] przez [onAction]. Układ inspirowany ekranem Home z makiety.
  *
  * Nagłówek (lokal + wyszukiwarka) i chipy kategorii są przypięte; przewija się tylko siatka produktów,

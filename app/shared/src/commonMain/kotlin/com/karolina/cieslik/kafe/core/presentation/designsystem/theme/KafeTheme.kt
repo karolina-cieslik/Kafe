@@ -10,11 +10,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
-/** KAFE-25: Kolory rozszerzone bieżącego motywu; ustawia je [KafeTheme], domyślnie jasne. */
+/** Kolory rozszerzone bieżącego motywu; ustawia je [KafeTheme], domyślnie jasne. */
 internal val LocalKafeExtendedColors = staticCompositionLocalOf { KafeLightExtendedColors }
 
 /**
- * KAFE-25: Motyw aplikacji – [MaterialTheme] z kolorami, typografią i kształtami Kafe oraz rozszerzenia
+ * Motyw aplikacji – [MaterialTheme] z kolorami, typografią i kształtami Kafe oraz rozszerzenia
  * ([KafeExtendedColors], [KafeSpacing]) udostępniane przez CompositionLocal.
  * Owija cały korzeń UI i każdy preview; ekrany odczytują wartości przez obiekt [KafeTheme].
  *
@@ -40,7 +40,7 @@ fun KafeTheme(
 }
 
 /**
- * KAFE-25: Jedyny punkt dostępu ekranów i komponentów do tokenów motywu – zamiast bezpośrednich odwołań
+ * Jedyny punkt dostępu ekranów i komponentów do tokenów motywu – zamiast bezpośrednich odwołań
  * do [MaterialTheme] czy palety. Działa tylko wewnątrz composable [KafeTheme].
  */
 object KafeTheme {

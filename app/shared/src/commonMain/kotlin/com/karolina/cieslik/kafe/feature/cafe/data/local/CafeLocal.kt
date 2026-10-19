@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * @property address adres w jednej linii.
  * @property lat szerokość geograficzna (WGS84, stopnie).
  * @property lng długość geograficzna (WGS84, stopnie).
- * @property position kolejność lokali ze źródła, od 0 – pierwszy jest domyślnie wybrany.
+ * @property position kolejność lokali ze źródła, od 0.
  */
 @Entity(tableName = "cafes")
 data class CafeEntity(

@@ -14,8 +14,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 
-// KAFE-6: Offline-first – Room jest źródłem prawdy, refresh() pobiera lokale i zapisuje je lokalnie.
-// KAFE-31: wybór lokalu zapamiętany w SelectedCafeStore (DataStore), bez domyślnego lokalu.
+/**
+ * Offline-first: Room jest źródłem prawdy, [refresh] pobiera lokale i zapisuje je lokalnie.
+ *
+ * Wybór lokalu jest zapamiętany w [SelectedCafeStore] (DataStore) i przetrwa restart aplikacji. Domyślnego
+ * lokalu nie ma – bez wyboru [observeSelectedCafe] emituje null, a aplikacja startuje od wyboru lokalu.
+ *
+ * @param clock źródło czasu zapisu synchronizacji; w testach podmieniane.
+ */
 class OfflineFirstCafeRepository(
     private val local: CafeLocalDataSource,
     private val remote: CafeRemoteDataSource,

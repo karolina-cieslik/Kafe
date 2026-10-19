@@ -31,9 +31,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// KAFE-6: Menu wybranego lokalu. Offline-first: zapamiętane dane od razu, a przy pierwszej obserwacji
-// odświeżenie w tle – lokali, a potem menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych
-// danych nie blokuje ekranu; bez zapamiętanych danych kończy się stanem Error z „Spróbuj ponownie” (AC 6–7).
+/**
+ * Menu wybranego lokalu.
+ *
+ * Offline-first: zapamiętane dane od razu, a przy pierwszej obserwacji odświeżenie w tle – lokali, a potem
+ * menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych danych nie blokuje ekranu; bez zapamiętanych
+ * danych kończy się stanem Error z „Spróbuj ponownie”.
+ *
+ * @param dispatcher dispatcher odświeżania i mapowania menu; w testach testowy.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MenuViewModel(
     private val cafeRepository: CafeRepository,
@@ -56,9 +62,11 @@ class MenuViewModel(
     /** Jednorazowe zdarzenia nawigacyjne; każde trafia do jednego kolektora, bufor trzyma je do czasu zebrania. */
     val events: Flow<MenuEvent> = eventChannel.receiveAsFlow()
 
-    // KAFE-31: odświeżenie w tle tylko przy pierwszej obserwacji (zimny start ekranu) i pierwszym wejściu
-    // na menu danego lokalu – powrót ze szczegółów nie pokazuje wskaźnika. Ponownie: pull-to-refresh / Retry.
-    // Tylko udane odświeżenia – po błędzie ponowne wejście na lokal znów próbuje pobrać menu.
+    /**
+     * Lokale, których menu udało się już odświeżyć w tym VM. Odświeżenie w tle jest tylko przy pierwszym wejściu
+     * na menu danego lokalu, więc powrót ze szczegółów nie pokazuje wskaźnika; ponownie: pull-to-refresh / Retry.
+     * Tylko udane odświeżenia – po błędzie ponowne wejście na lokal znów próbuje pobrać menu.
+     */
     private val refreshedMenuCafeIds = MutableStateFlow<Set<String>>(emptySet())
 
     private val selectedCafe = cafeRepository.observeSelectedCafe()

@@ -24,10 +24,10 @@ val databaseModule = module {
     single { get<KafeDatabase>().cafeDao() }
 }
 
-// KAFE-31: Jedna instancja DataStore na plik preferencji.
+/** DataStore Preferences – jedna instancja na plik, dlatego single. PreferencesFactory dostarcza [platformModule]. */
 val preferencesModule = module {
     single { get<PreferencesFactory>().createDataStore() }
 }
 
-/** Zależności platformowe: silnik HTTP i DatabaseFactory. */
+/** Zależności platformowe: silnik HTTP, DatabaseFactory i PreferencesFactory. */
 expect val platformModule: Module

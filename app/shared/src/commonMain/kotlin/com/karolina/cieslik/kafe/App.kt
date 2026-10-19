@@ -15,8 +15,13 @@ import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
 import com.karolina.cieslik.kafe.navigation.KafeNavHost
 import org.koin.compose.viewmodel.koinViewModel
 
-// KAFE-25 / KAFE-41: Korzeń UI – motyw Kafe i graf nawigacji.
-// KAFE-31: ekran startowy (Menu albo CafePicker) z AppStartViewModel; do czasu intro (KAFE-42) pusta powierzchnia.
+/**
+ * Korzeń UI wspólny dla platform – motyw Kafe i graf nawigacji ([KafeNavHost]).
+ *
+ * Ekran startowy (menu albo wybór lokalu) ustala [AppStartViewModel]; zanim będzie gotowy, widać pustą
+ * powierzchnię w kolorze motywu. Graf powstaje dopiero z ustalonym ekranem startowym, bo NavHost nie zmienia
+ * startDestination po utworzeniu.
+ */
 @Composable
 fun App(appStartViewModel: AppStartViewModel = koinViewModel()) {
     // Jeden ImageLoader Coila dla całej aplikacji; crossfade łagodzi pojawianie się zdjęć produktów.

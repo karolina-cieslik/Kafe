@@ -91,6 +91,21 @@ class CafePickerViewModelEdgeTest {
     }
 
     @Test
+    fun overnightCafeAfterClosingShowsTodaysLabelAndSaturdayNoonShowsFullRange() = runViewModelTest { context ->
+        val overnight = listOf(cafe("a", hours = listOf(OpeningHours(Weekday.SATURDAY, 18 * 60, 2 * 60))))
+
+        // Niedziela 2:00 (zima) – już zamknięte, w niedzielę brak godzin.
+        val sundayAfterClosing = contentAt(context.dispatcher, context::track, "2026-12-06T01:00:00Z", overnight).cafes.single()
+        assertFalse(sundayAfterClosing.isOpenNow)
+        assertEquals(CAFE_CLOSED_TODAY, sundayAfterClosing.openingHoursLabel)
+
+        // Sobota 12:00 – zamknięte, etykieta z pełnym zakresem przez północ.
+        val saturdayNoon = contentAt(context.dispatcher, context::track, "2026-12-05T11:00:00Z", overnight).cafes.single()
+        assertFalse(saturdayNoon.isOpenNow)
+        assertEquals("Dziś 18:00–2:00", saturdayNoon.openingHoursLabel)
+    }
+
+    @Test
     fun cafesAreSortedPolishAlphabeticallyNotByCodePoint() = runViewModelTest { context ->
         val cafes = listOf("Kafe Żoliborz", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Sopot", "Kafe Łazienki", "Kafe Mokotów")
             .mapIndexed { index, name -> cafe("c$index", name) }
@@ -112,6 +127,7 @@ class CafePickerViewModelEdgeTest {
 
         assertTrue(cafeUi.isOpenNow)
         assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")
+        assertEquals("Do 2:00", cafeUi.openingHoursLabel)
     }
 }
 

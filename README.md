@@ -1,34 +1,98 @@
-This is a Kotlin Multiplatform project targeting Android and iOS.
+# Kafe
 
-* [/app/iosApp](./app/iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+Aplikacja mobilna do zamawiania kawy w sieci kawiarni. Klient wybiera lokal, przegląda menu, konfiguruje napój (rozmiar, mleko, shoty, syrop) i widzi cenę na żywo.
 
-* [/app/shared](./app/shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./app/shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./app/shared/src/iosMain/kotlin) folder would be the right place for such calls.
+Projekt jest w Kotlin Multiplatform: najpierw Android, iOS na tej samej bazie kodu jako „nice to have”.
 
-* [/core](./core/src) is for the code that will be shared between all targets in the project.
-  The most important subfolder is [commonMain](./core/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+## Stan projektu
 
-### Running the apps
+MVP w budowie. Na `develop` działa:
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+- splash, animowane intro i ikona aplikacji (także tematyczna, Android 13+),
+- wybór lokalu: lista alfabetyczna z godzinami na dziś i statusem „Otwarte”/„Zamknięte” (czas warszawski, godziny przez północ); wybór jest zapamiętywany między uruchomieniami,
+- menu sieci podzielone na kategorie, z dostępnością produktów w wybranym lokalu; działa offline (najpierw lokalna baza, odświeżenie z sieci w tle),
+- szczegóły produktu: rozmiar, modyfikatory z limitami, liczba sztuk (1–20), cena liczona w groszach.
 
-- Android app: `./gradlew :app:androidApp:assembleDebug`
-- iOS app: open the [/app/iosApp](./app/iosApp) directory in Xcode and run it from there.
+Jeszcze nie ma: koszyka i zamówień, logowania, mapy lokali, powiadomień push. Dane menu i lokali pochodzą na razie z seeda w aplikacji; docelowym backendem jest Firebase.
 
-### Running tests
+Zadania i kryteria akceptacji: Jira, projekt **KAFE**.
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+## Technologie
 
-- Android tests: `./gradlew :app:shared:testAndroidHostTest`
-- iOS tests: `./gradlew :app:shared:iosSimulatorArm64Test`
+| Obszar | Biblioteka |
+|---|---|
+| Język | Kotlin 2.4 (Multiplatform) |
+| UI | Compose Multiplatform, Material 3 |
+| Nawigacja | Navigation Compose (trasy typowane, `@Serializable`) |
+| Asynchroniczność | Coroutines, `StateFlow` / `Flow` |
+| Sieć | Ktor Client 3 + kotlinx.serialization |
+| Baza lokalna | Room KMP (offline-first) |
+| Preferencje | DataStore (zapamiętany lokal) |
+| DI | Koin |
+| Obrazy | Coil 3 |
+| Testy | kotlin.test, Turbine, Robolectric (UI Compose na JVM) |
 
----
+Wersje: `gradle/libs.versions.toml`.
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/).
+## Architektura
+
+Clean Architecture z podziałem na warstwy i jednokierunkowy przepływ danych (MVVM/MVI):
+
+```
+UI (Compose) ──Action──▶ ViewModel ──▶ UseCase / Repository ──▶ Room + API
+     ▲                        │
+     └──── StateFlow<UiState> ┘     zdarzenia jednorazowe (nawigacja, snackbar) przez Flow<Event>
+```
+
+- **Domena** – modele, reguły biznesowe, interfejsy repozytoriów; czysty Kotlin bez zależności od Androida.
+- **Dane** – DTO, encje Room, mappery, repozytoria offline-first. Błędy zwracane jako `Result<T, DataError>`, nie wyjątki.
+- **Prezentacja** – ViewModel wystawia niemutowalny `StateFlow<UiState>`; kontrakt ekranu (`UiState`, `Action`, `Event`) to `sealed interface`.
+
+### Moduły
+
+| Moduł | Zawartość |
+|---|---|
+| `core` | domena: `core/domain` (`Result`, `DataError`, `Money`) i `feature/*/domain` (menu, produkt, lokale) |
+| `app/shared` | dane, prezentacja, DI, nawigacja i design system (`core/presentation/designsystem`, motyw `KafeTheme`) |
+| `app/androidApp` | punkt wejścia Androida: `MainActivity`, splash, zasoby ikony |
+| `app/iosApp` | punkt wejścia iOS (Xcode) |
+
+Kod funkcji jest pogrupowany po funkcjach: `feature/menu`, `feature/product`, `feature/cafe`, `feature/start` – każda z podkatalogami `data`, `presentation` (i `domain` w module `core`).
+
+## Uruchomienie
+
+Wymagania:
+
+- Android Studio z JDK 21 (JBR) – AGP 9 wymaga JDK 17+,
+- Android SDK z platformą 37 (`compileSdk`); `minSdk` to 29 (Android 10),
+- `local.properties` z `sdk.dir` (Android Studio tworzy go sam).
+
+Budowanie i instalacja:
+
+```bash
+./gradlew :app:androidApp:assembleDebug        # APK: app/androidApp/build/outputs/apk/debug/
+./gradlew :app:androidApp:installDebug         # instalacja na podłączonym urządzeniu/emulatorze
+```
+
+Na Windows: `gradlew.bat`. iOS: katalog `app/iosApp` w Xcode (wymaga macOS; na razie nie jest budowany ani testowany).
+
+## Testy
+
+Ten sam zestaw co CI (`.github/workflows/ci.yml`):
+
+```bash
+./gradlew :app:androidApp:assembleDebug :app:shared:assembleAndroidDeviceTest \
+  :core:testAndroidHostTest :app:shared:testAndroidHostTest :app:androidApp:testDebugUnitTest \
+  :app:androidApp:lintDebug
+```
+
+Rodzaje testów, konwencje i znane problemy: [docs/testing.md](docs/testing.md).
+
+## Jak pracujemy
+
+- Gałęzie: `master` (wydania), `develop` (integracja, cel PR-ów), `feature/KAFE-<n>-<opis>`.
+- Commity: `KAFE-<n>: <opis po polsku>`.
+- Małe PR-y (ok. 400 zmienionych linii bez plików generowanych), testy w tym samym PR co kod. CI musi być zielone przed merge.
+- Komentarze i KDoc po polsku, nad deklaracjami, bez numerów ticketów (wyjątki: `TODO(KAFE-n)`, wyłączone testy).
+
+Pełne zasady kodu: [CLAUDE.md](CLAUDE.md).

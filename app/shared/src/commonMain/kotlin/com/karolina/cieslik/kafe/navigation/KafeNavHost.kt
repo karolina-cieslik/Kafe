@@ -1,6 +1,7 @@
 package com.karolina.cieslik.kafe.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -49,11 +50,14 @@ fun KafeNavHost(
             )
         }
         composable<KafeRoute.CafePicker> {
+            // Liczone raz na wpis stosu: przy animacji wyjścia (po wyborze z menu) poprzedni wpis jest już zdjęty
+            // i bieżące odczytanie dałoby false – nagłówek mignąłby jako powitalny.
+            val canNavigateBack = remember { navController.previousBackStackEntry != null }
             CafePickerRoute(
                 onCafeChosen = { navController.navigateAfterCafeChosen() },
                 // Bezpiecznik: zdjęcie jedynego wpisu stosu zostawiłoby pusty ekran.
                 onNavigateBack = { if (navController.previousBackStackEntry != null) navController.popBackStack() },
-                canNavigateBack = navController.previousBackStackEntry != null,
+                canNavigateBack = canNavigateBack,
             )
         }
     }

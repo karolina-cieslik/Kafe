@@ -20,11 +20,12 @@ sealed interface CafePickerUiState {
      * Lista lokali.
      *
      * @property cafes lokale alfabetycznie po polsku; pusta lista, gdy serwer nie zwrócił lokali.
-     * @property isFirstLaunch brak zapamiętanego wyboru – ekran startowy aplikacji, bez przycisku „wstecz”.
-     * Ustalane raz i nie zmienia się po wyborze, żeby przycisk nie mignął przed przejściem do menu.
+     * @property isFirstLaunch brak zapamiętanego wyboru; UI go nie używa (strzałkę wstecz wyznacza stos nawigacji),
+     * pole zostanie usunięte.
      */
     data class Content(
         val cafes: List<CafeUi>,
+        // TODO(KAFE-29): usunąć w rundzie 3
         val isFirstLaunch: Boolean,
     ) : CafePickerUiState
 }

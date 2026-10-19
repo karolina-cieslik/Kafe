@@ -49,7 +49,7 @@ class MenuViewModelIntegrationTest {
         val cafeRemote: SwitchableCafeRemote,
     )
 
-    // KAFE-31: bez zapamiętanego wyboru nie ma domyślnego lokalu – testy menu zaczynają od wybranego Krakowa.
+    /** Bez zapamiętanego wyboru nie ma domyślnego lokalu, więc testy menu zaczynają od wybranego Krakowa. */
     private fun ViewModelTestContext.createViewModel(
         cafeRemote: CafeRemoteDataSource = SeedCafeRemoteDataSource(),
         selectedCafeId: String? = "krakow-rynek",

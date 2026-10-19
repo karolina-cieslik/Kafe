@@ -17,11 +17,11 @@ import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSour
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuViewModel
-import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
-import kotlin.time.Clock
 import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
+import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
+import kotlin.time.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO

@@ -149,6 +149,30 @@ class AppStartUiTest {
     }
 
     @Test
+    fun afterProcessDeathWithStartStillLoadingBrandBackdropIsShownInsteadOfIntro() {
+        cafes.selectedId.value = "krakow"
+        var appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        val restorationTester = StateRestorationTester(composeRule)
+        composeRule.mainClock.autoAdvance = false
+        restorationTester.setContent { App(appStartViewModel = appStartViewModel) }
+        finishIntroAndCrossfade()
+
+        // given: nowy proces – zapisany stan wraca, a nowy AppStartViewModel czeka na odczyt wyboru
+        cafes.blockSelected()
+        appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        restorationTester.emulateSavedInstanceStateRestore()
+
+        composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()
+        composeRule.onNodeWithTag(AppTestTags.BRAND_BACKDROP).assertIsDisplayed()
+
+        cafes.unblockSelected()
+        finishIntroAndCrossfade()
+
+        composeRule.onNodeWithTag(AppTestTags.BRAND_BACKDROP).assertDoesNotExist()
+        composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
+    }
+
+    @Test
     fun introStaysUntilAnimationEndsEvenWhenStartIsReady() {
         cafes.selectedId.value = "krakow"
         setApp()

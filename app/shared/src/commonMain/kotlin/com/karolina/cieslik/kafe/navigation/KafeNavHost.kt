@@ -12,8 +12,15 @@ import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
 
-// KAFE-41: Graf nawigacji. NavController i ekran startowy są parametrami, żeby testy mogły podać własny
-// kontroler (TestNavHostController), a KAFE-31 – start na CafePicker przy pierwszym uruchomieniu.
+/**
+ * Graf nawigacji aplikacji.
+ *
+ * Przejścia z menu używają launchSingleTop, więc szybkie podwójne kliknięcie nie otwiera ekranu dwa razy.
+ * Powrót zdejmuje ekran ze stosu, a menu zachowuje swój stan.
+ *
+ * @param navController kontroler nawigacji; parametr, żeby testy mogły podać TestNavHostController.
+ * @param startDestination ekran startowy; parametr, żeby pierwsze uruchomienie mogło zacząć od wyboru lokalu.
+ */
 @Composable
 fun KafeNavHost(
     modifier: Modifier = Modifier,

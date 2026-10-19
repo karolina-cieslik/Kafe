@@ -5,7 +5,6 @@ import com.karolina.cieslik.kafe.feature.menu.domain.CafeMenu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuItem
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuSection
 
-// KAFE-6: Mapowanie domena -> UI oraz filtrowanie wyszukiwarką.
 internal fun MenuSection.toCategoryUi() = CategoryUi(
     id = category.id,
     name = category.name,
@@ -33,11 +32,13 @@ internal fun CafeMenu.filterByProductName(query: String): CafeMenu {
     )
 }
 
+/** Komunikat błędu menu: osobny dla braku sieci i timeoutu, ogólny dla pozostałych błędów. */
 internal fun DataError.toMenuErrorMessage(): String = when (this) {
     DataError.Remote.NO_INTERNET, DataError.Remote.REQUEST_TIMEOUT -> MENU_ERROR_NO_CONNECTION
     else -> MENU_ERROR_GENERIC
 }
 
-// AC 7 KAFE-6. Docelowo do zasobów stringów (composeResources), gdy dojdzie lokalizacja.
+/** Komunikat przy braku połączenia. Docelowo w zasobach stringów (composeResources), gdy dojdzie lokalizacja. */
 internal const val MENU_ERROR_NO_CONNECTION = "Nie udało się pobrać menu. Sprawdź połączenie."
+/** Komunikat przy pozostałych błędach pobierania menu. */
 internal const val MENU_ERROR_GENERIC = "Nie udało się pobrać menu. Spróbuj ponownie później."

@@ -37,7 +37,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 
-// KAFE-6: Testy repozytorium menu offline-first (lokalne źródło zastąpione fake'iem w pamięci).
+/** Repozytorium menu offline-first; lokalne źródło zastąpione fake'iem w pamięci. */
 class OfflineFirstMenuRepositoryTest {
 
     private class FakeRemote(
@@ -152,7 +152,7 @@ class OfflineFirstMenuRepositoryTest {
         assertNull(product.imageUrl)
     }
 
-    // KAFE-10: odporność mapowania modyfikatorów na błędne dane.
+    /** Odporność mapowania modyfikatorów na błędne dane. */
     @Test
     fun modifierGroupWithUnknownTypeOrWithoutValidOptionsIsDropped() {
         val options = listOf(ModifierOptionEntity("o", "g", "Opcja", 100, 1))
@@ -184,7 +184,7 @@ class OfflineFirstMenuRepositoryTest {
         assertEquals(1, quantity.maxQuantity)
     }
 
-    // KAFE-9 / KAFE-10: spójność seeda (grupy i domyślne rozmiary istnieją).
+    /** Spójność seeda: grupy i domyślne rozmiary istnieją. */
     @Test
     fun seedProductsReferenceExistingModifierGroupsAndDefaultSizes() {
         val groupIds = SeedMenu.menu.modifierGroups.map { it.id }.toSet()

@@ -23,7 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-// KAFE-6: Testy repozytorium lokali offline-first i mapowania godzin otwarcia.
+/** Repozytorium lokali offline-first i mapowanie godzin otwarcia. */
 class OfflineFirstCafeRepositoryTest {
 
     private class FakeRemote(
@@ -64,7 +64,7 @@ class OfflineFirstCafeRepositoryTest {
 
     private fun cafe(id: String) = Cafe(id, "Zapamiętana $id", "ul. Testowa 1", 0.0, 0.0, emptyList())
 
-    // KAFE-31: bez domyślnego lokalu – pierwsze uruchomienie startuje od wyboru.
+    /** Bez domyślnego lokalu – pierwsze uruchomienie startuje od wyboru. */
     @Test
     fun withoutStoredChoiceNoCafeIsSelected() = runTest {
         val repository = repository()

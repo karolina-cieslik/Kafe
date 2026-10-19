@@ -8,7 +8,7 @@ import com.karolina.cieslik.kafe.feature.menu.domain.Product
 import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 
-// KAFE-9 / KAFE-10: Wspólne dane testowe – latte z mlekiem (wymagane), shotami (0–4) i syropem (opcjonalny).
+/** Wspólne dane testowe – latte z mlekiem (wymagane), shotami (0–4) i syropem (opcjonalny). */
 internal object ProductTestData {
 
     val milk = ModifierGroup(

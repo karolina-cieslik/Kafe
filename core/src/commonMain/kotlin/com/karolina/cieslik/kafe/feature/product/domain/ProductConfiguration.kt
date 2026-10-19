@@ -5,23 +5,36 @@ import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroup
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroupType
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 
-// KAFE-9 / KAFE-10 / KAFE-11: Wybór klienta (rozmiar, modyfikatory, liczba sztuk) i reguły jego zmiany.
-// Niedozwolone zmiany (niedostępna opcja, przekroczony limit) są ignorowane – zwracana jest ta sama konfiguracja.
+/**
+ * Wybór klienta (rozmiar, modyfikatory, liczba sztuk) i reguły jego zmiany. Konfiguracja nie jest zapamiętywana
+ * między wejściami na ekran.
+ *
+ * Niedozwolone zmiany (niedostępna opcja, przekroczony limit) są ignorowane – zwracana jest ta sama konfiguracja.
+ *
+ * @property size wybrany rozmiar.
+ * @property selections groupId -> (optionId -> ilość > 0). SINGLE ma co najwyżej jeden wpis z ilością 1.
+ * @property quantity liczba sztuk, od [MIN_QUANTITY] do [MAX_QUANTITY].
+ */
 data class ProductConfiguration(
     val size: SizeCode,
-    /** groupId -> (optionId -> ilość > 0). SINGLE ma co najwyżej jeden wpis z ilością 1. */
     val selections: Map<String, Map<String, Int>>,
     val quantity: Int,
 ) {
 
+    /** Ilość opcji [optionId] w grupie [groupId]; 0, gdy nie jest wybrana. */
     fun quantityOf(groupId: String, optionId: String): Int = selections[groupId]?.get(optionId) ?: 0
 
+    /** Suma ilości wszystkich opcji w grupie [groupId]. */
     fun totalIn(groupId: String): Int = selections[groupId]?.values?.sum() ?: 0
 
+    /** Zmienia rozmiar na [code]; niedostępny w lokalu albo nieistniejący rozmiar jest ignorowany. */
     fun selectSize(code: SizeCode, details: ProductDetails): ProductConfiguration =
         if (details.isSizeAvailable(code)) copy(size = code) else this
 
-    /** SINGLE: wybór opcji; w grupie opcjonalnej ponowny wybór zaznaczonej opcji ją odznacza. */
+    /**
+     * SINGLE: wybór opcji – zastępuje poprzednią opcję w grupie. W grupie opcjonalnej ponowny wybór zaznaczonej
+     * opcji ją odznacza; w wymaganej nic nie zmienia. Niedostępnej opcji nie da się wybrać.
+     */
     fun selectOption(groupId: String, optionId: String, details: ProductDetails): ProductConfiguration {
         val group = details.group(groupId)?.takeIf { it.type == ModifierGroupType.SINGLE } ?: return this
         if (group.options.none { it.id == optionId }) return this
@@ -34,7 +47,10 @@ data class ProductConfiguration(
         }
     }
 
-    /** QUANTITY: zmiana ilości o [delta]; suma w grupie w zakresie 0..maxQuantity, niedostępną opcję można tylko zmniejszać. */
+    /**
+     * QUANTITY: zmiana ilości opcji o [delta]. Suma w grupie zostaje w zakresie 0..maxQuantity (np. shoty 0–4),
+     * a przekroczenie jest przycinane do limitu. Niedostępną opcję można tylko zmniejszać.
+     */
     fun changeOptionQuantity(groupId: String, optionId: String, delta: Int, details: ProductDetails): ProductConfiguration {
         val group = details.group(groupId)?.takeIf { it.type == ModifierGroupType.QUANTITY } ?: return this
         if (delta == 0 || group.options.none { it.id == optionId }) return this
@@ -47,10 +63,15 @@ data class ProductConfiguration(
         return withGroup(groupId, updated.filterValues { it > 0 })
     }
 
+    /** Zmienia liczbę sztuk o [delta], przycinając do zakresu [MIN_QUANTITY]..[MAX_QUANTITY] (1–20). */
     fun changeQuantity(delta: Int): ProductConfiguration =
         copy(quantity = (quantity + delta).coerceIn(MIN_QUANTITY, MAX_QUANTITY))
 
-    /** Pierwszy powód, dla którego nie można dodać do koszyka; null = konfiguracja poprawna. */
+    /**
+     * Pierwszy powód, dla którego nie można dodać do koszyka; null = konfiguracja poprawna.
+     * Kolejność sprawdzania: produkt, rozmiar, potem grupy w kolejności wyświetlania (niedostępna opcja przed
+     * brakiem wymaganej).
+     */
     fun validate(details: ProductDetails): ConfigurationIssue? {
         if (!details.isAvailable) return ConfigurationIssue.ProductUnavailable
         if (!details.isSizeAvailable(size)) return ConfigurationIssue.SizeUnavailable
@@ -66,10 +87,12 @@ data class ProductConfiguration(
     }
 
     /**
-     * KAFE-10 (przypadek brzegowy): dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają,
-     * niedostępne są odznaczane (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować),
-     * limit QUANTITY jest przycinany, a wymagana grupa bez wyboru dostaje opcję startową. Rozmiar spoza produktu
-     * wraca do startowego; niedostępny rozmiar zostaje (walidacja blokuje dodanie, jak w KAFE-9 AC6).
+     * Dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają, niedostępne są odznaczane
+     * (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować), limit QUANTITY jest
+     * przycinany (opcje w kolejności grupy). Wymagana grupa SINGLE bez wyboru dostaje opcję startową, a wymagana
+     * grupa QUANTITY zostaje pusta i blokuje dodanie ([validate]). Grupy, których produkt już nie ma, znikają.
+     * Rozmiar spoza produktu wraca do startowego; niedostępny rozmiar zostaje, a dodanie blokuje [validate].
+     * Liczba sztuk się nie zmienia.
      */
     fun normalizedFor(details: ProductDetails): Normalized {
         val start by lazy { initial(details) }
@@ -97,8 +120,15 @@ data class ProductConfiguration(
         return Normalized(configuration, deselected)
     }
 
+    /**
+     * Wynik [normalizedFor].
+     *
+     * @property configuration konfiguracja dopasowana do menu.
+     * @property deselectedOptions nazwy opcji odznaczonych, bo stały się niedostępne; pusta lista = bez zmian.
+     */
     data class Normalized(val configuration: ProductConfiguration, val deselectedOptions: List<String>)
 
+    /** Cena wszystkich sztuk z dopłatami według [PriceCalculator]; liczy tylko opcje istniejące w grupach produktu. */
     fun totalPrice(details: ProductDetails, calculator: PriceCalculator): Money {
         val sizePrice = (details.product.sizes.firstOrNull { it.code == size } ?: details.product.sizes.first()).price
         val options = details.modifierGroups.flatMap { group ->
@@ -111,14 +141,22 @@ data class ProductConfiguration(
 
     private fun withGroup(groupId: String, options: Map<String, Int>) = copy(selections = selections + (groupId to options))
 
+    /** Limity i konfiguracja startowa. */
     companion object {
+        /** Najmniejsza liczba sztuk w pozycji. */
         const val MIN_QUANTITY = 1
+
+        /** Największa liczba sztuk w jednej pozycji – limit 1–20 sztuk na pozycję. */
         const val MAX_QUANTITY = 20
 
         /**
-         * Konfiguracja startowa (KAFE-9 AC3, KAFE-10): domyślny rozmiar, jeśli dostępny, w przeciwnym razie pierwszy
-         * dostępny (S → L); gdy żaden – domyślny / pierwszy. Grupy: opcja domyślna, jeśli dostępna; wymagana grupa
-         * bez dostępnej opcji domyślnej – pierwsza dostępna; QUANTITY – zero.
+         * Konfiguracja startowa, 1 sztuka.
+         *
+         * Rozmiar: domyślny rozmiar produktu, jeśli jest dostępny w lokalu; w przeciwnym razie pierwszy dostępny
+         * w kolejności S → M → L (tę kolejność rozmiarów zapewnia mapper danych); gdy żaden nie jest dostępny – domyślny, a bez domyślnego pierwszy z listy
+         * (dodanie i tak zablokuje [validate]).
+         * Grupy SINGLE: opcja domyślna, jeśli jest dostępna; grupa wymagana bez dostępnej opcji domyślnej –
+         * pierwsza dostępna; grupa opcjonalna – nic. Grupy QUANTITY startują od zera.
          */
         fun initial(details: ProductDetails): ProductConfiguration {
             val sizes = details.product.sizes
@@ -141,10 +179,18 @@ data class ProductConfiguration(
     }
 }
 
+/** Powód, dla którego konfiguracji nie można dodać do koszyka; UI zamienia go na komunikat. */
 sealed interface ConfigurationIssue {
+    /** Produkt jest niedostępny w lokalu. */
     data object ProductUnavailable : ConfigurationIssue
+
+    /** Wybrany rozmiar jest niedostępny w lokalu. */
     data object SizeUnavailable : ConfigurationIssue
+
+    /** W wymaganej grupie [group] nic nie wybrano. */
     data class MissingRequired(val group: ModifierGroup) : ConfigurationIssue
+
+    /** W grupie [group] wybrano opcję [optionName], która jest niedostępna w lokalu. */
     data class OptionUnavailable(val group: ModifierGroup, val optionName: String) : ConfigurationIssue
 }
 

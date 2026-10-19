@@ -16,8 +16,15 @@ import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-// KAFE-9: Podpina ProductDetailViewModel do bezstanowego ProductDetailScreen.
-// AddedToCart → snackbar „Dodano do koszyka: …”, NavigateBack → callback nawigacji.
+/**
+ * Wejście do ekranu szczegółów produktu z grafu nawigacji – podpina [ProductDetailViewModel] do bezstanowego
+ * [ProductDetailScreen] i obsługuje jednorazowe [ProductDetailEvent]: [ProductDetailEvent.AddedToCart] pokazuje
+ * snackbar „Dodano do koszyka: …”, a [ProductDetailEvent.NavigateBack] wywołuje [onNavigateBack].
+ *
+ * @param productId id produktu z trasy; trafia do ViewModelu jako parametr Koina.
+ * @param onNavigateBack wywoływane po strzałce wstecz.
+ * @param viewModel domyślnie z Koina dla [productId]; parametr ułatwia podmianę w testach.
+ */
 @Composable
 fun ProductDetailRoute(
     productId: String,
@@ -30,6 +37,8 @@ fun ProductDetailRoute(
     val snackbarScope = rememberCoroutineScope()
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
 
+    // Zbieranie eventów startuje raz na instancję ViewModelu – zmiana lambdy nawigacji go nie restartuje,
+    // bo wywołujemy ją przez rememberUpdatedState (zawsze najnowszą).
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {

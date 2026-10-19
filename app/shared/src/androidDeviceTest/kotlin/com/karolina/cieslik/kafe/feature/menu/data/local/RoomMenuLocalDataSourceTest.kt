@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-// KAFE-6: Lokalne źródło menu na prawdziwym SQLite (baza w pamięci).
+/** Lokalne źródło menu na prawdziwym SQLite (baza w pamięci). */
 @RunWith(AndroidJUnit4::class)
 class RoomMenuLocalDataSourceTest {
 
@@ -94,7 +94,7 @@ class RoomMenuLocalDataSourceTest {
         assertEquals(setOf("latte"), assertNotNull(dataSource.observeMenu("a").first()).unavailableProductIds)
     }
 
-    // KAFE-9 / KAFE-10: modyfikatory, domyślny rozmiar i dostępność rozmiarów oraz opcji (schemat v3).
+    /** Modyfikatory, domyślny rozmiar i dostępność rozmiarów oraz opcji (schemat v3). */
     @Test
     fun modifiersDefaultSizeAndSizeAndOptionAvailabilityAreReadBack() = runTest {
         val withModifiers = menu.copy(

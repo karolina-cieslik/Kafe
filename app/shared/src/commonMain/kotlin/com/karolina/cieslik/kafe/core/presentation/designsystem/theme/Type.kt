@@ -6,8 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// KAFE-25: Font systemowy (na Androidzie Roboto, na iOS San Francisco) – decyzja produktowa zamiast Sory.
-// Skala, wagi i rozmiary bez zmian względem poprzedniej wersji.
+/** Styl tekstu na foncie systemowym; rozmiary w sp, [letterSpacing] w sp. */
 private fun style(weight: FontWeight, size: Int, lineHeight: Int, letterSpacing: Double = 0.0) = TextStyle(
     fontFamily = FontFamily.Default,
     fontWeight = weight,
@@ -16,6 +15,10 @@ private fun style(weight: FontWeight, size: Int, lineHeight: Int, letterSpacing:
     letterSpacing = letterSpacing.sp,
 )
 
+/**
+ * Typografia Kafe na foncie systemowym (na Androidzie Roboto, na iOS San Francisco) – decyzja
+ * produktowa zamiast Sory. Skala, wagi i rozmiary bez zmian względem poprzedniej wersji.
+ */
 internal val KafeTypography = Typography(
     displayLarge = style(FontWeight.SemiBold, 40, 48),
     displayMedium = style(FontWeight.SemiBold, 34, 42),

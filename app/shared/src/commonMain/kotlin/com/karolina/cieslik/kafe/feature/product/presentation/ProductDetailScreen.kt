@@ -56,19 +56,46 @@ import kafe.app.shared.generated.resources.product_detail_title
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-// KAFE-9: Stabilne tagi dla testów UI.
+/** Stabilne tagi ekranu szczegółów produktu dla testów UI (Robolectric i instrumentacyjnych). */
 object ProductDetailTestTags {
+    /** Wskaźnik w stanie ładowania. */
     const val LOADING = "productDetailLoading"
+
+    /** Przewijana treść w stanie treści. */
     const val CONTENT = "productDetailContent"
+
+    /** Przycisk „Dodaj do koszyka” w dolnym pasku. */
     const val ADD_TO_CART = "productDetailAddToCart"
+
+    /** Baner z informacją (np. o niedostępności produktu). */
     const val INFO = "productDetailInfo"
+
+    /** Opcja rozmiaru o danym kodzie, np. „M”. */
     fun size(code: String) = "productDetailSize_$code"
+
+    /** Wiersz opcji jednokrotnego wyboru w danej grupie modyfikatorów. */
     fun option(groupId: String, optionId: String) = "productDetailOption_${groupId}_$optionId"
 }
 
-// KAFE-9: Szczegóły produktu – bezstanowy ekran (state + onAction), inspirowany ekranem „Detail” z makiety:
-// duże zdjęcie, nazwa, zwijany opis, rozmiary S/M/L, modyfikatory, liczba sztuk i przypięty pasek z ceną.
-// Snackbar „Dodano do koszyka” pokazuje route przez [snackbarHostState].
+/**
+ * Szczegóły produktu – bezstanowy ekran: cały stan przychodzi w [state], interakcje wychodzą jako
+ * [ProductDetailAction] przez [onAction]. Układ inspirowany ekranem „Detail” z makiety: duże zdjęcie, nazwa,
+ * zwijany opis, rozmiary, modyfikatory, liczba sztuk i przypięty dolny pasek z ceną łączną.
+ *
+ * Stany:
+ * - [ProductDetailUiState.Loading] – wskaźnik ładowania pod górnym paskiem;
+ * - [ProductDetailUiState.Content] – formularz produktu; sekcja rozmiaru tylko przy więcej niż jednym rozmiarze;
+ *   produkt niedostępny: zdjęcie w skali szarości, etykieta „Chwilowo niedostępny” i wszystkie opcje
+ *   wyłączone; aktywność „Dodaj do koszyka” zależy od `canAddToCart` ze stanu;
+ * - [ProductDetailUiState.Error] – pełnoekranowy błąd z „Spróbuj ponownie”.
+ *
+ * Akcje: [ProductDetailAction.SizeSelected], [ProductDetailAction.OptionSelected],
+ * [ProductDetailAction.OptionQuantityChanged] i [ProductDetailAction.QuantityChanged] (zmiany formularza),
+ * [ProductDetailAction.AddToCartClicked] (dolny pasek), [ProductDetailAction.BackClicked] (strzałka wstecz),
+ * [ProductDetailAction.Retry] (stan błędu).
+ *
+ * @param snackbarHostState host snackbara; route przekazuje własny, żeby pokazać „Dodano do koszyka: …”.
+ */
 @Composable
 fun ProductDetailScreen(
     state: ProductDetailUiState,
@@ -76,6 +103,7 @@ fun ProductDetailScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    // Pasek statusu leży na tle ekranu: na jasnym motywie ciemne ikony, na ciemnym jasne.
     StatusBarAppearance(darkIcons = KafeTheme.colors.background.luminance() > 0.5f)
     Scaffold(
         topBar = {
@@ -201,6 +229,10 @@ private fun ProductDetailContent(
     }
 }
 
+/**
+ * Grupa modyfikatorów w komponencie DS zależnym od typu: jednokrotny wybór albo liczniki.
+ * Przy niedostępnym produkcie wszystkie opcje są wyłączone.
+ */
 @Composable
 private fun ModifierGroup(
     group: ModifierGroupUi,
@@ -246,6 +278,10 @@ private fun ModifierGroup(
     }
 }
 
+/**
+ * Wiersz liczby sztuk – nagłówek i duży stepper. Limity (1–20 sztuk) liczy ViewModel; ekran tylko pokazuje
+ * [canIncrease] / [canDecrease] ze stanu, żeby reguła była w jednym miejscu.
+ */
 @Composable
 private fun QuantityRow(
     quantity: Int,
@@ -271,6 +307,7 @@ private fun QuantityRow(
     }
 }
 
+/** Baner informacyjny w kolorze akcentu, np. „Ten produkt jest chwilowo niedostępny w …”. */
 @Composable
 private fun InfoBanner(text: String) {
     Row(
@@ -297,6 +334,7 @@ private fun InfoBanner(text: String) {
     }
 }
 
+/** Separator sekcji formularza z odstępem nad i pod nim. */
 @Composable
 private fun SectionDivider() {
     HorizontalDivider(

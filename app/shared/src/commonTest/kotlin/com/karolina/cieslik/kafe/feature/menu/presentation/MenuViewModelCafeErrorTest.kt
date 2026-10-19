@@ -28,7 +28,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-// KAFE-6: Regresja zgłoszona przez testera – brak lokali bez sieci kończył się wiecznym Loading (AC 7).
+/** Regresja zgłoszona przez testera – brak lokali bez sieci kończył się wiecznym Loading zamiast błędu z Retry. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MenuViewModelCafeErrorTest {
 
@@ -96,7 +96,7 @@ class MenuViewModelCafeErrorTest {
         assertEquals(2, cafes.refreshCount)
     }
 
-    // KAFE-31: powrót na ekran (ponowna subskrypcja po > 5 s) nie odświeża ponownie – tylko Refresh / Retry.
+    /** Powrót na ekran (ponowna subskrypcja po > 5 s) nie odświeża ponownie – tylko Refresh / Retry. */
     @Test
     fun resubscribingDoesNotRefreshAgain() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)

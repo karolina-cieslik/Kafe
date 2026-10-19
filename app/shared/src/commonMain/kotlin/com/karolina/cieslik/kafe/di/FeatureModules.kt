@@ -30,20 +30,24 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-// KAFE-6: Moduły DI feature'ów. Lokalnie Room (DAO z databaseModule), zdalnie na razie seed – Firebase podmieni
-// tylko *RemoteDataSource, bez zmian w domenie i prezentacji.
+/** Kwalifikator dispatchera do pracy IO (zapytania i mapowanie danych w ViewModelach). */
 val IoDispatcher = named("IoDispatcher")
 
+/** Dispatchery wstrzykiwane przez DI, żeby testy mogły je podmienić. */
 val dispatchersModule = module {
     single<CoroutineDispatcher>(IoDispatcher) { Dispatchers.IO }
 }
 
+/**
+ * Lokale sieci, zapamiętany wybór lokalu (DataStore), wybór lokalu i ekran startowy. Lokalnie Room
+ * (DAO z databaseModule), zdalnie na razie seed – backend podmieni tylko *RemoteDataSource, bez zmian
+ * w domenie i prezentacji.
+ */
 val cafeModule = module {
     single<CafeRemoteDataSource> { SeedCafeRemoteDataSource() }
     single<CafeLocalDataSource> { RoomCafeLocalDataSource(dao = get()) }
     single<SelectedCafeStore> { DataStoreSelectedCafeStore(dataStore = get()) }
     single<CafeRepository> { OfflineFirstCafeRepository(local = get(), remote = get(), selectedCafeStore = get()) }
-    // KAFE-29: godziny otwarcia lokali są w czasie polskim, niezależnie od strefy telefonu.
     viewModel {
         CafePickerViewModel(
             cafeRepository = get(),
@@ -55,8 +59,13 @@ val cafeModule = module {
     viewModel { AppStartViewModel(cafeRepository = get(), dispatcher = get(IoDispatcher)) }
 }
 
+/**
+ * Strefa czasowa godzin otwarcia lokali. Godziny są w czasie polskim, więc „otwarte teraz” liczymy w tej
+ * strefie niezależnie od strefy telefonu.
+ */
 val CafeTimeZone: TimeZone = TimeZone.of("Europe/Warsaw")
 
+/** Menu: źródła danych, repozytorium, przypadek użycia i MenuViewModel; źródła jak w [cafeModule]. */
 val menuModule = module {
     single<MenuRemoteDataSource> { SeedMenuRemoteDataSource() }
     single<MenuLocalDataSource> { RoomMenuLocalDataSource(dao = get()) }
@@ -72,7 +81,10 @@ val menuModule = module {
     }
 }
 
-// KAFE-9: productId przychodzi z trasy – w UI: koinViewModel { parametersOf(productId) }.
+/**
+ * Szczegóły produktu: przypadek użycia, kalkulator ceny i ProductDetailViewModel. productId przychodzi z trasy,
+ * więc w UI: `koinViewModel { parametersOf(productId) }`.
+ */
 val productModule = module {
     factory { GetProductDetails(menuRepository = get()) }
     factory { PriceCalculator() }

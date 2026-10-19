@@ -24,8 +24,12 @@ interface CafeRepository {
      */
     fun observeSelectedCafe(): Flow<Cafe?>
 
-    /** Zapisuje wybór lokalu [cafeId] na stałe (przetrwa restart aplikacji); [observeSelectedCafe] go wyemituje. */
-    suspend fun selectCafe(cafeId: String)
+    /**
+     * Zapisuje wybór lokalu [cafeId] na stałe (przetrwa restart aplikacji); [observeSelectedCafe] go wyemituje.
+     *
+     * @return sukces albo [DataError.Local], gdy zapis się nie udał – poprzedni wybór zostaje bez zmian.
+     */
+    suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local>
 
     /**
      * Pobiera lokale z serwera i zapisuje je lokalnie.

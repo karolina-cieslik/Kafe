@@ -168,8 +168,9 @@ private class InMemorySelectedCafeStore(initial: String?) : SelectedCafeStore {
 
     override fun observeSelectedCafeId(): Flow<String?> = selected
 
-    override suspend fun saveSelectedCafeId(cafeId: String) {
+    override suspend fun saveSelectedCafeId(cafeId: String): EmptyResult<DataError.Local> {
         selected.value = cafeId
+        return Result.Success(Unit)
     }
 }
 

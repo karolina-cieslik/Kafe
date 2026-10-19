@@ -46,8 +46,9 @@ class FeatureModulesTest {
             object : SelectedCafeStore {
                 private val id = MutableStateFlow<String?>(null)
                 override fun observeSelectedCafeId(): Flow<String?> = id
-                override suspend fun saveSelectedCafeId(cafeId: String) {
+                override suspend fun saveSelectedCafeId(cafeId: String): EmptyResult<DataError.Local> {
                     id.value = cafeId
+                    return Result.Success(Unit)
                 }
             }
         }

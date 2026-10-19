@@ -28,7 +28,7 @@ class AppStartViewModelTest {
         var refreshCount = 0
         override fun observeCafes(): Flow<List<Cafe>> = flowOf(listOfNotNull(selected))
         override fun observeSelectedCafe(): Flow<Cafe?> = flowOf(selected)
-        override suspend fun selectCafe(cafeId: String) = Unit
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> = Result.Success(Unit)
         override suspend fun refresh(): EmptyResult<DataError> {
             refreshCount++
             return Result.Success(Unit)

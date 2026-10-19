@@ -66,6 +66,12 @@ sealed interface CafePickerEvent {
     /** Wybór zapisany – nawigacja do menu (przy pierwszym uruchomieniu z wyczyszczeniem stosu). */
     data object CafeChosen : CafePickerEvent
 
+    /**
+     * Nie udało się zapisać wyboru (błąd pliku preferencji) – zostajemy na liście, poprzedni wybór bez zmian.
+     * Ekran pokazuje krótki komunikat (np. snackbar) i pozwala wybrać lokal ponownie.
+     */
+    data object SelectionFailed : CafePickerEvent
+
     /** Powrót do poprzedniego ekranu bez zmiany wyboru. */
     data object NavigateBack : CafePickerEvent
 }

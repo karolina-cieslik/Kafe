@@ -45,10 +45,16 @@ class CafeOpeningTest {
 
     @Test
     fun polishOrderPutsDiacriticsAfterBaseLetter() {
-        val names = listOf("Kafe Żoliborz", "kafe Rynek", "Kafe Łódź", "Kafe Lublin", "Kafe Śródmieście", "Kafe Sopot", "Kafe Zakopane")
+        val names = listOf(
+            "Kafe Żoliborz", "kafe Rynek", "Kafe Łódź", "Kafe Quattro", "Kafe Lublin", "Kafe Śródmieście", "Kafe Abc",
+            "Kafe Sopot", "Kafe Zakopane", "Kafe Praga",
+        )
 
         assertEquals(
-            listOf("Kafe Lublin", "Kafe Łódź", "kafe Rynek", "Kafe Sopot", "Kafe Śródmieście", "Kafe Zakopane", "Kafe Żoliborz"),
+            listOf(
+                "Kafe Abc", "Kafe Lublin", "Kafe Łódź", "Kafe Praga", "Kafe Quattro", "kafe Rynek", "Kafe Sopot",
+                "Kafe Śródmieście", "Kafe Zakopane", "Kafe Żoliborz",
+            ),
             names.sortedWith(PolishAlphabeticalOrder),
         )
     }

@@ -225,6 +225,19 @@ class KafeNavHostTest {
     }
 
     @Test
+    fun failedCafeSelectionShowsSnackbarAndStaysOnCafePicker() {
+        setNavHost()
+        openCafePickerFromMenu()
+        cafes.selectError = DataError.Local.DISK_FULL
+
+        click(CafePickerTestTags.cafe("gdansk"))
+
+        assertCurrentRoute<KafeRoute.CafePicker>()
+        composeRule.onNodeWithText("Nie udało się zapisać wyboru lokalu. Spróbuj ponownie.").assertIsDisplayed()
+        assertEquals("krakow", cafes.selectedId.value)
+    }
+
+    @Test
     fun firstLaunchStartsOnCafePickerWithWelcomeAndNoBackArrow() {
         setNavHost(startDestination = KafeRoute.CafePicker, selectedCafeId = null)
 
@@ -254,14 +267,17 @@ class KafeNavHostTest {
 private class NavFakeCafeRepository(cafes: List<Cafe>) : CafeRepository {
     private val cafes = MutableStateFlow(cafes)
     val selectedId = MutableStateFlow<String?>(null)
+    var selectError: DataError.Local? = null
 
     override fun observeCafes(): Flow<List<Cafe>> = cafes
 
     override fun observeSelectedCafe(): Flow<Cafe?> =
         combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
+        selectError?.let { return Result.Failure(it) }
         selectedId.value = cafeId
+        return Result.Success(Unit)
     }
 
     override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)

@@ -123,8 +123,9 @@ private class StaticCafeRepository(cafes: List<Cafe>) : CafeRepository {
 
     override fun observeSelectedCafe(): Flow<Cafe?> = combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
         selectedId.value = cafeId
+        return Result.Success(Unit)
     }
 
     override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)

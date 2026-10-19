@@ -54,7 +54,7 @@ class CafePickerViewModel(
     private var isFirstLaunch: Boolean? = null
 
     private val eventChannel = Channel<CafePickerEvent>(Channel.BUFFERED)
-    /** Jednorazowe zdarzenia (wybór zapisany, powrót); każde trafia do jednego kolektora. */
+    /** Jednorazowe zdarzenia (wybór zapisany albo nieudany, powrót); każde trafia do jednego kolektora. */
     val events: Flow<CafePickerEvent> = eventChannel.receiveAsFlow()
 
     /**
@@ -70,7 +70,8 @@ class CafePickerViewModel(
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CafePickerUiState.Loading)
 
     /**
-     * Obsługuje akcję użytkownika. Wybór lokalu zapisuje go i emituje [CafePickerEvent.CafeChosen]; drugi wybór
+     * Obsługuje akcję użytkownika. Wybór lokalu zapisuje go i emituje [CafePickerEvent.CafeChosen], a gdy zapis
+     * się nie uda – [CafePickerEvent.SelectionFailed] (ekran zostaje, można wybrać ponownie). Drugi wybór
      * w trakcie zapisu i nieznane id są ignorowane. Retry nie startuje drugiego odświeżania, gdy jedno trwa.
      */
     fun onAction(action: CafePickerAction) {
@@ -86,8 +87,11 @@ class CafePickerViewModel(
         val content = state.value as? CafePickerUiState.Content ?: return
         if (content.cafes.none { it.id == cafeId }) return
         selectJob = viewModelScope.launch {
-            cafeRepository.selectCafe(cafeId)
-            eventChannel.send(CafePickerEvent.CafeChosen)
+            val event = when (cafeRepository.selectCafe(cafeId)) {
+                is Result.Success -> CafePickerEvent.CafeChosen
+                is Result.Failure -> CafePickerEvent.SelectionFailed
+            }
+            eventChannel.send(event)
         }
     }
 

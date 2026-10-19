@@ -19,6 +19,7 @@ import org.koin.compose.viewmodel.koinViewModel
 // KAFE-31: ekran startowy (Menu albo CafePicker) z AppStartViewModel; do czasu intro (KAFE-42) pusta powierzchnia.
 @Composable
 fun App(appStartViewModel: AppStartViewModel = koinViewModel()) {
+    // Jeden ImageLoader Coila dla całej aplikacji; crossfade łagodzi pojawianie się zdjęć produktów.
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .crossfade(true)

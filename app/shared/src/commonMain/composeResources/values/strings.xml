@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- KAFE-25 / KAFE-6: Teksty UI (PL). -->
+<!-- Teksty UI (PL). -->
 <resources>
     <!-- Design system -->
     <string name="ds_product_unavailable">Chwilowo niedostępny</string>
@@ -10,7 +10,7 @@
     <string name="ds_loading">Ładowanie…</string>
     <string name="ds_error_title">Coś poszło nie tak</string>
 
-    <!-- Menu (KAFE-6) -->
+    <!-- Menu -->
     <string name="menu_location_label">Twoja kawiarnia</string>
     <string name="menu_change_cafe">Zmień kawiarnię</string>
     <string name="menu_search_placeholder">Szukaj kawy</string>
@@ -19,4 +19,21 @@
     <string name="menu_search_empty_title">Brak wyników</string>
     <string name="menu_search_empty_message">Nie znaleźliśmy niczego dla „%1$s”. Spróbuj innej nazwy.</string>
     <string name="menu_refreshing">Odświeżanie menu</string>
+
+    <!-- Design system -->
+    <string name="ds_increase">Zwiększ: %1$s</string>
+    <string name="ds_decrease">Zmniejsz: %1$s</string>
+    <string name="ds_quantity_value">%1$s: %2$d</string>
+    <string name="ds_required">Wymagane</string>
+    <string name="ds_optional">Opcjonalne</string>
+    <string name="ds_total_label">Razem</string>
+    <string name="ds_read_more">Czytaj więcej</string>
+    <string name="ds_read_less">Zwiń</string>
+
+    <!-- Szczegóły produktu -->
+    <string name="product_detail_title">Szczegóły</string>
+    <string name="product_detail_size">Rozmiar</string>
+    <string name="product_detail_quantity">Liczba sztuk</string>
+    <string name="product_detail_add_to_cart">Dodaj do koszyka</string>
+    <string name="product_detail_added_to_cart">Dodano do koszyka: %1$s</string>
 </resources>

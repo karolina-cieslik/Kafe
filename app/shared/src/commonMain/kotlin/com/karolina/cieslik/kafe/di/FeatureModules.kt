@@ -19,6 +19,9 @@ import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuViewModel
 import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
 import kotlin.time.Clock
+import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
+import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
+import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -27,14 +30,18 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-// KAFE-6: Moduły DI feature'ów. Lokalnie Room (DAO z databaseModule), zdalnie na razie seed – Firebase podmieni
-// tylko *RemoteDataSource, bez zmian w domenie i prezentacji.
+/** Kwalifikator dispatchera do pracy IO (zapytania i mapowanie danych w ViewModelach). */
 val IoDispatcher = named("IoDispatcher")
 
+/** Dispatchery wstrzykiwane przez DI, żeby testy mogły je podmienić. */
 val dispatchersModule = module {
     single<CoroutineDispatcher>(IoDispatcher) { Dispatchers.IO }
 }
 
+/**
+ * Lokale sieci. Lokalnie Room (DAO z databaseModule), zdalnie na razie seed – backend podmieni tylko
+ * *RemoteDataSource, bez zmian w domenie i prezentacji.
+ */
 val cafeModule = module {
     single<CafeRemoteDataSource> { SeedCafeRemoteDataSource() }
     single<CafeLocalDataSource> { RoomCafeLocalDataSource(dao = get()) }
@@ -54,6 +61,7 @@ val cafeModule = module {
 
 val CafeTimeZone: TimeZone = TimeZone.of("Europe/Warsaw")
 
+/** Menu: źródła danych, repozytorium, przypadek użycia i MenuViewModel; źródła jak w [cafeModule]. */
 val menuModule = module {
     single<MenuRemoteDataSource> { SeedMenuRemoteDataSource() }
     single<MenuLocalDataSource> { RoomMenuLocalDataSource(dao = get()) }
@@ -64,6 +72,25 @@ val menuModule = module {
             cafeRepository = get(),
             menuRepository = get(),
             getMenuForCafe = get(),
+            dispatcher = get(IoDispatcher),
+        )
+    }
+}
+
+/**
+ * Szczegóły produktu: przypadek użycia, kalkulator ceny i ProductDetailViewModel. productId przychodzi z trasy,
+ * więc w UI: `koinViewModel { parametersOf(productId) }`.
+ */
+val productModule = module {
+    factory { GetProductDetails(menuRepository = get()) }
+    factory { PriceCalculator() }
+    viewModel { (productId: String) ->
+        ProductDetailViewModel(
+            productId = productId,
+            cafeRepository = get(),
+            menuRepository = get(),
+            getProductDetails = get(),
+            priceCalculator = get(),
             dispatcher = get(IoDispatcher),
         )
     }

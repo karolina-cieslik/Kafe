@@ -34,6 +34,7 @@ class OfflineFirstCafeRepository(
         selectedCafeStore.saveSelectedCafeId(cafeId)
     }
 
+    /** Błąd sieci zwraca bez zapisu, więc zapamiętane lokale zostają bez zmian. */
     override suspend fun refresh(): EmptyResult<DataError> =
         when (val result = remote.fetchCafes()) {
             is Result.Success -> local.saveCafes(result.data, clock.now().toEpochMilliseconds())

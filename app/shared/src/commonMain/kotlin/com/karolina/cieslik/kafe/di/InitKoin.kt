@@ -6,7 +6,10 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
-// KAFE-2: Punkt startowy DI – wywoływany raz z Application (Android) lub z iOSApp (iOS).
+/**
+ * Punkt startowy DI – wywoływany raz z Application (Android) lub z iOSApp (iOS).
+ * [appDeclaration] dokłada konfigurację platformy (np. androidContext); drugie wywołanie rzuca wyjątek Koina.
+ */
 fun initKoin(
     networkConfig: NetworkConfig,
     appDeclaration: KoinAppDeclaration = {},
@@ -24,4 +27,5 @@ internal fun kafeModules(networkConfig: NetworkConfig) = listOf(
     dispatchersModule,
     cafeModule,
     menuModule,
+    productModule,
 )

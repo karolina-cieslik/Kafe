@@ -14,6 +14,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -22,7 +23,15 @@ import androidx.compose.ui.unit.dp
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-25: Opcja rozmiaru napoju. priceLabel to PEŁNA cena w danym rozmiarze (nie dopłata), np. „14,00 zł”.
+/**
+ * Opcja rozmiaru napoju dla [SizeSelector].
+ *
+ * @property id identyfikator rozmiaru zwracany w `onSelect`.
+ * @property label krótka nazwa, np. „M”.
+ * @property volumeLabel pojemność, np. „350 ml”; `null` = linia jest pomijana.
+ * @property priceLabel PEŁNA cena w tym rozmiarze (nie dopłata), np. „14,00 zł”.
+ * @property isAvailable `false` = opcja przygaszona i nieklikalna.
+ */
 @Immutable
 data class SizeOptionUi(
     val id: String,
@@ -32,13 +41,20 @@ data class SizeOptionUi(
     val isAvailable: Boolean = true,
 )
 
-// KAFE-25: Wybór rozmiaru S/M/L – grupa radiowa z pełną ceną pod każdą opcją.
+/**
+ * Wybór rozmiaru (np. S/M/L) – grupa radiowa z opcjami równej szerokości i pełną ceną pod każdą.
+ *
+ * @param options opcje w kolejności wyświetlania.
+ * @param selectedId id wybranej opcji; `null` = nic nie jest wybrane.
+ * @param onSelect wywoływane z id stukniętej dostępnej opcji (także już wybranej).
+ */
 @Composable
 fun SizeSelector(
     options: List<SizeOptionUi>,
     selectedId: String?,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
+    optionTestTag: ((optionId: String) -> String)? = null,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(KafeTheme.spacing.m),
@@ -51,7 +67,9 @@ fun SizeSelector(
                 option = option,
                 selected = option.id == selectedId,
                 onClick = { onSelect(option.id) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .then(if (optionTestTag != null) Modifier.testTag(optionTestTag(option.id)) else Modifier),
             )
         }
     }

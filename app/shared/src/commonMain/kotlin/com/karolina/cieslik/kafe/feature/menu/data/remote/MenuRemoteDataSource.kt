@@ -3,11 +3,15 @@ package com.karolina.cieslik.kafe.feature.menu.data.remote
 import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.Result
 
-// KAFE-6: Zdalne źródło menu. Na razie implementacja seed w pamięci; docelowo Firebase przez Ktor (REST).
+/** Zdalne źródło menu. Na razie implementacja seed w pamięci; docelowo Firebase przez Ktor (REST). */
 interface MenuRemoteDataSource {
 
+    /** Menu sieci z modyfikatorami; [DataError.Remote] przy błędzie sieci. */
     suspend fun fetchMenu(): Result<MenuDto, DataError.Remote>
 
-    /** Mapa productId -> dostępność w lokalu. Brak wpisu oznacza produkt dostępny. */
-    suspend fun fetchAvailability(cafeId: String): Result<Map<String, Boolean>, DataError.Remote>
+    /**
+     * Braki produktów, rozmiarów i opcji modyfikatorów w lokalu [cafeId]. Brak wpisu oznacza „dostępne”.
+     * [DataError.Remote.NOT_FOUND], gdy lokal nie istnieje, inne [DataError.Remote] przy błędzie sieci.
+     */
+    suspend fun fetchAvailability(cafeId: String): Result<AvailabilityDto, DataError.Remote>
 }

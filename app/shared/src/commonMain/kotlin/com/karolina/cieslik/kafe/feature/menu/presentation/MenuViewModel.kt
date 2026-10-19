@@ -47,12 +47,13 @@ class MenuViewModel(
     private val cafesRefresh = MutableStateFlow<RefreshStatus>(RefreshStatus.Idle)
     private val menuRefresh = MutableStateFlow<RefreshStatus>(RefreshStatus.Idle)
 
-    // Dostęp tylko z wątku Main (viewModelScope / onAction).
+    /** Lokal, którego menu jest obserwowane; dostęp tylko z wątku Main (viewModelScope / onAction). */
     private var currentCafeId: String? = null
     private var cafesRefreshJob: Job? = null
     private var menuRefreshJob: Job? = null
 
     private val eventChannel = Channel<MenuEvent>(Channel.BUFFERED)
+    /** Jednorazowe zdarzenia nawigacyjne; każde trafia do jednego kolektora, bufor trzyma je do czasu zebrania. */
     val events: Flow<MenuEvent> = eventChannel.receiveAsFlow()
 
     // KAFE-31: odświeżenie w tle tylko przy pierwszej obserwacji (zimny start ekranu) i pierwszym wejściu
@@ -64,7 +65,7 @@ class MenuViewModel(
         .onStart { if (cafesRefreshJob == null) startCafesRefresh() }
         .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
-    // Menu zmienia się tylko przy zmianie id lokalu; cafeId w wyniku pozwala odrzucić menu poprzedniego lokalu.
+    /** Menu zmienia się tylko przy zmianie id lokalu; cafeId w wyniku pozwala odrzucić menu poprzedniego lokalu. */
     private val menuOfSelectedCafe: Flow<MenuOfCafe?> = selectedCafe
         .map { it?.id }
         .distinctUntilChanged()
@@ -80,6 +81,11 @@ class MenuViewModel(
             }
         }
 
+    /**
+     * Stan ekranu. Zaczyna od [MenuUiState.Loading], aktualizuje się po każdej zmianie lokalu, menu, statusu
+     * odświeżania, kategorii i wyszukiwania. Obserwacja trwa jeszcze 5 s po zniknięciu ostatniego kolektora,
+     * żeby obrót ekranu nie restartował odświeżania.
+     */
     val state: StateFlow<MenuUiState> = combine(
         selectedCafe,
         menuOfSelectedCafe,
@@ -89,6 +95,10 @@ class MenuViewModel(
         ::buildState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MenuUiState.Loading)
 
+    /**
+     * Obsługuje akcję użytkownika. Retry i Refresh nie startują drugiego odświeżania, gdy jedno już trwa.
+     * Kliknięcia produktu i „Zmień lokal” emitują zdarzenie w [events].
+     */
     fun onAction(action: MenuAction) {
         when (action) {
             is MenuAction.CategorySelected -> selectedCategoryId.value = action.id

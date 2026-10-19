@@ -5,7 +5,30 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// KAFE-25: Skala odstępów (siatka 4dp) i stałe rozmiary komponentów.
+/**
+ * Skala odstępów (siatka 4dp, od [xxs] do [xxxl]) i stałe rozmiary komponentów,
+ * dostępne przez [KafeTheme.spacing].
+ *
+ * @property xxs 2dp.
+ * @property xs 4dp.
+ * @property s 8dp – odstęp między chipami.
+ * @property m 12dp – odstęp między kartami w siatce.
+ * @property l 16dp.
+ * @property xl 24dp.
+ * @property xxl 32dp.
+ * @property xxxl 48dp.
+ * @property screenHorizontal poziomy margines treści ekranu.
+ * @property minTouchTarget minimalny obszar dotyku (48dp, wymóg dostępności).
+ * @property buttonHeight wysokość głównych przycisków.
+ * @property fieldHeight wysokość pól tekstowych (np. wyszukiwarki).
+ * @property chipHeight wysokość chipów kategorii.
+ * @property iconSmall rozmiar małej ikony (np. w polu tekstowym).
+ * @property icon standardowy rozmiar ikony.
+ * @property iconLarge rozmiar ikony ilustrującej stan (pusty, błąd).
+ * @property addButton rozmiar widocznego przycisku „+” na karcie produktu (obszar dotyku jest większy).
+ * @property cardImageHeight wysokość zdjęcia na karcie produktu.
+ * @property heroImageHeight wysokość dużego zdjęcia na górze szczegółów produktu.
+ */
 @Immutable
 data class KafeSpacing(
     val xxs: Dp = 2.dp,
@@ -26,6 +49,8 @@ data class KafeSpacing(
     val iconLarge: Dp = 48.dp,
     val addButton: Dp = 32.dp,
     val cardImageHeight: Dp = 128.dp,
+    val heroImageHeight: Dp = 240.dp,
 )
 
+/** Odstępy bieżącego motywu; ustawia je [KafeTheme]. */
 internal val LocalKafeSpacing = staticCompositionLocalOf { KafeSpacing() }

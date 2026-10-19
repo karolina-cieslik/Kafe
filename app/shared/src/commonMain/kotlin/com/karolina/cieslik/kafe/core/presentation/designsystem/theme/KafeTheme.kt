@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.luminance
 
 /** Kolory rozszerzone bieżącego motywu; ustawia je [KafeTheme], domyślnie jasne. */
 internal val LocalKafeExtendedColors = staticCompositionLocalOf { KafeLightExtendedColors }
@@ -63,4 +64,8 @@ object KafeTheme {
     /** Odstępy i stałe rozmiary komponentów. */
     val spacing: KafeSpacing
         @Composable @ReadOnlyComposable get() = LocalKafeSpacing.current
+
+    /** Jasne tło ekranu (motyw jasny) – np. do wyboru koloru ikon pasków systemowych. */
+    val isLight: Boolean
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background.luminance() > 0.5f
 }

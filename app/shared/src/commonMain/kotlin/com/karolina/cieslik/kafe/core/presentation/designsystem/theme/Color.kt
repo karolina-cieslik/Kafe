@@ -119,6 +119,10 @@ data class KafeExtendedColors(
     val promo: Color,
     val onPromo: Color,
     val rating: Color,
+    /** Tło marki (splash, intro) – kawowe w obu motywach, jak ikona aplikacji. */
+    val brand: Color,
+    /** Treść (logo, napis) na tle [brand]. */
+    val onBrand: Color,
 )
 
 /** [KafeExtendedColors] jasnego motywu. */
@@ -131,6 +135,8 @@ internal val KafeLightExtendedColors = KafeExtendedColors(
     promo = KafePalette.Promo,
     onPromo = KafePalette.White,
     rating = KafePalette.Rating,
+    brand = KafePalette.Coffee,
+    onBrand = KafePalette.Cream,
 )
 
 /** [KafeExtendedColors] ciemnego motywu – nagłówek jaśniejszy od tła, żeby się od niego odcinał. */
@@ -143,4 +149,6 @@ internal val KafeDarkExtendedColors = KafeExtendedColors(
     promo = KafePalette.Promo,
     onPromo = KafePalette.White,
     rating = KafePalette.Rating,
+    brand = KafePalette.Coffee,
+    onBrand = KafePalette.Cream,
 )

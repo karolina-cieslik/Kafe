@@ -24,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -44,7 +43,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.components.Produ
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.QuantityOptionUi
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.SizeOptionUi
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.SizeSelector
-import com.karolina.cieslik.kafe.core.presentation.designsystem.system.StatusBarAppearance
+import com.karolina.cieslik.kafe.core.presentation.designsystem.system.SystemBarsAppearance
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import kafe.app.shared.generated.resources.Res
 import kafe.app.shared.generated.resources.ds_product_unavailable
@@ -103,8 +102,8 @@ fun ProductDetailScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    // Pasek statusu leży na tle ekranu: na jasnym motywie ciemne ikony, na ciemnym jasne.
-    StatusBarAppearance(darkIcons = KafeTheme.colors.background.luminance() > 0.5f)
+    // Paski systemowe leżą na tle ekranu: na jasnym motywie ciemne ikony, na ciemnym jasne.
+    SystemBarsAppearance(darkStatusBarIcons = KafeTheme.isLight, darkNavigationBarIcons = KafeTheme.isLight)
     Scaffold(
         topBar = {
             KafeTopBar(

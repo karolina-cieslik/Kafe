@@ -50,6 +50,8 @@ data class KafeSpacing(
     val addButton: Dp = 32.dp,
     val cardImageHeight: Dp = 128.dp,
     val heroImageHeight: Dp = 240.dp,
+    /** Pole ikony systemowego splasha bez tła (288dp) – intro rysuje logo w tym samym miejscu i rozmiarze. */
+    val brandLogo: Dp = 288.dp,
 )
 
 /** Odstępy bieżącego motywu; ustawia je [KafeTheme]. */

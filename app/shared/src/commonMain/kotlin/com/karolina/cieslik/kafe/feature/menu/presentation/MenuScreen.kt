@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -61,7 +60,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.components.Produ
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.ProductCardSkeleton
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.SearchField
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.SearchFieldDefaults
-import com.karolina.cieslik.kafe.core.presentation.designsystem.system.StatusBarAppearance
+import com.karolina.cieslik.kafe.core.presentation.designsystem.system.SystemBarsAppearance
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import kafe.app.shared.generated.resources.Res
 import kafe.app.shared.generated.resources.ds_loading
@@ -124,8 +123,11 @@ fun MenuScreen(
     onAction: (MenuAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Nagłówek jest ciemny w obu motywach (przy Error tło jest jasne/ciemne zależnie od motywu).
-    StatusBarAppearance(darkIcons = state is MenuUiState.Error && KafeTheme.colors.background.luminance() > 0.5f)
+    // Nagłówek jest ciemny w obu motywach (przy Error nagłówka nie ma – tło zależy od motywu).
+    SystemBarsAppearance(
+        darkStatusBarIcons = state is MenuUiState.Error && KafeTheme.isLight,
+        darkNavigationBarIcons = KafeTheme.isLight,
+    )
     Box(
         modifier = modifier
             .fillMaxSize()

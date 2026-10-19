@@ -79,8 +79,14 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 - **Przypięty pasek na dole (Scaffold bottomBar, edge-to-edge):** treść przewija się pod paskiem, więc `performScrollTo()` potrafi zostawić element pod nim i `performClick()` trafi w pasek (np. w „Dodaj do koszyka”). W `ProductDetailScreenTest` jest helper `scrollAboveBottomBar()`, który po `performScrollTo` dosuwa element nad górną krawędź paska.
 - **Pomiar tekstu (`hasVisualOverflow`, „Czytaj więcej”) wymaga `@GraphicsMode(GraphicsMode.Mode.NATIVE)`.** W domyślnym trybie LEGACY Robolectric nie mierzy tekstu, więc przepełnienie nigdy nie występuje.
 - Nawigację testujemy w `KafeNavHostTest`: `rememberNavController()` przechwycony w `setContent`, ViewModele z fake'ami podstawione przez `startKoin` w `@Before` (`stopKoin` w `@After`), systemowe wstecz przez `activity.onBackPressedDispatcher` (`createAndroidComposeRule<ComponentActivity>()`).
+- **Nieskończone animacje (intro KAFE-42, para nad filiżanką):** `waitForIdle()` z `autoAdvance = true` nigdy się nie kończy. Zegar prowadzimy ręcznie (`mainClock.autoAdvance = false`, `advanceTimeBy(...)`) i wracamy do auto dopiero, gdy animacja zniknie z drzewa (`AppStartUiTest.finishIntroAndCrossfade`). Reduced motion symulujemy przez `Settings.Global.ANIMATOR_DURATION_SCALE = 0` przed `setContent`.
+- **ViewModel nie może powstawać wewnątrz `setContent`** (lint `ViewModelConstructorInComposable` failuje build) – tworzymy go przed `setContent`.
+- **DataStore na JVM pod Windows** nie nadpisuje istniejącego pliku („Unable to rename …tmp”, także dwa zapisy w jednej sesji). Na Androidzie i w CI (ubuntu) działa. Testy z nadpisaniem pomijamy na Windows przez `Assume`.
 - Na później: screenshot testy previewów (Compose Preview Screenshot Testing z AGP) jako tani test regresji wizualnej.
 
 ## Znane problemy
+
+- `kotlin.test.Ignore` nie przyjmuje powodu – przy `@Ignore` piszemy powód w komentarzu w tej samej linii (`@Ignore // KAFE-XX BUG …`).
+- Migracje Room (2→3) nie mają testu na danych (brak `room-testing`/`MigrationTestHelper`, wymaga emulatora) – walidację robi tylko kompilator AutoMigration.
 
 - **`Money(Long.MIN_VALUE).format()`** zwraca niepoprawny tekst (`--92 233…,-8 zł`), bo `-grosze` przepełnia `Long`. W praktyce nieosiągalne (kwoty w groszach są o rzędy wielkości mniejsze). Zostawione bez poprawki na decyzję koordynatora (KAFE-6). Brak testu, żeby nie utrwalać błędnego zachowania.

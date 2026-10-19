@@ -4,4 +4,4 @@ import androidx.compose.runtime.Composable
 
 /** iOS: styl paska statusu ustawia hostujący UIViewController – na razie bez zmian (Android-first). */
 @Composable
-actual fun StatusBarAppearance(darkIcons: Boolean) = Unit
+actual fun SystemBarsAppearance(darkStatusBarIcons: Boolean, darkNavigationBarIcons: Boolean) = Unit

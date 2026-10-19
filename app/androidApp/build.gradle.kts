@@ -14,11 +14,19 @@ dependencies {
     implementation(project(":app:shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.splashscreen)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+
+    // Testy startu aplikacji na prawdziwej MainActivity (Robolectric) – uruchamiane w CI przez testDebugUnitTest.
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.testExt.junit)
+    testImplementation(libs.androidx.compose.uiTest.junit4)
+    testImplementation(libs.androidx.compose.uiTest.manifest)
 }
 
 android {
@@ -57,5 +65,8 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 }

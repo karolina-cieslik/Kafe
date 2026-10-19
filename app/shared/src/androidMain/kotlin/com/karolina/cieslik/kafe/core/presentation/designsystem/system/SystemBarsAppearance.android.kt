@@ -10,14 +10,17 @@ import androidx.core.view.WindowCompat
 
 /** Android: ustawia `isAppearanceLightStatusBars` okna aktywności; w podglądzie (edit mode) nic nie robi. */
 @Composable
-actual fun StatusBarAppearance(darkIcons: Boolean) {
+actual fun SystemBarsAppearance(darkStatusBarIcons: Boolean, darkNavigationBarIcons: Boolean) {
     val view = LocalView.current
     if (view.isInEditMode) return
     // SideEffect, a nie LaunchedEffect: ma się wykonać po każdej udanej kompozycji, także gdy ekran wraca
     // na wierzch, a inny ekran zdążył w międzyczasie zmienić kolor ikon.
     SideEffect {
         val window = view.context.findActivity()?.window ?: return@SideEffect
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkIcons
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = darkStatusBarIcons
+            isAppearanceLightNavigationBars = darkNavigationBarIcons
+        }
     }
 }
 

@@ -45,4 +45,5 @@
     <string name="cafe_picker_selected">Wybrana</string>
     <string name="cafe_picker_empty_title">Brak kawiarni</string>
     <string name="cafe_picker_empty_message">Nie mamy teraz żadnego lokalu do pokazania. Spróbuj ponownie za chwilę.</string>
+    <string name="cafe_picker_selection_failed">Nie udało się zapisać wyboru lokalu. Spróbuj ponownie.</string>
 </resources>

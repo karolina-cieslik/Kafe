@@ -21,9 +21,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
@@ -88,12 +91,15 @@ object CafePickerTestTags {
  * [CafePickerAction.Retry] (stan błędu).
  *
  * Przełącznik lista/mapa wejdzie pod nagłówek, nad listę (w [CafePickerContent]).
+ *
+ * @param snackbarHostState host snackbara; route przekazuje własny, żeby pokazać błąd zapisu wyboru lokalu.
  */
 @Composable
 fun CafePickerScreen(
     state: CafePickerUiState,
     onAction: (CafePickerAction) -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     // Pasek statusu leży na tle ekranu (pasek i nagłówek powitalny mają kolor tła): na jasnym motywie ciemne
     // ikony, na ciemnym jasne.
@@ -110,6 +116,7 @@ fun CafePickerScreen(
                 )
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = KafeTheme.colors.background,
         modifier = modifier,
     ) { innerPadding ->

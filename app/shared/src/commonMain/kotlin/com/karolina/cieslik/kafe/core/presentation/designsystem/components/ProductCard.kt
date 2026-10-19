@@ -86,7 +86,7 @@ fun ProductCard(
                         .alpha(contentAlpha),
                 )
                 if (!isAvailable) {
-                    UnavailableBadge(
+                    KafeBadge(
                         text = unavailableLabel,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -168,19 +168,6 @@ private fun AddButton(
             )
         }
     }
-}
-
-@Composable
-private fun UnavailableBadge(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = KafeTheme.typography.labelMedium,
-        color = KafeTheme.colors.onSecondary,
-        modifier = modifier
-            .clip(KafeTheme.shapes.small)
-            .background(KafeTheme.colors.secondary)
-            .padding(horizontal = KafeTheme.spacing.s, vertical = KafeTheme.spacing.xs),
-    )
 }
 
 /**

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
+/** Android: globalna skala animacji (`ANIMATOR_DURATION_SCALE`) równa 0. */
 @Composable
 actual fun isReducedMotionEnabled(): Boolean {
     val context = LocalContext.current

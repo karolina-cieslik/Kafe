@@ -3,9 +3,11 @@ package com.karolina.cieslik.kafe.core.presentation.designsystem.components
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.PathParser
 
-// KAFE-42: Geometria logo (filiżanka na spodku + para) w układzie 108×108 – tym samym, co adaptacyjna ikona
-// launchera (treść w bezpiecznej strefie 21–87). Te same ścieżki są w res/drawable/ic_launcher_foreground.xml
-// aplikacji Android (wraz ze skalą grupy) – zmieniając je tutaj, zmień je też tam.
+/**
+ * Geometria logo (filiżanka na spodku + para) w układzie 108×108 – tym samym, co adaptacyjna ikona launchera
+ * (treść w bezpiecznej strefie 21–87). Te same ścieżki są w `res/drawable/ic_launcher_foreground.xml` aplikacji
+ * Android (wraz ze skalą grupy) – zmieniając je tutaj, zmień je też tam.
+ */
 internal object KafeLogo {
     const val VIEWPORT = 108f
     const val STROKE_WIDTH = 4f

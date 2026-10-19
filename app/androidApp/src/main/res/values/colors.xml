@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- KAFE-42: Kolory marki dla ikony i systemowego splasha – odpowiadają tokenom KafeTheme.extendedColors.brand/onBrand. -->
+<!-- Kolory marki dla ikony i systemowego splasha – odpowiadają tokenom KafeTheme.extendedColors.brand/onBrand. -->
 <resources>
     <color name="kafe_brand">#FFC67C4E</color>
     <color name="kafe_on_brand">#FFF9F2ED</color>

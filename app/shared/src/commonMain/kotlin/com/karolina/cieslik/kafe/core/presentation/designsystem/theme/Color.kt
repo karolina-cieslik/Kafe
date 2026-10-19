@@ -119,8 +119,9 @@ data class KafeExtendedColors(
     val promo: Color,
     val onPromo: Color,
     val rating: Color,
-    /** KAFE-42: Tło marki (splash, intro) – kawowe w obu motywach, jak ikona aplikacji. */
+    /** Tło marki (splash, intro) – kawowe w obu motywach, jak ikona aplikacji. */
     val brand: Color,
+    /** Treść (logo, napis) na tle [brand]. */
     val onBrand: Color,
 )
 

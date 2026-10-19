@@ -48,7 +48,7 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.PI
 import kotlin.math.sin
 
-// KAFE-42: Oś czasu intro (ms). Łącznie ~1,3 s.
+/** Oś czasu intro w ms (łącznie ok. 1,3 s); tu: rysowanie konturu filiżanki. Kolejne stałe – para i napis. */
 private const val DRAW_DURATION = 650
 private const val STEAM_DELAY = 450L
 private const val STEAM_DURATION = 450
@@ -59,19 +59,27 @@ private const val STEAM_WAVE_PERIOD = 1400
 private const val STEAM_RISE = 6f
 private const val TITLE_SLIDE = 12f
 
-// Napis pod spodkiem: środek napisu ~1/3 wysokości pola logo poniżej środka ekranu.
+/** Napis pod spodkiem: środek napisu ok. 1/3 wysokości pola logo poniżej środka ekranu. */
 private const val TITLE_OFFSET_DIVISOR = 3
 
-// Przezroczystość „cienia” konturu – kontynuacja ikony ze splasha, po której rysuje się pełna kreska.
+/** Przezroczystość „cienia” konturu – kontynuacja ikony ze splasha, po której rysuje się pełna kreska. */
 private const val GHOST_ALPHA = 0.3f
 
+/** Stabilne tagi intro dla testów UI. */
 object KafeIntroTestTags {
+    /** Korzeń intro (całe tło marki). */
     const val INTRO = "kafeIntro"
 }
 
-// KAFE-42: Animowane intro przy zimnym starcie – kontur filiżanki rysuje się (PathMeasure), unosi się
-// falująca para, na końcu pojawia się napis „Kafe”. Tło, rozmiar i położenie logo zgadzają się z systemowym
-// splashem, a kontur rysuje się po jego półprzezroczystym „cieniu”, więc przejście jest ciągłe. Przy wyłączonych animacjach od razu stan końcowy i [onFinished].
+/**
+ * Animowane intro przy zimnym starcie – kontur filiżanki rysuje się (PathMeasure), unosi się falująca para,
+ * na końcu pojawia się napis „Kafe”. Tło, rozmiar i położenie logo zgadzają się z systemowym splashem, a kontur
+ * rysuje się po jego półprzezroczystym „cieniu”, więc przejście jest ciągłe. Paski systemowe mają jasne ikony
+ * (kawowe tło w obu motywach). Przy wyłączonych animacjach od razu stan końcowy.
+ *
+ * @param onFinished wywoływane raz, po końcu animacji napisu (ok. 1,3 s) albo od razu przy wyłączonych
+ * animacjach; para faluje dalej, dopóki intro jest na ekranie.
+ */
 @Composable
 fun KafeIntro(
     onFinished: () -> Unit,
@@ -85,6 +93,8 @@ fun KafeIntro(
     val titleProgress = remember { Animatable(initial) }
     val currentOnFinished by rememberUpdatedState(onFinished)
 
+    // Klucz Unit: oś czasu rusza raz na wejście intro i nie restartuje się przy rekompozycji; aktualną lambdę
+    // onFinished daje rememberUpdatedState.
     LaunchedEffect(Unit) {
         if (!reducedMotion) {
             launch { drawProgress.animateTo(1f, tween(DRAW_DURATION, easing = FastOutSlowInEasing)) }

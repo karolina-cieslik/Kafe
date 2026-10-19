@@ -195,7 +195,6 @@ class CafePickerViewModelTest {
         assertEquals(emptyList(), env.content.cafes)
     }
 
-    /** Błąd od testera: w niedzielę o 1:00 lokal z soboty 18:00–2:00 był „Otwarte”, ale z etykietą „Dziś zamknięte”. */
     @Test
     fun overnightCafeOpenFromYesterdayShowsClosingTime() {
         val cafe = Cafe("nocna", "Kafe Nocna", "ul. Nocna 1", 0.0, 0.0, listOf(hours(Weekday.SATURDAY, 18, 2)))

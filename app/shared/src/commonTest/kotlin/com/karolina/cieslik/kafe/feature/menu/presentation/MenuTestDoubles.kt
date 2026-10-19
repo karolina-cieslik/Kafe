@@ -64,8 +64,9 @@ internal class FakeCafeRepository(selected: Cafe?) : CafeRepository {
 
     override fun observeSelectedCafe(): Flow<Cafe?> = selectedCafe
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
         selectedCafe.value = cafe(cafeId)
+        return Result.Success(Unit)
     }
 
     override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)

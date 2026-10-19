@@ -40,12 +40,15 @@ class CafePickerViewModelTest {
         var remoteCafes: List<Cafe> = seedCafes
         var refreshResult: EmptyResult<DataError> = Result.Success(Unit)
         var refreshCount = 0
+        var selectError: DataError.Local? = null
 
         override fun observeCafes(): Flow<List<Cafe>> = cafes
         override fun observeSelectedCafe(): Flow<Cafe?> =
             combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
-        override suspend fun selectCafe(cafeId: String) {
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
+            selectError?.let { return Result.Failure(it) }
             selectedId.value = cafeId
+            return Result.Success(Unit)
         }
         override suspend fun refresh(): EmptyResult<DataError> {
             refreshCount++
@@ -130,6 +133,23 @@ class CafePickerViewModelTest {
         assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen), env.events)
         // Flaga pierwszego uruchomienia nie znika po wyborze.
         assertTrue(env.content.isFirstLaunch)
+    }
+
+    @Test
+    fun failedSaveEmitsSelectionFailedWithoutCafeChosenAndAllowsRetry() = runVmTest { env ->
+        env.repository.selectError = DataError.Local.UNKNOWN
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+
+        assertEquals(null, env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.SelectionFailed), env.events)
+
+        env.repository.selectError = null
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+
+        assertEquals("rynek", env.repository.selectedId.value)
+        assertEquals(listOf(CafePickerEvent.SelectionFailed, CafePickerEvent.CafeChosen), env.events)
     }
 
     @Test

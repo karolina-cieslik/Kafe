@@ -48,9 +48,12 @@ class OfflineFirstCafeRepositoryTest {
 
     private class FakeSelectedCafeStore(initial: String? = null) : SelectedCafeStore {
         val id = MutableStateFlow(initial)
+        var saveError: DataError.Local? = null
         override fun observeSelectedCafeId(): Flow<String?> = id
-        override suspend fun saveSelectedCafeId(cafeId: String) {
+        override suspend fun saveSelectedCafeId(cafeId: String): EmptyResult<DataError.Local> {
+            saveError?.let { return Result.Failure(it) }
             id.value = cafeId
+            return Result.Success(Unit)
         }
     }
 
@@ -83,6 +86,16 @@ class OfflineFirstCafeRepositoryTest {
 
         assertEquals("b", store.id.value)
         assertEquals("b", repository.observeSelectedCafe().first()?.id)
+    }
+
+    @Test
+    fun failedSaveIsReturnedAndPreviousChoiceStays() = runTest {
+        val store = FakeSelectedCafeStore(initial = "a").apply { saveError = DataError.Local.UNKNOWN }
+        val repository = repository(store = store)
+        repository.refresh()
+
+        assertEquals(Result.Failure(DataError.Local.UNKNOWN), repository.selectCafe("b"))
+        assertEquals("a", repository.observeSelectedCafe().first()?.id)
     }
 
     @Test

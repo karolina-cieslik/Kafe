@@ -45,8 +45,9 @@ class ProductDetailViewModelTest {
         val selected = MutableStateFlow<Cafe?>(cafe("a"))
         override fun observeCafes(): Flow<List<Cafe>> = selected.map { listOfNotNull(it) }
         override fun observeSelectedCafe(): Flow<Cafe?> = selected
-        override suspend fun selectCafe(cafeId: String) {
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
             selected.value = cafe(cafeId)
+            return Result.Success(Unit)
         }
         override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)
     }

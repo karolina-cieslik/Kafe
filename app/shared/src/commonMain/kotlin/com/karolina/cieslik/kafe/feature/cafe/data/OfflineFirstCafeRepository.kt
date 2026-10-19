@@ -36,9 +36,8 @@ class OfflineFirstCafeRepository(
             cafes.firstOrNull { it.id == selectedId }
         }.distinctUntilChanged()
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> =
         selectedCafeStore.saveSelectedCafeId(cafeId)
-    }
 
     /** Błąd sieci zwraca bez zapisu, więc zapamiętane lokale zostają bez zmian. */
     override suspend fun refresh(): EmptyResult<DataError> =

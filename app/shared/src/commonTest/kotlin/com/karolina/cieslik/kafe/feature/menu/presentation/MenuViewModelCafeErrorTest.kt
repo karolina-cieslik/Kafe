@@ -39,7 +39,7 @@ class MenuViewModelCafeErrorTest {
 
         override fun observeCafes(): Flow<List<Cafe>> = cafes
         override fun observeSelectedCafe(): Flow<Cafe?> = cafes.map { it.firstOrNull() }
-        override suspend fun selectCafe(cafeId: String) = Unit
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> = Result.Success(Unit)
         override suspend fun refresh(): EmptyResult<DataError> {
             refreshCount++
             if (refreshResult is Result.Success) cafes.value = listOf(Cafe("a", "Kafe A", "ul. Testowa 1", 0.0, 0.0, emptyList()))

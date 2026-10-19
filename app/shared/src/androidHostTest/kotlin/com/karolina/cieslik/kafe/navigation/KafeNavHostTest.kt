@@ -258,6 +258,19 @@ class KafeNavHostTest {
         assertEquals("krakow", cafes.selectedId.value)
     }
 
+    @Test
+    fun firstLaunchOfflineWithoutCafesShowsErrorWithWelcomeAndNoBackArrow() {
+        cafes.cafeList.value = emptyList()
+        cafes.refreshResult = Result.Failure(DataError.Remote.NO_INTERNET)
+
+        setNavHost(startDestination = KafeRoute.CafePicker, selectedCafeId = null)
+
+        composeRule.onNodeWithText("Spróbuj ponownie").assertIsDisplayed()
+        composeRule.onNodeWithTag(CafePickerTestTags.WELCOME).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Wstecz").assertDoesNotExist()
+        assertCurrentRoute<KafeRoute.CafePicker>()
+    }
+
     private fun hasClickLabel(label: String) = SemanticsMatcher("onClickLabel = $label") { node ->
         node.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label
     }
@@ -265,14 +278,15 @@ class KafeNavHostTest {
 
 /** Kilka lokali i zapamiętany wybór (`null` = pierwsze uruchomienie), jak `OfflineFirstCafeRepository` bez sieci. */
 private class NavFakeCafeRepository(cafes: List<Cafe>) : CafeRepository {
-    private val cafes = MutableStateFlow(cafes)
+    val cafeList = MutableStateFlow(cafes)
     val selectedId = MutableStateFlow<String?>(null)
     var selectError: DataError.Local? = null
+    var refreshResult: EmptyResult<DataError> = Result.Success(Unit)
 
-    override fun observeCafes(): Flow<List<Cafe>> = cafes
+    override fun observeCafes(): Flow<List<Cafe>> = cafeList
 
     override fun observeSelectedCafe(): Flow<Cafe?> =
-        combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
+        combine(cafeList, selectedId) { list, id -> list.firstOrNull { it.id == id } }
 
     override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
         selectError?.let { return Result.Failure(it) }
@@ -280,5 +294,5 @@ private class NavFakeCafeRepository(cafes: List<Cafe>) : CafeRepository {
         return Result.Success(Unit)
     }
 
-    override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)
+    override suspend fun refresh(): EmptyResult<DataError> = refreshResult
 }

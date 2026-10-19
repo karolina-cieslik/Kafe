@@ -54,6 +54,7 @@ import kafe.app.shared.generated.resources.cafe_picker_open
 import kafe.app.shared.generated.resources.cafe_picker_selected
 import kafe.app.shared.generated.resources.cafe_picker_title
 import kafe.app.shared.generated.resources.cafe_picker_welcome_subtitle
+import kafe.app.shared.generated.resources.ds_retry
 import kafe.app.shared.generated.resources.ic_check
 import kafe.app.shared.generated.resources.ic_place
 import kafe.app.shared.generated.resources.ic_schedule
@@ -69,7 +70,7 @@ object CafePickerTestTags {
     /** Lista kart lokali w stanie treści. */
     const val LIST = "cafePickerList"
 
-    /** Nagłówek powitalny przy pierwszym uruchomieniu (zamiast górnego paska ze strzałką wstecz). */
+    /** Nagłówek powitalny, gdy picker jest ekranem startowym (zamiast górnego paska ze strzałką wstecz). */
     const val WELCOME = "cafePickerWelcome"
 
     /** Karta lokalu o danym id. */
@@ -82,38 +83,43 @@ object CafePickerTestTags {
  * Stany:
  * - [CafePickerUiState.Loading] – wskaźnik ładowania pod górnym paskiem;
  * - [CafePickerUiState.Content] – lista kart lokali z adresem, godzinami na dziś i odznaką „Otwarte”/„Zamknięte”;
- *   wybrany lokal ma obramowanie w kolorze `primary` i znacznik; pusta lista – komunikat „Brak kawiarni”.
- *   Przy pierwszym uruchomieniu (`isFirstLaunch`) zamiast paska ze strzałką wstecz jest nagłówek powitalny,
- *   bo użytkownik musi wybrać lokal, zanim zobaczy menu;
+ *   wybrany lokal ma obramowanie w kolorze `primary` i znacznik; pusta lista – komunikat „Brak kawiarni”
+ *   z „Spróbuj ponownie”;
  * - [CafePickerUiState.Error] – pełnoekranowy błąd z „Spróbuj ponownie”.
+ *
+ * Gdy nie ma dokąd wrócić (picker jest ekranem startowym przy pierwszym uruchomieniu), we wszystkich stanach
+ * zamiast paska ze strzałką wstecz jest nagłówek powitalny – użytkownik musi wybrać lokal, zanim zobaczy menu.
  *
  * Akcje: [CafePickerAction.CafeSelected] (karta lokalu), [CafePickerAction.BackClicked] (strzałka wstecz),
  * [CafePickerAction.Retry] (stan błędu).
  *
  * Przełącznik lista/mapa wejdzie pod nagłówek, nad listę (w [CafePickerContent]).
  *
+ * @param canNavigateBack `true`, gdy pod pickerem jest inny ekran (wejście z menu) – wtedy pasek ze strzałką
+ * wstecz; `false` – nagłówek powitalny bez strzałki. Wynika ze stosu nawigacji, nie ze stanu VM, bo przy
+ * pierwszym uruchomieniu ekran startuje w Loading/Error, zanim VM wie cokolwiek o wyborze.
  * @param snackbarHostState host snackbara; route przekazuje własny, żeby pokazać błąd zapisu wyboru lokalu.
  */
 @Composable
 fun CafePickerScreen(
     state: CafePickerUiState,
     onAction: (CafePickerAction) -> Unit,
+    canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     // Pasek statusu leży na tle ekranu (pasek i nagłówek powitalny mają kolor tła): na jasnym motywie ciemne
     // ikony, na ciemnym jasne.
     StatusBarAppearance(darkIcons = KafeTheme.colors.background.luminance() > 0.5f)
-    val isFirstLaunch = (state as? CafePickerUiState.Content)?.isFirstLaunch == true
     Scaffold(
         topBar = {
-            if (isFirstLaunch) {
-                WelcomeHeader()
-            } else {
+            if (canNavigateBack) {
                 KafeTopBar(
                     title = stringResource(Res.string.cafe_picker_title),
                     onNavigateBack = { onAction(CafePickerAction.BackClicked) },
                 )
+            } else {
+                WelcomeHeader()
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -152,6 +158,8 @@ private fun CafePickerContent(
         KafeEmptyState(
             title = stringResource(Res.string.cafe_picker_empty_title),
             message = stringResource(Res.string.cafe_picker_empty_message),
+            actionLabel = stringResource(Res.string.ds_retry),
+            onAction = { onAction(CafePickerAction.Retry) },
             modifier = Modifier.padding(contentPadding),
         )
         return

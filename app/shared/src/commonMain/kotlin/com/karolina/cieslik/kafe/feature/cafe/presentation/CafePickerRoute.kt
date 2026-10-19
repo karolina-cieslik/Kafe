@@ -22,6 +22,8 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * @param onCafeChosen wywoływane po zapisaniu wyboru ([CafePickerEvent.CafeChosen]); graf decyduje, czy wrócić
  * do menu, czy (przy pierwszym uruchomieniu) otworzyć menu z wyczyszczonym stosem.
+ * @param canNavigateBack czy pod pickerem jest inny ekran (z grafu nawigacji); `false` = ekran startowy bez strzałki
+ * wstecz, z nagłówkiem powitalnym.
  * @param onNavigateBack wywoływane po strzałce wstecz ([CafePickerEvent.NavigateBack]).
  * @param viewModel domyślnie z Koina; parametr ułatwia podmianę w testach.
  */
@@ -29,6 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CafePickerRoute(
     onCafeChosen: () -> Unit,
     onNavigateBack: () -> Unit,
+    canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
     viewModel: CafePickerViewModel = koinViewModel(),
 ) {
@@ -59,6 +62,7 @@ fun CafePickerRoute(
     CafePickerScreen(
         state = state,
         onAction = viewModel::onAction,
+        canNavigateBack = canNavigateBack,
         modifier = modifier,
         snackbarHostState = snackbarHostState,
     )

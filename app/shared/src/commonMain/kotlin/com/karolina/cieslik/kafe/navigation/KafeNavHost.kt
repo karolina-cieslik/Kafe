@@ -51,7 +51,9 @@ fun KafeNavHost(
         composable<KafeRoute.CafePicker> {
             CafePickerRoute(
                 onCafeChosen = { navController.navigateAfterCafeChosen() },
-                onNavigateBack = { navController.popBackStack() },
+                // Bezpiecznik: zdjęcie jedynego wpisu stosu zostawiłoby pusty ekran.
+                onNavigateBack = { if (navController.previousBackStackEntry != null) navController.popBackStack() },
+                canNavigateBack = navController.previousBackStackEntry != null,
             )
         }
     }

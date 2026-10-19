@@ -45,8 +45,10 @@ import org.robolectric.annotation.Config
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-// KAFE-42 / KAFE-31: Po intro widoczny ekran docelowy – CafePicker bez zapamiętanego lokalu, Menu z wyborem.
-// Intro znika dopiero, gdy skończy się animacja ORAZ AppStartViewModel poda ekran startowy.
+/**
+ * Po intro widoczny ekran docelowy – CafePicker bez zapamiętanego lokalu, Menu z wyborem; intro znika dopiero,
+ * gdy skończy się animacja ORAZ AppStartViewModel poda ekran startowy.
+ */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "w411dp-h891dp")
 class AppStartUiTest {
@@ -115,7 +117,6 @@ class AppStartUiTest {
         composeRule.onNodeWithTag(MenuTestTags.product("espresso")).assertIsDisplayed()
     }
 
-    // Wyłączone animacje: intro kończy się od razu, zostaje tylko crossfade (300 ms) – bez czekania ~1300 ms.
     @Test
     fun withReducedMotionTargetScreenAppearsRightAfterCrossfade() {
         val resolver = ApplicationProvider.getApplicationContext<android.content.Context>().contentResolver
@@ -131,7 +132,6 @@ class AppStartUiTest {
         composeRule.onNodeWithTag(MenuTestTags.HEADER).assertIsDisplayed()
     }
 
-    // Odtworzenie stanu (obrót, powrót do odtworzonej aktywności) nie odtwarza intro – tylko zimny start.
     @Test
     fun introIsNotShownAgainAfterStateRestoration() {
         cafes.selectedId.value = "krakow"
@@ -177,7 +177,7 @@ class AppStartUiTest {
     }
 }
 
-// Lokale z pamięci; observeSelectedCafe można zablokować, żeby AppStartViewModel został w Loading.
+/** Lokale z pamięci; `observeSelectedCafe` można zablokować, żeby AppStartViewModel został w Loading. */
 private class AppStartFakeCafeRepository(cafes: List<Cafe>) : CafeRepository {
     private val cafes = MutableStateFlow(cafes)
     val selectedId = MutableStateFlow<String?>(null)

@@ -15,8 +15,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-// KAFE-42: Intro – oś czasu (onFinished po ok. 1300 ms), dostępność (contentDescription „Kafe”), reduced motion.
-// Intro ma nieskończoną animację pary, więc zegar prowadzimy ręcznie (autoAdvance = false).
+/**
+ * Intro: oś czasu (onFinished po ok. 1300 ms), dostępność (contentDescription „Kafe”) i wyłączone animacje.
+ * Intro ma nieskończoną animację pary, więc zegar jest prowadzony ręcznie (`autoAdvance = false`).
+ */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK])
 class KafeIntroTest {

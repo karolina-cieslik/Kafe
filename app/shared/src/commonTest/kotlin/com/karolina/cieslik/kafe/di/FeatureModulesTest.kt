@@ -41,7 +41,7 @@ class FeatureModulesTest {
                 ): EmptyResult<DataError.Local> = Result.Success(Unit)
             }
         }
-        // KAFE-31: DataStore wymaga ścieżki platformowej – na JVM wybór w pamięci.
+        // DataStore wymaga ścieżki platformowej – na JVM wybór w pamięci.
         single<SelectedCafeStore> {
             object : SelectedCafeStore {
                 private val id = MutableStateFlow<String?>(null)

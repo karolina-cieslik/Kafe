@@ -20,7 +20,7 @@ import kotlinx.coroutines.test.setMain
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-31: Ekran startowy zależy od zapamiętanego wyboru lokalu.
+/** Ekran startowy zależy od zapamiętanego wyboru lokalu. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppStartViewModelTest {
 

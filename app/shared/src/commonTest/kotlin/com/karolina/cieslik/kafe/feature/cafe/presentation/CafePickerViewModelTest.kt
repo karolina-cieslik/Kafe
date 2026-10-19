@@ -30,7 +30,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-// KAFE-29 / KAFE-31: CafePickerViewModel ze wstrzykiwanym zegarem i strefą.
+/** CafePickerViewModel ze wstrzykiwanym zegarem i strefą. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CafePickerViewModelTest {
 
@@ -175,7 +175,7 @@ class CafePickerViewModelTest {
         assertEquals(emptyList(), env.content.cafes)
     }
 
-    // Błąd od testera: w niedzielę o 1:00 lokal z soboty 18:00–2:00 był „Otwarte”, ale z etykietą „Dziś zamknięte”.
+    /** Błąd od testera: w niedzielę o 1:00 lokal z soboty 18:00–2:00 był „Otwarte”, ale z etykietą „Dziś zamknięte”. */
     @Test
     fun overnightCafeOpenFromYesterdayShowsClosingTime() {
         val cafe = Cafe("nocna", "Kafe Nocna", "ul. Nocna 1", 0.0, 0.0, listOf(hours(Weekday.SATURDAY, 18, 2)))

@@ -8,7 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
-// KAFE-29: Podpina CafePickerViewModel do bezstanowego CafePickerScreen i zamienia CafePickerEvent na nawigację.
+/**
+ * Wejście do ekranu wyboru lokalu z grafu nawigacji – podpina [CafePickerViewModel] do bezstanowego
+ * [CafePickerScreen] i zamienia jednorazowe [CafePickerEvent] na nawigację.
+ *
+ * @param onCafeChosen wywoływane po zapisaniu wyboru ([CafePickerEvent.CafeChosen]); graf decyduje, czy wrócić
+ * do menu, czy (przy pierwszym uruchomieniu) otworzyć menu z wyczyszczonym stosem.
+ * @param onNavigateBack wywoływane po strzałce wstecz ([CafePickerEvent.NavigateBack]).
+ * @param viewModel domyślnie z Koina; parametr ułatwia podmianę w testach.
+ */
 @Composable
 fun CafePickerRoute(
     onCafeChosen: () -> Unit,
@@ -20,6 +28,8 @@ fun CafePickerRoute(
     val currentOnCafeChosen by rememberUpdatedState(onCafeChosen)
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
 
+    // Klucz = ViewModel: zbieranie zdarzeń startuje raz na instancję VM i nie restartuje się przy rekompozycji;
+    // aktualne lambdy nawigacji dają rememberUpdatedState.
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {

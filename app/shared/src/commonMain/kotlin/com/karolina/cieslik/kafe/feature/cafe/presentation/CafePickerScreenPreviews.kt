@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-29: Dane fake do previewów wyboru lokalu.
+/** Dane fake do previewów wyboru lokalu. */
 internal object CafePickerPreviewData {
     private val cafes = listOf(
         CafeUi("rynek", "Kafe Rynek", "Rynek Główny 12, Kraków", "Dziś 7:00–21:00", isOpenNow = true, isSelected = true),

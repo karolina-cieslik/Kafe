@@ -25,6 +25,8 @@ data class Category(
  * @property imageUrl adres zdjęcia; null, gdy produkt nie ma zdjęcia (UI pokazuje zastępczą grafikę).
  * @property sizes dostępne rozmiary z pełnymi cenami; pusta lista oznacza błędne dane.
  * @property sortOrder pozycja w kategorii ustalona przez sieć; rosnąco.
+ * @property defaultSize rozmiar wybrany na start konfiguracji; null = pierwszy dostępny w lokalu.
+ * @property modifierGroupIds grupy modyfikatorów produktu w kolejności wyświetlania (id z [Menu.modifierGroups]).
  */
 data class Product(
     val id: String,
@@ -36,6 +38,8 @@ data class Product(
     val sortOrder: Int,
     /** Produkt aktywny w menu sieci (np. sezonowy poza sezonem = false). Nieaktywne nie są pokazywane. */
     val isActive: Boolean,
+    val defaultSize: SizeCode? = null,
+    val modifierGroupIds: List<String> = emptyList(),
 ) {
     /** Cena bazowa na liście = najtańszy rozmiar; null tylko dla błędnych danych bez rozmiarów. */
     val basePrice: Money? get() = sizes.minOfOrNull { it.price }
@@ -58,15 +62,21 @@ data class ProductSize(
 enum class SizeCode { S, M, L }
 
 /**
- * Menu sieci w kontekście lokalu: kategorie i produkty są wspólne,
- * [unavailableProductIds] to produkty chwilowo niedostępne w tym lokalu (domyślnie produkt jest dostępny).
+ * Menu sieci w kontekście lokalu: kategorie, produkty i modyfikatory są wspólne, a zbiory „unavailable”
+ * opisują braki w tym lokalu (domyślnie wszystko jest dostępne).
  *
  * @property categories wszystkie kategorie sieci, także puste.
  * @property products wszystkie produkty sieci, także nieaktywne.
  * @property unavailableProductIds identyfikatory produktów niedostępnych w lokalu.
+ * @property modifierGroups wszystkie grupy modyfikatorów sieci.
+ * @property unavailableSizes rozmiary niedostępne w lokalu: productId -> kody rozmiarów.
+ * @property unavailableOptionIds opcje modyfikatorów niedostępne w lokalu (id opcji).
  */
 data class Menu(
     val categories: List<Category>,
     val products: List<Product>,
     val unavailableProductIds: Set<String>,
+    val modifierGroups: List<ModifierGroup> = emptyList(),
+    val unavailableSizes: Map<String, Set<SizeCode>> = emptyMap(),
+    val unavailableOptionIds: Set<String> = emptySet(),
 )

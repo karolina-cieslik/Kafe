@@ -30,7 +30,10 @@ fun Cafe.isOpenAt(day: Weekday, minuteOfDay: Int): Boolean {
 /** Poprzedni dzień tygodnia; dla poniedziałku niedziela. */
 fun Weekday.previous(): Weekday = Weekday.entries[(ordinal + Weekday.entries.size - 1) % Weekday.entries.size]
 
-/** Porządek alfabetyczny po polsku (ą po a, ł po l, ś po s…), bez rozróżniania wielkości liter. */
+/**
+ * Porządek alfabetyczny po polsku (ą po a, ł po l, ś po s…), bez rozróżniania wielkości liter. Litery łacińskie
+ * spoza polskiego alfabetu (q, v, x) są na swoich miejscach; inne obce litery (é, ü, ö) trafiają przed litery.
+ */
 val PolishAlphabeticalOrder: Comparator<String> = Comparator { a, b ->
     val left = a.lowercase()
     val right = b.lowercase()
@@ -41,7 +44,7 @@ val PolishAlphabeticalOrder: Comparator<String> = Comparator { a, b ->
     left.length.compareTo(right.length)
 }
 
-private const val POLISH_ALPHABET = "aąbcćdeęfghijklłmnńoóprsśtuvwxyzźż"
+private const val POLISH_ALPHABET = "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż"
 
 /** Pozycja znaku w sortowaniu: litery spoza alfabetu (cyfry, spacje, obce znaki) przed literami, w kolejności kodów. */
 private fun Char.polishRank(): Int {

@@ -14,6 +14,9 @@ import com.karolina.cieslik.kafe.feature.menu.data.remote.SeedMenuRemoteDataSour
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuViewModel
+import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
+import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
+import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -50,6 +53,25 @@ val menuModule = module {
             cafeRepository = get(),
             menuRepository = get(),
             getMenuForCafe = get(),
+            dispatcher = get(IoDispatcher),
+        )
+    }
+}
+
+/**
+ * Szczegóły produktu: przypadek użycia, kalkulator ceny i ProductDetailViewModel. productId przychodzi z trasy,
+ * więc w UI: `koinViewModel { parametersOf(productId) }`.
+ */
+val productModule = module {
+    factory { GetProductDetails(menuRepository = get()) }
+    factory { PriceCalculator() }
+    viewModel { (productId: String) ->
+        ProductDetailViewModel(
+            productId = productId,
+            cafeRepository = get(),
+            menuRepository = get(),
+            getProductDetails = get(),
+            priceCalculator = get(),
             dispatcher = get(IoDispatcher),
         )
     }

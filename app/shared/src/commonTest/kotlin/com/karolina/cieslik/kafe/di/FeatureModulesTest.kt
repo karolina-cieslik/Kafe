@@ -52,7 +52,7 @@ class FeatureModulesTest {
     fun menuAndCafeDefinitionsAreResolvable() {
         val koin = koinApplication {
             allowOverride(true)
-            modules(dispatchersModule, cafeModule, menuModule, fakeLocalModule)
+            modules(dispatchersModule, cafeModule, menuModule, productModule, fakeLocalModule)
         }.koin
 
         try {

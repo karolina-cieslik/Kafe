@@ -76,9 +76,9 @@ data class ProductConfiguration(
         if (!details.isAvailable) return ConfigurationIssue.ProductUnavailable
         if (!details.isSizeAvailable(size)) return ConfigurationIssue.SizeUnavailable
         details.modifierGroups.forEach { group ->
-            val selected = selections[group.id].orEmpty()
-            selected.keys.firstOrNull { !details.isOptionAvailable(it) }?.let { optionId ->
-                val option = group.options.first { it.id == optionId }
+            // Liczą się tylko opcje, które wciąż są w grupie – usunięte z menu traktujemy jak niewybrane.
+            val selected = group.options.filter { quantityOf(group.id, it.id) > 0 }
+            selected.firstOrNull { !details.isOptionAvailable(it.id) }?.let { option ->
                 return ConfigurationIssue.OptionUnavailable(group, option.name)
             }
             if (group.isRequired && selected.isEmpty()) return ConfigurationIssue.MissingRequired(group)
@@ -86,9 +86,51 @@ data class ProductConfiguration(
         return null
     }
 
+    /**
+     * Dopasowanie wyboru do menu po odświeżeniu. Opcje usunięte z grupy znikają, niedostępne są odznaczane
+     * (zwracane w [Normalized.deselectedOptions], żeby UI mogło o tym poinformować), limit QUANTITY jest
+     * przycinany (opcje w kolejności grupy). Wymagana grupa SINGLE bez wyboru dostaje opcję startową, a wymagana
+     * grupa QUANTITY zostaje pusta i blokuje dodanie ([validate]). Grupy, których produkt już nie ma, znikają.
+     * Rozmiar spoza produktu wraca do startowego; niedostępny rozmiar zostaje, a dodanie blokuje [validate].
+     * Liczba sztuk się nie zmienia.
+     */
+    fun normalizedFor(details: ProductDetails): Normalized {
+        val start by lazy { initial(details) }
+        val deselected = mutableListOf<String>()
+        val normalizedSelections = details.modifierGroups.mapNotNull { group ->
+            var remaining = group.maxQuantity
+            val kept = buildMap {
+                group.options.forEach { option ->
+                    val quantity = quantityOf(group.id, option.id)
+                    if (quantity <= 0) return@forEach
+                    if (!details.isOptionAvailable(option.id)) {
+                        deselected += option.name
+                        return@forEach
+                    }
+                    val allowed = minOf(quantity, remaining)
+                    if (allowed > 0) put(option.id, allowed)
+                    remaining -= allowed
+                }
+            }
+            val selection = kept.ifEmpty { if (group.isRequired) start.selections[group.id].orEmpty() else emptyMap() }
+            selection.takeIf { it.isNotEmpty() }?.let { group.id to it }
+        }.toMap()
+        val normalizedSize = size.takeIf { code -> details.product.sizes.any { it.code == code } } ?: start.size
+        val configuration = copy(size = normalizedSize, selections = normalizedSelections)
+        return Normalized(configuration, deselected)
+    }
+
+    /**
+     * Wynik [normalizedFor].
+     *
+     * @property configuration konfiguracja dopasowana do menu.
+     * @property deselectedOptions nazwy opcji odznaczonych, bo stały się niedostępne; pusta lista = bez zmian.
+     */
+    data class Normalized(val configuration: ProductConfiguration, val deselectedOptions: List<String>)
+
     /** Cena wszystkich sztuk z dopłatami według [PriceCalculator]; liczy tylko opcje istniejące w grupach produktu. */
     fun totalPrice(details: ProductDetails, calculator: PriceCalculator): Money {
-        val sizePrice = details.product.sizes.first { it.code == size }.price
+        val sizePrice = (details.product.sizes.firstOrNull { it.code == size } ?: details.product.sizes.first()).price
         val options = details.modifierGroups.flatMap { group ->
             group.options.mapNotNull { option ->
                 quantityOf(group.id, option.id).takeIf { it > 0 }?.let { PricedOption(option.surcharge, it) }

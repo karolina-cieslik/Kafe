@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
-/** Reguły konfiguracji produktu. */
+/** Reguły konfiguracji produktu; na końcu regresje od testera – odświeżenie menu w trakcie konfiguracji. */
 class ProductConfigurationTest {
 
     private val calculator = PriceCalculator()
@@ -151,6 +151,51 @@ class ProductConfigurationTest {
         assertEquals("Waniliowy", issue.optionName)
         // Niedostępną opcję da się odznaczyć.
         assertNull(config.selectOption("syrup", "syrup-vanilla", later).validate(later))
+    }
+
+    @Test
+    fun validateDoesNotCrashWhenSelectedOptionWasRemovedFromGroup() {
+        val config = ProductConfiguration.initial(details()).selectOption("syrup", "syrup-vanilla", details())
+        val later = details(
+            groups = listOf(milk, ProductTestData.shots, ProductTestData.syrup.copy(options = ProductTestData.syrup.options.drop(1))),
+            unavailableOptionIds = setOf("syrup-vanilla"),
+        )
+
+        assertNull(config.validate(later))
+    }
+
+    @Test
+    fun requiredGroupWithOnlyRemovedOptionSelectedIsMissingAndNormalizationRestoresDefault() {
+        val config = ProductConfiguration.initial(details()).selectOption("milk", "milk-oat", details())
+        val later = details(groups = listOf(milk.copy(options = milk.options.take(1)), ProductTestData.shots, ProductTestData.syrup))
+
+        assertEquals(ConfigurationIssue.MissingRequired(later.modifierGroups[0]), config.validate(later))
+        val normalized = config.normalizedFor(later)
+        assertEquals(mapOf("milk-cow" to 1), normalized.configuration.selections["milk"])
+        assertEquals(emptyList(), normalized.deselectedOptions)
+        assertNull(normalized.configuration.validate(later))
+    }
+
+    @Test
+    fun normalizationDeselectsOptionThatBecameUnavailable() {
+        val config = ProductConfiguration.initial(details()).selectOption("syrup", "syrup-vanilla", details())
+        val later = details(unavailableOptionIds = setOf("syrup-vanilla"))
+
+        val normalized = config.normalizedFor(later)
+
+        assertEquals(listOf("Waniliowy"), normalized.deselectedOptions)
+        assertNull(normalized.configuration.selections["syrup"])
+        assertNull(normalized.configuration.validate(later))
+        assertEquals(Money(1600), normalized.configuration.totalPrice(later, calculator))
+    }
+
+    @Test
+    fun normalizationClampsQuantityToNewLimit() {
+        var config = ProductConfiguration.initial(details())
+        repeat(4) { config = config.changeOptionQuantity("shots", "shot", +1, details()) }
+        val later = details(groups = listOf(milk, ProductTestData.shots.copy(maxQuantity = 2), ProductTestData.syrup))
+
+        assertEquals(2, config.normalizedFor(later).configuration.quantityOf("shots", "shot"))
     }
 
     @Test

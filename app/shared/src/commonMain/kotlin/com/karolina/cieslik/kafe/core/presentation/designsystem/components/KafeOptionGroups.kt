@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
@@ -182,7 +183,9 @@ fun KafeQuantityGroup(
 }
 
 /**
- * Nagłówek sekcji formularza produktu: tytuł, oznaczenie „Wymagane” / „Opcjonalne” i podpowiedź po prawej.
+ * Nagłówek sekcji formularza produktu: tytuł, tuż za nim oznaczenie „Wymagane” / „Opcjonalne”, a podpowiedź
+ * (np. limit) przy prawej krawędzi. Tytuł zajmuje tyle miejsca, ile potrzebuje, i zawija się dopiero wtedy,
+ * gdy obok oznaczenia i podpowiedzi naprawdę go brakuje; etykiety stoją na linii bazowej pierwszej linii tytułu.
  *
  * @param title tytuł sekcji, ogłaszany jako nagłówek.
  * @param isRequired `true` = „Wymagane”, `false` = „Opcjonalne”, `null` = bez oznaczenia (np. sekcja rozmiaru).
@@ -197,35 +200,50 @@ fun KafeGroupHeader(
     hint: String? = null,
     isHintEmphasized: Boolean = false,
 ) {
+    val spacing = KafeTheme.spacing
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(KafeTheme.spacing.s),
+        horizontalArrangement = Arrangement.spacedBy(spacing.s),
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = KafeTheme.spacing.xs),
+            .padding(bottom = spacing.xs),
     ) {
-        Text(
-            text = title,
-            style = KafeTheme.typography.titleMedium,
-            color = KafeTheme.colors.onBackground,
+        // Tytuł z oznaczeniem w osobnym wierszu z wagą: jedyna waga w zewnętrznym wierszu, więc podpowiedź
+        // dostaje tylko swoją szerokość, a reszta należy do tytułu. W środku tytuł ma `fill = false`, żeby
+        // oznaczenie stało tuż za nim, a nie przy prawej krawędzi.
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(spacing.s),
             modifier = Modifier
-                .weight(1f, fill = false)
-                .semantics { heading() },
-        )
-        if (isRequired != null) {
+                .weight(1f)
+                .alignByBaseline(),
+        ) {
             Text(
-                text = stringResource(if (isRequired) Res.string.ds_required else Res.string.ds_optional),
-                style = KafeTheme.typography.labelMedium,
-                color = if (isRequired) KafeTheme.colors.primary else KafeTheme.colors.onSurfaceVariant,
+                text = title,
+                style = KafeTheme.typography.titleMedium,
+                color = KafeTheme.colors.onBackground,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .alignByBaseline()
+                    .semantics { heading() },
             )
+            if (isRequired != null) {
+                Text(
+                    text = stringResource(if (isRequired) Res.string.ds_required else Res.string.ds_optional),
+                    style = KafeTheme.typography.labelMedium,
+                    color = if (isRequired) KafeTheme.colors.primary else KafeTheme.colors.onSurfaceVariant,
+                    maxLines = 1,
+                    modifier = Modifier.alignByBaseline(),
+                )
+            }
         }
-        Spacer(Modifier.weight(1f))
         if (hint != null) {
             Text(
                 text = hint,
                 style = KafeTheme.typography.labelMedium,
                 color = if (isHintEmphasized) KafeTheme.colors.primary else KafeTheme.colors.onSurfaceVariant,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                maxLines = 1,
+                modifier = Modifier
+                    .alignByBaseline()
+                    .semantics { liveRegion = LiveRegionMode.Polite },
             )
         }
     }
@@ -283,6 +301,24 @@ private fun KafeOptionGroupsPreview() {
                     QuantityOptionUi("shot", "Dodatkowe espresso", "+3,00 zł", quantity = 4, canIncrease = false, canDecrease = true),
                 ),
                 onQuantityChange = { _, _ -> },
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Preview(name = "Duża czcionka", fontScale = 1.3f, widthDp = 360)
+@Composable
+private fun KafeGroupHeaderLongTitlePreview() {
+    KafePreview {
+        Column(verticalArrangement = Arrangement.spacedBy(KafeTheme.spacing.l)) {
+            KafeGroupHeader(title = "Dodatkowe espresso", isRequired = false, hint = "maks. 4")
+            KafeGroupHeader(title = "Syrop", isRequired = false)
+            KafeGroupHeader(
+                title = "Dodatkowe espresso z ziaren jednorodnych z Etiopii",
+                isRequired = true,
+                hint = "maks. 4",
+                isHintEmphasized = true,
             )
         }
     }

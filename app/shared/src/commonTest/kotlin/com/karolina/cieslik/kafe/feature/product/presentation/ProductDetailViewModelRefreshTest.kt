@@ -19,7 +19,6 @@ import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -27,7 +26,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-// KAFE-10 / KAFE-11: Przypadki brzegowe – menu odświeża się w trakcie konfiguracji produktu.
+/** Przypadki brzegowe: menu odświeża się w trakcie konfiguracji produktu. */
 class ProductDetailViewModelRefreshTest {
 
     private val milk = ModifierGroup(
@@ -83,7 +82,6 @@ class ProductDetailViewModelRefreshTest {
         advanceUntilIdle()
     }
 
-    // KAFE-11 edge: zmiana cennika po odświeżeniu menu w trakcie konfiguracji – cena przelicza się automatycznie.
     @Test
     fun priceIsRecalculatedWhenPriceListChangesDuringConfiguration() = runViewModelTest { context ->
         val env = createViewModel(context, menu())
@@ -98,9 +96,6 @@ class ProductDetailViewModelRefreshTest {
         assertTrue(env.content.modifierGroups.first().options.first { it.id == "oat" }.isSelected)
     }
 
-    // KAFE-10 edge: wybrany modyfikator staje się niedostępny po odświeżeniu – jest automatycznie odznaczany,
-    // a użytkownik dostaje krótką informację.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun selectedOptionBecomingUnavailableIsDeselectedWithInfo() = runViewModelTest { context ->
         val env = createViewModel(context, menu())
@@ -116,8 +111,6 @@ class ProductDetailViewModelRefreshTest {
         assertTrue(env.content.canAddToCart)
     }
 
-    // Wybrana opcja zniknęła z grupy po odświeżeniu (i jest na liście niedostępnych) – ekran nie może się wywrócić.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun refreshRemovingSelectedOptionDoesNotCrash() = runViewModelTest { context ->
         val env = createViewModel(context, menu())
@@ -130,8 +123,6 @@ class ProductDetailViewModelRefreshTest {
         assertIs<ProductDetailUiState.Content>(env.viewModel.state.value)
     }
 
-    // Wybrana opcja wymaganej grupy zniknęła z menu – nie można dodać do koszyka bez widocznego wyboru mleka.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun refreshRemovingSelectedRequiredOptionBlocksAddToCartOrRestoresDefault() = runViewModelTest { context ->
         val env = createViewModel(context, menu())

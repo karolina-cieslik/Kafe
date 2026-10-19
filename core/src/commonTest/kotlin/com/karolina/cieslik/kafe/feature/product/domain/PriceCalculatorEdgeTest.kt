@@ -4,7 +4,7 @@ import com.karolina.cieslik.kafe.core.domain.Money
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-11: Przypadki brzegowe ceny – grosze bez błędów zaokrągleń (AC 5), format PLN (AC 2), maksymalne ilości.
+/** Przypadki brzegowe ceny: grosze bez błędów zaokrągleń, format PLN i maksymalne ilości. */
 class PriceCalculatorEdgeTest {
 
     private val calculator = PriceCalculator()

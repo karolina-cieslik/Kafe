@@ -3,13 +3,12 @@ package com.karolina.cieslik.kafe.feature.product.domain
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroup
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 
-// KAFE-9 / KAFE-10 / KAFE-11: Przypadki brzegowe konfiguracji, uzupełniające ProductConfigurationTest deva.
+/** Przypadki brzegowe konfiguracji produktu, uzupełniające ProductConfigurationTest. */
 class ProductConfigurationEdgeTest {
 
     private val calculator = PriceCalculator()
@@ -82,9 +81,6 @@ class ProductConfigurationEdgeTest {
         assertEquals(ConfigurationIssue.SizeUnavailable, config.validate(details(unavailableSizes = setOf(SizeCode.L))))
     }
 
-    // BUG (zgłoszony devowi): po odświeżeniu menu wybrana opcja zniknęła z grupy, a jej id jest na liście niedostępnych –
-    // validate() robi group.options.first { it.id == optionId } i rzuca NoSuchElementException.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun validateDoesNotCrashWhenSelectedOptionWasRemovedFromGroup() {
         val config = initial.selectOption("milk", "oat", details)
@@ -93,9 +89,6 @@ class ProductConfigurationEdgeTest {
         assertIs<ConfigurationIssue>(config.validate(oatRemoved))
     }
 
-    // BUG (zgłoszony devowi): wymagana grupa przechodzi walidację „wyborem-sierotą”, którego nie ma już wśród opcji –
-    // UI nie pokazuje żadnego zaznaczonego mleka, a „Dodaj do koszyka” jest aktywne.
-    @Ignore // KAFE-10 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun requiredGroupWithOnlyRemovedOptionSelectedIsMissing() {
         val config = initial.selectOption("milk", "oat", details)

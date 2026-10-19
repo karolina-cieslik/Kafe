@@ -8,7 +8,6 @@ import com.karolina.cieslik.kafe.feature.menu.domain.Product
 import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 
-// KAFE-9 / KAFE-10: Dane testowe produktu z rozmiarami S/M/L i grupami jak w AC KAFE-10.
 internal val milkGroup = ModifierGroup(
     id = "milk",
     name = "Mleko",

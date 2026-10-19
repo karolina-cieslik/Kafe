@@ -12,15 +12,27 @@ import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeEntity
 import com.karolina.cieslik.kafe.feature.cafe.data.local.OpeningHoursEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.CategoryEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuDao
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierOptionAvailabilityEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierOptionEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductAvailabilityEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.ProductModifierGroupEntity
 import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
+import com.karolina.cieslik.kafe.feature.menu.data.local.SizeAvailabilityEntity
 
 /**
- * Lokalna baza Room KMP – źródło prawdy w podejściu offline-first.
+ * Lokalna baza Room KMP – źródło prawdy w podejściu offline-first. Schematy są eksportowane do
+ * `app/shared/schemas`, a migracje generuje Room (AutoMigration) na ich podstawie.
  *
- * Wersja 2 dodała menu, dostępność per lokal i lokale; to same nowe tabele, więc wystarcza AutoMigration.
- * Schematy są eksportowane do `app/shared/schemas`.
+ * - Wersja 2 dodała menu, dostępność per lokal i lokale – same nowe tabele.
+ * - Wersja 3 dodała modyfikatory: tabele `menu_modifier_groups`, `menu_modifier_options`,
+ *   `menu_product_modifier_groups`, dostępność rozmiarów (`menu_size_availability`) i opcji
+ *   (`menu_modifier_option_availability`) oraz kolumnę `menu_products.defaultSizeCode` (TEXT, NULL).
+ *
+ * Migracja 2→3 jest bezpieczna dla danych: tylko tworzy tabele i dodaje kolumnę dopuszczającą NULL,
+ * niczego nie usuwa ani nie przepisuje. Zapamiętane menu zostaje, ale bez modyfikatorów i domyślnego
+ * rozmiaru – uzupełnią się przy najbliższym odświeżeniu menu.
  */
 @Database(
     entities = [
@@ -31,10 +43,15 @@ import com.karolina.cieslik.kafe.feature.menu.data.local.ProductSizeEntity
         ProductAvailabilityEntity::class,
         CafeEntity::class,
         OpeningHoursEntity::class,
+        ModifierGroupEntity::class,
+        ModifierOptionEntity::class,
+        ProductModifierGroupEntity::class,
+        SizeAvailabilityEntity::class,
+        ModifierOptionAvailabilityEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 @ConstructedBy(KafeDatabaseConstructor::class)
 abstract class KafeDatabase : RoomDatabase() {
@@ -42,7 +59,7 @@ abstract class KafeDatabase : RoomDatabase() {
     /** DAO znaczników synchronizacji. */
     abstract fun syncMetadataDao(): SyncMetadataDao
 
-    /** DAO menu sieci i dostępności w lokalach. */
+    /** DAO menu sieci, modyfikatorów i dostępności w lokalach. */
     abstract fun menuDao(): MenuDao
 
     /** DAO lokali sieci. */

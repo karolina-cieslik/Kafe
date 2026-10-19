@@ -62,9 +62,18 @@ internal fun Menu.toCafeMenu(): CafeMenu {
                 ?.let { products ->
                     MenuSection(
                         category = category,
-                        items = products.map { MenuItem(product = it, isAvailable = it.id !in unavailableProductIds) },
+                        items = products.map { MenuItem(product = it, isAvailable = isAvailable(it)) },
                     )
                 }
         }
     return CafeMenu(sections)
+}
+
+/**
+ * Produkt jest dostępny w lokalu, gdy nie ma go na liście braków i ma co najmniej jeden dostępny rozmiar.
+ * Wszystkie rozmiary niedostępne = produkt niedostępny; ta sama reguła obowiązuje na liście i w szczegółach.
+ */
+internal fun Menu.isAvailable(product: Product): Boolean {
+    val unavailable = unavailableSizes[product.id].orEmpty()
+    return product.id !in unavailableProductIds && product.sizes.any { it.code !in unavailable }
 }

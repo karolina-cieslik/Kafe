@@ -14,7 +14,8 @@ import kotlin.time.Duration
  * @property address adres w jednej linii.
  * @property lat szerokość geograficzna (WGS84, stopnie).
  * @property lng długość geograficzna (WGS84, stopnie).
- * @property openingHours godziny otwarcia; brak pola = pusta lista, czyli lokal bez godzin (zamknięty).
+ * @property openingHours godziny otwarcia; dzień bez wpisu = lokal zamknięty w tym dniu (zasada modelu),
+ * więc brak pola = pusta lista = lokal zamknięty codziennie.
  */
 @Serializable
 data class CafeDto(

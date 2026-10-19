@@ -17,13 +17,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-// KAFE-6: Fake'i i buildery do testów warstwy prezentacji (MenuViewModel, nawigacja, ekrany).
-
 /** Lokal testowy bez godzin otwarcia; nazwa domyślnie „Kafe <id>”. */
 internal fun cafe(id: String, name: String = "Kafe $id") =
     Cafe(id = id, name = name, address = "ul. Testowa 1", lat = 0.0, lng = 0.0, openingHours = emptyList())
 
-/** Kategoria menu; [sortOrder] decyduje o kolejności (AC 3 KAFE-6), nazwa domyślnie równa id. */
+/** Kategoria menu; [sortOrder] decyduje o kolejności (rosnąco), nazwa domyślnie równa id. */
 internal fun category(id: String, sortOrder: Int = 0, name: String = id) =
     Category(id = id, name = name, sortOrder = sortOrder)
 
@@ -64,8 +62,9 @@ internal class FakeCafeRepository(selected: Cafe?) : CafeRepository {
 
     override fun observeSelectedCafe(): Flow<Cafe?> = selectedCafe
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
         selectedCafe.value = cafe(cafeId)
+        return Result.Success(Unit)
     }
 
     override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)

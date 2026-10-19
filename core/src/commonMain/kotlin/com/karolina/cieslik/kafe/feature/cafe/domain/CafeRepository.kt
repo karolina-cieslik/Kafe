@@ -19,13 +19,17 @@ interface CafeRepository {
     fun observeCafes(): Flow<List<Cafe>>
 
     /**
-     * Wybrany lokal; gdy użytkownik jeszcze nie wybrał – pierwszy lokal sieci, null gdy brak zapamiętanych lokali.
-     * Emituje po każdej zmianie listy lokali albo wyboru.
+     * Zapamiętany wybór użytkownika; null, gdy jeszcze nic nie wybrał (bez domyślnego lokalu) albo wybranego
+     * lokalu nie ma wśród zapamiętanych. Emituje od razu i ponownie po każdej zmianie listy lokali albo wyboru.
      */
     fun observeSelectedCafe(): Flow<Cafe?>
 
-    /** Zapamiętuje wybór lokalu [cafeId]; [observeSelectedCafe] wyemituje nowy lokal. */
-    suspend fun selectCafe(cafeId: String)
+    /**
+     * Zapisuje wybór lokalu [cafeId] na stałe (przetrwa restart aplikacji); [observeSelectedCafe] go wyemituje.
+     *
+     * @return sukces albo [DataError.Local], gdy zapis się nie udał – poprzedni wybór zostaje bez zmian.
+     */
+    suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local>
 
     /**
      * Pobiera lokale z serwera i zapisuje je lokalnie.

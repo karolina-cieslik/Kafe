@@ -3,12 +3,13 @@ package com.karolina.cieslik.kafe.feature.cafe.domain
 /**
  * Lokal sieci. Menu jest wspólne dla sieci, a dostępność produktów zależy od lokalu.
  *
- * @property id identyfikator lokalu z API (np. `rynek`).
+ * @property id identyfikator lokalu z API (np. `krakow-rynek`).
  * @property name nazwa wyświetlana, np. „Kafe Rynek”.
  * @property address adres w jednej linii.
  * @property lat szerokość geograficzna (WGS84, stopnie).
  * @property lng długość geograficzna (WGS84, stopnie).
- * @property openingHours godziny otwarcia; dzień bez wpisu oznacza, że lokal jest wtedy zamknięty.
+ * @property openingHours godziny otwarcia, najwyżej jeden wpis na dzień. Zasada modelu: dzień bez wpisu =
+ * lokal zamknięty w tym dniu.
  */
 data class Cafe(
     val id: String,

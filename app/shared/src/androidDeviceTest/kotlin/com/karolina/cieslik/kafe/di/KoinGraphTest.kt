@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.karolina.cieslik.kafe.core.data.database.KafeDatabase
 import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataDao
 import com.karolina.cieslik.kafe.core.data.network.NetworkConfig
+import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import io.ktor.client.HttpClient
@@ -14,7 +15,7 @@ import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
-// KAFE-2: Pełny graf DI z prawdziwymi zależnościami platformowymi (OkHttp, Room z Context).
+/** Pełny graf DI z prawdziwymi zależnościami platformowymi (OkHttp, Room i DataStore z Context). */
 @RunWith(AndroidJUnit4::class)
 class KoinGraphTest {
 
@@ -30,9 +31,10 @@ class KoinGraphTest {
             assertNotNull(koinApp.koin.get<HttpClient>())
             assertNotNull(koinApp.koin.get<KafeDatabase>())
             assertNotNull(koinApp.koin.get<SyncMetadataDao>())
-            // KAFE-6
             assertNotNull(koinApp.koin.get<MenuRepository>())
             assertNotNull(koinApp.koin.get<CafeRepository>())
+            // DataStore z prawdziwą ścieżką z Context.
+            assertNotNull(koinApp.koin.get<SelectedCafeStore>())
         } finally {
             koinApp.close()
             context.deleteDatabase(KafeDatabase.DATABASE_NAME)

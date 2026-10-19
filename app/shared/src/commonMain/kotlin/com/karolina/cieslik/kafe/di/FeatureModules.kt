@@ -2,10 +2,13 @@ package com.karolina.cieslik.kafe.di
 
 import com.karolina.cieslik.kafe.feature.cafe.data.OfflineFirstCafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeLocalDataSource
+import com.karolina.cieslik.kafe.feature.cafe.data.local.DataStoreSelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.data.local.RoomCafeLocalDataSource
+import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.local.RoomMenuLocalDataSource
@@ -17,9 +20,12 @@ import com.karolina.cieslik.kafe.feature.menu.presentation.MenuViewModel
 import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
+import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
+import kotlin.time.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.datetime.TimeZone
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -33,14 +39,31 @@ val dispatchersModule = module {
 }
 
 /**
- * Lokale sieci. Lokalnie Room (DAO z databaseModule), zdalnie na razie seed – backend podmieni tylko
- * *RemoteDataSource, bez zmian w domenie i prezentacji.
+ * Lokale sieci, zapamiętany wybór lokalu (DataStore), wybór lokalu i ekran startowy. Lokalnie Room
+ * (DAO z databaseModule), zdalnie na razie seed – backend podmieni tylko *RemoteDataSource, bez zmian
+ * w domenie i prezentacji.
  */
 val cafeModule = module {
     single<CafeRemoteDataSource> { SeedCafeRemoteDataSource() }
     single<CafeLocalDataSource> { RoomCafeLocalDataSource(dao = get()) }
-    single<CafeRepository> { OfflineFirstCafeRepository(local = get(), remote = get()) }
+    single<SelectedCafeStore> { DataStoreSelectedCafeStore(dataStore = get()) }
+    single<CafeRepository> { OfflineFirstCafeRepository(local = get(), remote = get(), selectedCafeStore = get()) }
+    viewModel {
+        CafePickerViewModel(
+            cafeRepository = get(),
+            clock = Clock.System,
+            timeZone = CafeTimeZone,
+            dispatcher = get(IoDispatcher),
+        )
+    }
+    viewModel { AppStartViewModel(cafeRepository = get(), dispatcher = get(IoDispatcher)) }
 }
+
+/**
+ * Strefa czasowa godzin otwarcia lokali. Godziny są w czasie polskim, więc „otwarte teraz” liczymy w tej
+ * strefie niezależnie od strefy telefonu.
+ */
+val CafeTimeZone: TimeZone = TimeZone.of("Europe/Warsaw")
 
 /** Menu: źródła danych, repozytorium, przypadek użycia i MenuViewModel; źródła jak w [cafeModule]. */
 val menuModule = module {

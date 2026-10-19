@@ -34,9 +34,9 @@ import kotlinx.coroutines.launch
 /**
  * Menu wybranego lokalu.
  *
- * Offline-first: zapamiętane dane od razu, a przy każdym (ponownym) rozpoczęciu obserwacji odświeżenie w tle –
- * lokali, a potem menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych danych nie blokuje ekranu;
- * bez zapamiętanych danych kończy się stanem Error z „Spróbuj ponownie”.
+ * Offline-first: zapamiętane dane od razu, a przy pierwszej obserwacji odświeżenie w tle – lokali, a potem
+ * menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych danych nie blokuje ekranu; bez zapamiętanych
+ * danych kończy się stanem Error z „Spróbuj ponownie”.
  *
  * @param dispatcher dispatcher odświeżania i mapowania menu; w testach testowy.
  */
@@ -62,8 +62,15 @@ class MenuViewModel(
     /** Jednorazowe zdarzenia nawigacyjne; każde trafia do jednego kolektora, bufor trzyma je do czasu zebrania. */
     val events: Flow<MenuEvent> = eventChannel.receiveAsFlow()
 
+    /**
+     * Lokale, których menu udało się już odświeżyć w tym VM. Odświeżenie w tle jest tylko przy pierwszym wejściu
+     * na menu danego lokalu, więc powrót ze szczegółów nie pokazuje wskaźnika; ponownie: pull-to-refresh / Retry.
+     * Tylko udane odświeżenia – po błędzie ponowne wejście na lokal znów próbuje pobrać menu.
+     */
+    private val refreshedMenuCafeIds = MutableStateFlow<Set<String>>(emptySet())
+
     private val selectedCafe = cafeRepository.observeSelectedCafe()
-        .onStart { startCafesRefresh() }
+        .onStart { if (cafesRefreshJob == null) startCafesRefresh() }
         .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
     /** Menu zmienia się tylko przy zmianie id lokalu; cafeId w wyniku pozwala odrzucić menu poprzedniego lokalu. */
@@ -78,7 +85,7 @@ class MenuViewModel(
                 getMenuForCafe(cafeId)
                     .map { MenuOfCafe(cafeId, it) }
                     .flowOn(dispatcher)
-                    .onStart { startMenuRefresh(cafeId) }
+                    .onStart { if (cafeId !in refreshedMenuCafeIds.value) startMenuRefresh(cafeId) }
             }
         }
 
@@ -128,7 +135,11 @@ class MenuViewModel(
         menuRefreshJob?.cancel()
         // Status ustawiany synchronicznie, żeby pierwszy stan bez menu był Loading, a nie Error poprzedniej próby.
         menuRefresh.value = RefreshStatus.InProgress(cafeId)
-        menuRefreshJob = launchRefresh(menuRefresh, cafeId) { menuRepository.refresh(cafeId) }
+        menuRefreshJob = launchRefresh(menuRefresh, cafeId) {
+            menuRepository.refresh(cafeId).also { result ->
+                if (result is Result.Success) refreshedMenuCafeIds.update { it + cafeId }
+            }
+        }
     }
 
     private fun launchRefresh(

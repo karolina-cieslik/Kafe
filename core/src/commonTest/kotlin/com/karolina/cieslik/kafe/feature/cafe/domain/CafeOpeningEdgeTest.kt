@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-// KAFE-29: Przypadki brzegowe „otwarte teraz” i polskiego sortowania – uzupełnienie CafeOpeningTest deva.
+/** Przypadki brzegowe „otwarte teraz” i polskiego sortowania – uzupełnienie `CafeOpeningTest`. */
 class CafeOpeningEdgeTest {
 
     private fun cafe(vararg hours: OpeningHours) = Cafe("a", "Kafe", "ul. Testowa 1", 0.0, 0.0, hours.toList())

@@ -17,7 +17,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-// KAFE-31: Wybrany lokal jest zapisywany lokalnie i przywracany po ponownym uruchomieniu (DataStore na pliku, JVM).
+/** Wybrany lokal jest zapisywany lokalnie i przywracany po ponownym uruchomieniu (DataStore na pliku, JVM). */
 class DataStoreSelectedCafeStoreTest {
 
     @get:Rule
@@ -48,10 +48,10 @@ class DataStoreSelectedCafeStoreTest {
         assertEquals("gdansk-dluga", session { it.observeSelectedCafeId().first() })
     }
 
-    // Drugi zapis do istniejącego pliku DataStore na JVM pod Windows kończy się „Unable to rename …tmp”
-    // (problem DataStore/okio z podmianą pliku na Windows, występuje też w jednej sesji). Android i CI (ubuntu) – OK.
     @Test
     fun changedCafeOverridesPreviousChoiceAfterRestart() {
+        // Drugi zapis do istniejącego pliku DataStore na JVM pod Windows kończy się „Unable to rename …tmp”
+        // (podmiana pliku w DataStore/okio na Windows); Android i CI (ubuntu) – OK.
         assumeFalse("DataStore na JVM/Windows nie nadpisuje pliku", isWindows)
         session { it.saveSelectedCafeId("krakow-rynek") }
         session { it.saveSelectedCafeId("warszawa-nowy-swiat") }

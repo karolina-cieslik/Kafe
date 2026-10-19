@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.datetime.TimeZone
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -25,8 +24,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-// KAFE-29: „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku,
-// spójność etykiety godzin ze statusem.
+/** „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku i spójność etykiety godzin ze statusem. */
 class CafePickerViewModelEdgeTest {
 
     private val warsaw = TimeZone.of("Europe/Warsaw")
@@ -52,8 +50,6 @@ class CafePickerViewModelEdgeTest {
     }
 
     private fun isOpen(content: CafePickerUiState.Content) = content.cafes.single().isOpenNow
-
-    // --- Strefa czasowa i granice godzin ---
 
     @Test
     fun winterTimeUsesUtcPlusOne() = runViewModelTest { context ->
@@ -94,8 +90,6 @@ class CafePickerViewModelEdgeTest {
         assertEquals("Dziś 0:00–1:00", content.cafes.single().openingHoursLabel)
     }
 
-    // --- Sortowanie ---
-
     @Test
     fun cafesAreSortedPolishAlphabeticallyNotByCodePoint() = runViewModelTest { context ->
         val cafes = listOf("Kafe Żoliborz", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Sopot", "Kafe Łazienki", "Kafe Mokotów")
@@ -109,9 +103,6 @@ class CafePickerViewModelEdgeTest {
         )
     }
 
-    // --- Spójność etykiety ze statusem ---
-
-    @Ignore // KAFE-29 BUG zgłoszony devowi – zdjąć po poprawce
     @Test
     fun overnightCafeOpenNowIsNotLabelledClosedToday() = runViewModelTest { context ->
         // Sobota 18:00–2:00, w niedzielę zamknięte. Niedziela 1:00 (zima) – lokal wciąż otwarty od soboty.

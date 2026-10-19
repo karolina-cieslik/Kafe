@@ -22,8 +22,17 @@ import kafe.app.shared.generated.resources.Res
 import kafe.app.shared.generated.resources.ds_total_label
 import org.jetbrains.compose.resources.stringResource
 
-// KAFE-25 / KAFE-9: Przypięty dolny pasek z ceną i główną akcją (np. „Dodaj do koszyka”).
-// Cena jest widoczna zawsze, niezależnie od przewijania treści nad paskiem (AC KAFE-11 pkt 4).
+/**
+ * Przypięty dolny pasek z ceną i główną akcją ekranu (np. „Dodaj do koszyka”). Cena jest widoczna zawsze,
+ * niezależnie od przewijania treści nad paskiem. Pasek sam dodaje odstęp od paska nawigacji systemu.
+ *
+ * @param priceLabel sformatowana cena, np. „28,00 zł”.
+ * @param actionText etykieta przycisku akcji.
+ * @param onActionClick wywoływane po kliknięciu przycisku, gdy [actionEnabled] = `true`.
+ * @param actionEnabled czy akcja jest dostępna (np. `false` dla produktu niedostępnego lub bez wymaganego wyboru).
+ * @param priceCaption podpis nad ceną; domyślnie „Razem”. TalkBack czyta podpis i cenę razem.
+ * @param actionTestTag opcjonalny tag testowy przycisku akcji.
+ */
 @Composable
 fun KafeBottomActionBar(
     priceLabel: String,

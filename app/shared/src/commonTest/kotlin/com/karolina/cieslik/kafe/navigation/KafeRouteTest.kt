@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-41: Trasy i mapowanie zdarzeń menu na nawigację.
+/** Trasy i mapowanie zdarzeń menu na nawigację. */
 class KafeRouteTest {
 
     @Test

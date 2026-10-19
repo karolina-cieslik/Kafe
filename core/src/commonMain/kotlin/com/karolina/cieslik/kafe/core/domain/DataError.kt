@@ -1,8 +1,9 @@
 package com.karolina.cieslik.kafe.core.domain
 
-// KAFE-2: Błędy warstwy danych – sieć (Remote) i baza lokalna (Local).
+/** Błędy warstwy danych zwracane w [Result]: sieć ([Remote]) i lokalna baza ([Local]). */
 sealed interface DataError : Error {
 
+    /** Błąd zapytania sieciowego – mapowany z kodów HTTP i wyjątków klienta w `safeCall`. */
     enum class Remote : DataError {
         NO_INTERNET,
         REQUEST_TIMEOUT,
@@ -15,6 +16,7 @@ sealed interface DataError : Error {
         UNKNOWN,
     }
 
+    /** Błąd lokalnej bazy Room – mapowany z wyjątków SQLite w `safeDbCall`. */
     enum class Local : DataError {
         DISK_FULL,
         NOT_FOUND,

@@ -10,8 +10,12 @@ import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock
 
-// KAFE-6: Offline-first – Room jest źródłem prawdy, refresh pobiera menu i dostępność, a potem zapisuje je atomowo.
-// Błąd sieci nie rusza zapamiętanego menu.
+/**
+ * Offline-first: Room jest źródłem prawdy, [refresh] pobiera menu i dostępność, a potem zapisuje je w jednej
+ * transakcji. Błąd sieci nie rusza zapamiętanego menu.
+ *
+ * @param clock źródło czasu zapisu synchronizacji; w testach podmieniane.
+ */
 class OfflineFirstMenuRepository(
     private val local: MenuLocalDataSource,
     private val remote: MenuRemoteDataSource,
@@ -20,6 +24,7 @@ class OfflineFirstMenuRepository(
 
     override fun observeMenu(cafeId: String): Flow<Menu?> = local.observeMenu(cafeId)
 
+    /** Zapisuje dopiero, gdy oba zapytania się udały – pierwszy błąd przerywa odświeżanie bez zapisu. */
     override suspend fun refresh(cafeId: String): EmptyResult<DataError> {
         val menu = when (val result = remote.fetchMenu()) {
             is Result.Success -> result.data

@@ -18,12 +18,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-// KAFE-6: Lokalne źródło menu (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM.
+/** Lokalne źródło menu (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM. */
 interface MenuLocalDataSource {
 
-    /** null, gdy menu sieci lub dostępność w lokalu nie zostały jeszcze zapisane. */
+    /**
+     * Menu sieci z modyfikatorami i dostępnością w lokalu [cafeId]; null, gdy menu sieci lub dostępność w lokalu
+     * nie zostały jeszcze zapisane. Emituje od razu i ponownie po każdej zmianie tabel menu; identyczne
+     * wartości pomija.
+     */
     fun observeMenu(cafeId: String): Flow<Menu?>
 
+    /**
+     * Zastępuje menu sieci [menu] i dostępność w lokalu [cafeId] ([availability]).
+     * [syncedAtEpochMillis] to czas zapisu w ms od epoki (UTC).
+     *
+     * @return sukces albo [DataError.Local] przy błędzie bazy; wtedy zostaje poprzednie menu.
+     */
     suspend fun saveMenu(
         cafeId: String,
         menu: MenuDto,
@@ -32,8 +42,15 @@ interface MenuLocalDataSource {
     ): EmptyResult<DataError.Local>
 }
 
+/** [MenuLocalDataSource] na Room. */
 class RoomMenuLocalDataSource(private val dao: MenuDao) : MenuLocalDataSource {
 
+    // TODO(KAFE-6): R-1 – odczyt niespójny z atomowym zapisem; poprawka: jeden wyzwalacz + odczyt w transakcji.
+    /**
+     * Znane ograniczenie (R-1): zapis w [MenuDao.replaceMenuForCafe] jest atomowy, ale odczyt nie – combine łączy
+     * siedem osobnych zapytań, które po transakcji wykonują się ponownie każde osobno. Może więc wyemitować stan
+     * pośredni, np. nowe kategorie bez produktów (pusta lista sekcji) albo nowe menu ze starą dostępnością.
+     */
     override fun observeMenu(cafeId: String): Flow<Menu?> {
         val network = combine(dao.observeCategories(), dao.observeProducts(), dao.observeModifierGroups(), ::Triple)
         val availability = combine(
@@ -47,6 +64,7 @@ class RoomMenuLocalDataSource(private val dao: MenuDao) : MenuLocalDataSource {
             network,
             availability,
         ) { syncedCount, (categories, products, groups), cafeAvailability ->
+            // Menu jest „zapamiętane” dopiero, gdy są oba znaczniki: menu sieci i dostępności w tym lokalu.
             if (syncedCount < 2) null else toMenu(categories, products, groups, cafeAvailability)
         }.distinctUntilChanged()
     }
@@ -61,6 +79,10 @@ class RoomMenuLocalDataSource(private val dao: MenuDao) : MenuLocalDataSource {
     }
 }
 
+/**
+ * Zamienia odpowiedź API na wiersze bazy. Kody rozmiarów i typy grup są zapisywane wielkimi literami;
+ * kolejność grup produktu z [MenuDto] staje się ich sortOrder.
+ */
 internal fun MenuDto.toSnapshot(cafeId: String, availability: AvailabilityDto): MenuSnapshot {
     // Duplikaty id złamałyby klucze główne – wszędzie zostaje pierwszy wpis.
     val groups = modifierGroups.distinctBy { it.id }
@@ -110,6 +132,7 @@ internal fun MenuDto.toSnapshot(cafeId: String, availability: AvailabilityDto): 
     )
 }
 
+/** Składa domenowe [Menu] z wierszy bazy; dostępność zamienia na zbiory braków (wpisy z isAvailable = false). */
 internal fun toMenu(
     categories: List<CategoryEntity>,
     products: List<ProductWithSizes>,
@@ -150,7 +173,10 @@ internal fun ProductSizeEntity.toDomainOrNull(): ProductSize? {
     return ProductSize(code = sizeCode, volumeMl = volumeMl, price = Money(priceGrosze))
 }
 
-/** KAFE-10: grupa z nieznanym typem albo bez poprawnych opcji jest pomijana; ujemne dopłaty są odrzucane. */
+/**
+ * Grupa z nieznanym typem albo bez poprawnych opcji jest pomijana; opcje z ujemną dopłatą są odrzucane.
+ * Limit: SINGLE zawsze 1, QUANTITY co najmniej 1. Opcja domyślna spoza grupy jest ignorowana.
+ */
 internal fun ModifierGroupWithOptions.toDomainOrNull(): ModifierGroup? {
     val type = ModifierGroupType.entries.firstOrNull { it.name.equals(group.type, ignoreCase = true) } ?: return null
     val options = options

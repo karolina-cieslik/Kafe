@@ -37,7 +37,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// KAFE-9 / KAFE-10 / KAFE-11: ProductDetailViewModel na fake'owych repozytoriach.
+/** ProductDetailViewModel na fake'owych repozytoriach; na końcu regresje od testera – odświeżenie menu w trakcie konfiguracji. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductDetailViewModelTest {
 
@@ -45,8 +45,9 @@ class ProductDetailViewModelTest {
         val selected = MutableStateFlow<Cafe?>(cafe("a"))
         override fun observeCafes(): Flow<List<Cafe>> = selected.map { listOfNotNull(it) }
         override fun observeSelectedCafe(): Flow<Cafe?> = selected
-        override suspend fun selectCafe(cafeId: String) {
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
             selected.value = cafe(cafeId)
+            return Result.Success(Unit)
         }
         override suspend fun refresh(): EmptyResult<DataError> = Result.Success(Unit)
     }
@@ -255,7 +256,6 @@ class ProductDetailViewModelTest {
         assertEquals("M", env.content.sizes.single { it.isSelected }.code)
     }
 
-    // Regresje od testera (KAFE-10): odświeżenie menu w trakcie konfiguracji.
     @Test
     fun selectedOptionBecomingUnavailableIsDeselectedWithInfo() = runVmTest { env ->
         act(env, ProductDetailAction.OptionSelected("syrup", "syrup-vanilla"))

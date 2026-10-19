@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- KAFE-25 / KAFE-6: Teksty UI (PL). -->
+<!-- Teksty UI (PL). -->
 <resources>
     <!-- Design system -->
     <string name="ds_product_unavailable">Chwilowo niedostępny</string>
@@ -10,7 +10,7 @@
     <string name="ds_loading">Ładowanie…</string>
     <string name="ds_error_title">Coś poszło nie tak</string>
 
-    <!-- Menu (KAFE-6) -->
+    <!-- Menu -->
     <string name="menu_location_label">Twoja kawiarnia</string>
     <string name="menu_change_cafe">Zmień kawiarnię</string>
     <string name="menu_search_placeholder">Szukaj kawy</string>
@@ -20,7 +20,7 @@
     <string name="menu_search_empty_message">Nie znaleźliśmy niczego dla „%1$s”. Spróbuj innej nazwy.</string>
     <string name="menu_refreshing">Odświeżanie menu</string>
 
-    <!-- Design system (KAFE-9) -->
+    <!-- Design system -->
     <string name="ds_increase">Zwiększ: %1$s</string>
     <string name="ds_decrease">Zmniejsz: %1$s</string>
     <string name="ds_quantity_value">%1$s: %2$d</string>
@@ -30,14 +30,14 @@
     <string name="ds_read_more">Czytaj więcej</string>
     <string name="ds_read_less">Zwiń</string>
 
-    <!-- Szczegóły produktu (KAFE-9) -->
+    <!-- Szczegóły produktu -->
     <string name="product_detail_title">Szczegóły</string>
     <string name="product_detail_size">Rozmiar</string>
     <string name="product_detail_quantity">Liczba sztuk</string>
     <string name="product_detail_add_to_cart">Dodaj do koszyka</string>
     <string name="product_detail_added_to_cart">Dodano do koszyka: %1$s</string>
 
-    <!-- Wybór lokalu (KAFE-29) -->
+    <!-- Wybór lokalu -->
     <string name="cafe_picker_title">Wybierz kawiarnię</string>
     <string name="cafe_picker_welcome_subtitle">Pokażemy menu i dostępność produktów w wybranym lokalu. Zmienisz go w każdej chwili.</string>
     <string name="cafe_picker_open">Otwarte</string>
@@ -45,6 +45,7 @@
     <string name="cafe_picker_selected">Wybrana</string>
     <string name="cafe_picker_empty_title">Brak kawiarni</string>
     <string name="cafe_picker_empty_message">Nie mamy teraz żadnego lokalu do pokazania. Spróbuj ponownie za chwilę.</string>
+    <string name="cafe_picker_selection_failed">Nie udało się zapisać wyboru lokalu. Spróbuj ponownie.</string>
 
     <!-- Intro (KAFE-42) -->
     <string name="brand_name">Kafe</string>

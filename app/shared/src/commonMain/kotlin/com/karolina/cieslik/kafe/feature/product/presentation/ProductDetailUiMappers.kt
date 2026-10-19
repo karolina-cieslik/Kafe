@@ -9,7 +9,11 @@ import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 
-// KAFE-9 / KAFE-10 / KAFE-11: Mapowanie szczegółów produktu i konfiguracji na stan ekranu.
+/**
+ * Stan ekranu dla produktu i bieżącej konfiguracji: sformatowane etykiety, cena wszystkich sztuk i możliwość
+ * dodania do koszyka. [deselectedOptions] to nazwy opcji odznaczonych po odświeżeniu menu – trafiają do
+ * infoMessage, jeśli nic nie blokuje dodania.
+ */
 internal fun ProductDetails.toContent(
     configuration: ProductConfiguration,
     calculator: PriceCalculator,
@@ -97,9 +101,13 @@ internal fun List<String>.toDeselectedMessage(): String? = when (size) {
     else -> "Opcje ${joinToString { "„$it”" }} są już niedostępne i zostały odznaczone."
 }
 
-// Docelowo do zasobów stringów (composeResources), gdy dojdzie lokalizacja.
+/** Etykieta opcji bez dopłaty. Teksty docelowo w zasobach stringów (composeResources), gdy dojdzie lokalizacja. */
 internal const val SURCHARGE_NONE = "bez dopłaty"
+/** Produkt zniknął z menu albo jest nieaktywny. */
 internal const val PRODUCT_ERROR_NOT_FOUND = "Tego produktu nie ma już w menu."
+/** Nie ma wybranego lokalu ani lokali do wyboru. */
 internal const val PRODUCT_ERROR_NO_CAFE = "Nie wybrano lokalu."
+/** Brak połączenia przy pobieraniu menu. */
 internal const val PRODUCT_ERROR_NO_CONNECTION = "Nie udało się pobrać produktu. Sprawdź połączenie."
+/** Pozostałe błędy pobierania menu. */
 internal const val PRODUCT_ERROR_GENERIC = "Nie udało się pobrać produktu. Spróbuj ponownie później."

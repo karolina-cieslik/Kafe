@@ -13,9 +13,21 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.preview.KafePreview
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
+/**
+ * Wariant kolorystyczny [KafeBadge]:
+ * - [Neutral] – ciemne tło `secondary`, np. „Chwilowo niedostępny” na zdjęciu produktu;
+ * - [Accent] – kawowy kontener `primaryContainer`, np. „Otwarte”;
+ * - [Muted] – wyciszone tło `surfaceVariant`, np. „Zamknięte”.
+ */
 enum class KafeBadgeStyle { Neutral, Accent, Muted }
 
-// KAFE-25: Mała etykieta statusu („Chwilowo niedostępny”, „Otwarte”, „Zamknięte”).
+/**
+ * Mała, jednoliniowa etykieta statusu („Chwilowo niedostępny”, „Otwarte”, „Zamknięte”).
+ * Nie jest klikalna; TalkBack czyta ją jak zwykły tekst.
+ *
+ * @param text treść etykiety.
+ * @param style wariant kolorów; domyślnie [KafeBadgeStyle.Neutral].
+ */
 @Composable
 fun KafeBadge(
     text: String,

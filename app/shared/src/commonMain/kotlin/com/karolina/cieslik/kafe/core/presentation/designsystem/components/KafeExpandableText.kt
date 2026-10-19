@@ -22,14 +22,21 @@ import kafe.app.shared.generated.resources.ds_read_less
 import kafe.app.shared.generated.resources.ds_read_more
 import org.jetbrains.compose.resources.stringResource
 
-// KAFE-25 / KAFE-9: Tekst zwijany do [collapsedMaxLines] z „Czytaj więcej” / „Zwiń”. Przełącznik pojawia się
-// tylko wtedy, gdy tekst faktycznie się nie mieści.
+/**
+ * Tekst zwijany do [collapsedMaxLines] linii z przełącznikiem „Czytaj więcej” / „Zwiń”. Przełącznik pojawia się
+ * tylko wtedy, gdy tekst faktycznie się nie mieści. Stan rozwinięcia przetrwa obrót ekranu.
+ *
+ * @param text pełny tekst (np. opis produktu).
+ * @param collapsedMaxLines liczba linii w stanie zwiniętym.
+ */
 @Composable
 fun KafeExpandableText(
     text: String,
     modifier: Modifier = Modifier,
     collapsedMaxLines: Int = 3,
 ) {
+    // Oba w rememberSaveable: po obrocie rozwinięty opis zostaje rozwinięty, a przełącznik nie znika do czasu
+    // ponownego pomiaru tekstu.
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var hasOverflow by rememberSaveable { mutableStateOf(false) }
     Column(modifier = modifier.animateContentSize()) {

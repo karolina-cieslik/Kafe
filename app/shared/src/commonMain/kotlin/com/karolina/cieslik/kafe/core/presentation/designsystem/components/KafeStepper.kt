@@ -37,13 +37,31 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val DISABLED_ALPHA = 0.38f
 
+/**
+ * Rozmiar [KafeStepper]: [Small] w wierszu modyfikatora, [Large] dla liczby sztuk.
+ *
+ * @property button średnica okrągłego przycisku (obszar dotyku i tak ma co najmniej 48dp).
+ * @property icon rozmiar ikony „−” / „+”.
+ * @property valueWidth minimalna szerokość pola wartości, żeby przyciski nie skakały przy zmianie cyfr.
+ */
 enum class KafeStepperSize(val button: Dp, val icon: Dp, val valueWidth: Dp) {
     Small(button = 28.dp, icon = 16.dp, valueWidth = 24.dp),
     Large(button = 36.dp, icon = 20.dp, valueWidth = 32.dp),
 }
 
-// KAFE-25 / KAFE-9: Stepper „− wartość +” (dodatkowe shoty, liczba sztuk). [label] trafia do opisów
-// dostępności („Zwiększ: Dodatkowe espresso”); zmiana wartości jest ogłaszana przez TalkBack (liveRegion).
+/**
+ * Stepper „− wartość +” (np. dodatkowe shoty, liczba sztuk). Komponent nie pilnuje limitów sam – o tym,
+ * czy przycisk jest aktywny, decydują [canDecrease] / [canIncrease] ze stanu ekranu.
+ *
+ * @param value bieżąca wartość.
+ * @param label nazwa wartości do opisów dostępności, np. „Zwiększ: Dodatkowe espresso”; zmiana wartości
+ * jest ogłaszana przez TalkBack („Dodatkowe espresso: 2”).
+ * @param onDecrease wywoływane po kliknięciu „−”, gdy [canDecrease] = `true`.
+ * @param onIncrease wywoływane po kliknięciu „+”, gdy [canIncrease] = `true`.
+ * @param canDecrease czy można zmniejszyć (np. `false` przy minimum); wyłączony przycisk jest przygaszony.
+ * @param canIncrease czy można zwiększyć (np. `false` przy limicie).
+ * @param size rozmiar steppera.
+ */
 @Composable
 fun KafeStepper(
     value: Int,

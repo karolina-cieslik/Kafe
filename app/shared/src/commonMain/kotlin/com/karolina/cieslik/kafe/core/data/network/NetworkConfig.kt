@@ -1,6 +1,14 @@
 package com.karolina.cieslik.kafe.core.data.network
 
-// KAFE-2: Konfiguracja klienta HTTP – dostarczana przez DI (base URL i flaga debug z platformy).
+/**
+ * Konfiguracja klienta HTTP – dostarczana przez DI (bazowy adres i flaga debug z platformy).
+ *
+ * @property baseUrl bazowy adres API, do którego doklejane są ścieżki żądań.
+ * @property enableLogging logowanie całych żądań i odpowiedzi; tylko w buildach debug.
+ * @property requestTimeoutMillis limit całego żądania w milisekundach.
+ * @property connectTimeoutMillis limit nawiązania połączenia w milisekundach.
+ * @property socketTimeoutMillis maksymalna przerwa między pakietami w milisekundach.
+ */
 data class NetworkConfig(
     val baseUrl: String,
     val enableLogging: Boolean = false,

@@ -1,6 +1,7 @@
 package com.karolina.cieslik.kafe.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,8 +13,15 @@ import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
 
-// KAFE-41: Graf nawigacji. NavController i ekran startowy są parametrami, żeby testy mogły podać własny
-// kontroler (TestNavHostController), a KAFE-31 – start na CafePicker przy pierwszym uruchomieniu.
+/**
+ * Graf nawigacji aplikacji.
+ *
+ * Przejścia z menu używają launchSingleTop, więc szybkie podwójne kliknięcie nie otwiera ekranu dwa razy.
+ * Powrót zdejmuje ekran ze stosu, a menu zachowuje swój stan.
+ *
+ * @param navController kontroler nawigacji; parametr, żeby testy mogły podać TestNavHostController.
+ * @param startDestination ekran startowy; parametr, żeby pierwsze uruchomienie mogło zacząć od wyboru lokalu.
+ */
 @Composable
 fun KafeNavHost(
     modifier: Modifier = Modifier,
@@ -42,9 +50,14 @@ fun KafeNavHost(
             )
         }
         composable<KafeRoute.CafePicker> {
+            // Liczone raz na wpis stosu: przy animacji wyjścia (po wyborze z menu) poprzedni wpis jest już zdjęty
+            // i bieżące odczytanie dałoby false – nagłówek mignąłby jako powitalny.
+            val canNavigateBack = remember { navController.previousBackStackEntry != null }
             CafePickerRoute(
                 onCafeChosen = { navController.navigateAfterCafeChosen() },
-                onNavigateBack = { navController.popBackStack() },
+                // Bezpiecznik: zdjęcie jedynego wpisu stosu zostawiłoby pusty ekran.
+                onNavigateBack = { if (navController.previousBackStackEntry != null) navController.popBackStack() },
+                canNavigateBack = canNavigateBack,
             )
         }
     }

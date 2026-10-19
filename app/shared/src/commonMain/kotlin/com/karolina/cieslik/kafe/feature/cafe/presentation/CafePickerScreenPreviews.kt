@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 
-// KAFE-29: Dane fake do previewów wyboru lokalu.
+/** Dane fake do previewów wyboru lokalu. */
 internal object CafePickerPreviewData {
     private val cafes = listOf(
         CafeUi("rynek", "Kafe Rynek", "Rynek Główny 12, Kraków", "Dziś 7:00–21:00", isOpenNow = true, isSelected = true),
@@ -21,8 +21,8 @@ internal object CafePickerPreviewData {
 }
 
 @Composable
-private fun CafePickerPreview(state: CafePickerUiState) {
-    KafeTheme { CafePickerScreen(state = state, onAction = {}) }
+private fun CafePickerPreview(state: CafePickerUiState, canNavigateBack: Boolean = true) {
+    KafeTheme { CafePickerScreen(state = state, onAction = {}, canNavigateBack = canNavigateBack) }
 }
 
 @PreviewLightDark
@@ -31,7 +31,18 @@ private fun CafePickerContentPreview() = CafePickerPreview(CafePickerPreviewData
 
 @PreviewLightDark
 @Composable
-private fun CafePickerFirstLaunchPreview() = CafePickerPreview(CafePickerPreviewData.firstLaunch)
+private fun CafePickerFirstLaunchPreview() = CafePickerPreview(CafePickerPreviewData.firstLaunch, canNavigateBack = false)
+
+@PreviewLightDark
+@Composable
+private fun CafePickerFirstLaunchLoadingPreview() = CafePickerPreview(CafePickerUiState.Loading, canNavigateBack = false)
+
+@PreviewLightDark
+@Composable
+private fun CafePickerFirstLaunchErrorPreview() = CafePickerPreview(
+    CafePickerUiState.Error("Nie udało się pobrać listy kawiarni. Sprawdź połączenie z internetem."),
+    canNavigateBack = false,
+)
 
 @Preview
 @Composable

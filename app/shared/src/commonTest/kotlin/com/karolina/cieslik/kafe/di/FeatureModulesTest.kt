@@ -23,8 +23,10 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 
-// KAFE-6: Graf DI feature'ów menu i lokali. Room (DAO) sprawdza KoinGraphTest na urządzeniu,
-// tu lokalne źródła są podmienione, żeby test działał na JVM.
+/**
+ * Graf DI feature'ów. Room (DAO) sprawdza KoinGraphTest na urządzeniu, tu lokalne źródła są podmienione,
+ * żeby test działał na JVM.
+ */
 class FeatureModulesTest {
 
     private val fakeLocalModule = module {
@@ -39,13 +41,14 @@ class FeatureModulesTest {
                 ): EmptyResult<DataError.Local> = Result.Success(Unit)
             }
         }
-        // KAFE-31: DataStore wymaga ścieżki platformowej – na JVM wybór w pamięci.
+        // DataStore wymaga ścieżki platformowej – na JVM wybór w pamięci.
         single<SelectedCafeStore> {
             object : SelectedCafeStore {
                 private val id = MutableStateFlow<String?>(null)
                 override fun observeSelectedCafeId(): Flow<String?> = id
-                override suspend fun saveSelectedCafeId(cafeId: String) {
+                override suspend fun saveSelectedCafeId(cafeId: String): EmptyResult<DataError.Local> {
                     id.value = cafeId
+                    return Result.Success(Unit)
                 }
             }
         }

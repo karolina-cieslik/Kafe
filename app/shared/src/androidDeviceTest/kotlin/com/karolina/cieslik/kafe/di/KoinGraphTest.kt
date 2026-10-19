@@ -15,7 +15,7 @@ import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
-// KAFE-2: Pełny graf DI z prawdziwymi zależnościami platformowymi (OkHttp, Room z Context).
+/** Pełny graf DI z prawdziwymi zależnościami platformowymi (OkHttp, Room i DataStore z Context). */
 @RunWith(AndroidJUnit4::class)
 class KoinGraphTest {
 
@@ -31,10 +31,9 @@ class KoinGraphTest {
             assertNotNull(koinApp.koin.get<HttpClient>())
             assertNotNull(koinApp.koin.get<KafeDatabase>())
             assertNotNull(koinApp.koin.get<SyncMetadataDao>())
-            // KAFE-6
             assertNotNull(koinApp.koin.get<MenuRepository>())
             assertNotNull(koinApp.koin.get<CafeRepository>())
-            // KAFE-31: DataStore z prawdziwą ścieżką z Context.
+            // DataStore z prawdziwą ścieżką z Context.
             assertNotNull(koinApp.koin.get<SelectedCafeStore>())
         } finally {
             koinApp.close()

@@ -81,20 +81,42 @@ private const val GRID_COLUMNS = 2
 private const val SKELETON_ITEMS = 6
 private const val SKELETON_CHIPS = 3
 
-// KAFE-6: Stabilne tagi dla testów UI (Robolectric / instrumentacyjnych).
+/** Stabilne tagi ekranu menu dla testów UI (Robolectric i instrumentacyjnych). */
 object MenuTestTags {
+    /** Siatka szkieletów w stanie ładowania. */
     const val LOADING = "menuLoading"
+
+    /** Siatka produktów w stanie treści. */
     const val GRID = "menuGrid"
+
+    /** Przypięty nagłówek z lokalem i wyszukiwarką. */
     const val HEADER = "menuHeader"
+
+    /** Rząd chipów kategorii. */
     const val CATEGORIES = "menuCategories"
+
+    /** Karta produktu o danym id. */
     fun product(id: String) = "menuProduct_$id"
+
+    /** Chip kategorii o danym id. */
     fun category(id: String) = "menuCategory_$id"
 }
 
-// KAFE-6: Ekran menu lokalu – bezstanowy (state + onAction), inspirowany ekranem Home z makiety.
-// Nagłówek (lokal + wyszukiwarka) i chipy kategorii są przypięte; przewija się tylko siatka produktów,
-// a pull-to-refresh działa wyłącznie na niej. Bez wyszukiwania siatka pokazuje wybraną kategorię,
-// przy aktywnym wyszukiwaniu – wszystkie wyniki w sekcjach (chipy ukryte).
+/**
+ * Ekran menu wybranego lokalu – bezstanowy, cały stan przychodzi w [state], a interakcje wychodzą
+ * jako [MenuAction] przez [onAction]. Układ inspirowany ekranem Home z makiety.
+ *
+ * Nagłówek (lokal + wyszukiwarka) i chipy kategorii są przypięte; przewija się tylko siatka produktów,
+ * a pull-to-refresh działa wyłącznie na niej. Stany:
+ * - [MenuUiState.Loading] – nagłówek z nieaktywną wyszukiwarką, szkielety chipów i kart;
+ * - [MenuUiState.Content] – bez wyszukiwania siatka pokazuje wybraną kategorię, przy aktywnym wyszukiwaniu
+ *   wszystkie wyniki w sekcjach (chipy ukryte); brak kategorii = stan pustki (osobny dla wyszukiwania);
+ * - [MenuUiState.Error] – pełnoekranowy błąd z „Spróbuj ponownie”, bez nagłówka.
+ *
+ * Akcje: [MenuAction.CategorySelected] (chip), [MenuAction.SearchQueryChanged] (każda zmiana tekstu),
+ * [MenuAction.ProductClicked] (karta i „+”), [MenuAction.ChangeCafeClicked] (nazwa lokalu, przycisk w stanie
+ * pustki), [MenuAction.Refresh] (pull-to-refresh), [MenuAction.Retry] (stan błędu).
+ */
 @Composable
 fun MenuScreen(
     state: MenuUiState,
@@ -155,8 +177,10 @@ private fun MenuContent(
     val gridState = rememberLazyGridState()
     val isGridScrolled by remember { derivedStateOf { gridState.canScrollBackward } }
 
-    // Nowa kategoria / nowe wyniki wyszukiwania startują od góry. Porównanie z zapisanym kluczem
-    // chroni przed przewinięciem na górę po odtworzeniu ekranu (obrót, powrót z tła).
+    // Nowa kategoria / nowe wyniki wyszukiwania startują od góry. Klucz efektu to aktualna lista (kategoria
+    // albo zapytanie), więc efekt rusza przy każdej jej zmianie. Ostatni klucz jest w rememberSaveable:
+    // po odtworzeniu ekranu (obrót, powrót z tła, powrót ze szczegółów) efekt startuje znowu, ale klucz
+    // się zgadza i pozycja przewinięcia zostaje.
     val listKey = if (isSearching) "search:${state.searchQuery.trim()}" else "category:${state.selectedCategoryId}"
     var lastListKey by rememberSaveable { mutableStateOf(listKey) }
     LaunchedEffect(listKey) {
@@ -272,7 +296,7 @@ private fun LazyGridScope.products(category: CategoryUi, onAction: (MenuAction) 
     }
 }
 
-// Przypięty ciemny nagłówek: lokal + wyszukiwarka. Status bar wchodzi w jego tło.
+/** Przypięty ciemny nagłówek: lokal + wyszukiwarka. Pasek statusu wchodzi w jego tło. */
 @Composable
 private fun MenuHeader(
     cafeName: String?,
@@ -391,7 +415,7 @@ private fun CategoryChips(
     }
 }
 
-// Zajmuje tyle miejsca co chipy, żeby po załadowaniu siatka nie przeskakiwała.
+/** Zajmuje tyle miejsca co chipy, żeby po załadowaniu siatka nie przeskakiwała. */
 @Composable
 private fun CategoryChipsSkeleton() {
     val spacing = KafeTheme.spacing
@@ -413,7 +437,7 @@ private fun CategoryChipsSkeleton() {
     }
 }
 
-// Separator pod przypiętą częścią – widoczny tylko, gdy siatka jest przewinięta (treść „pod” paskiem).
+/** Separator pod przypiętą częścią – widoczny tylko, gdy siatka jest przewinięta (treść „pod” paskiem). */
 @Composable
 private fun ScrollEdgeDivider(visible: Boolean) {
     val alpha by animateFloatAsState(targetValue = if (visible) 1f else 0f, label = "scrollEdgeDivider")

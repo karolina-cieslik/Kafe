@@ -14,8 +14,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 
-// KAFE-6: Offline-first – Room jest źródłem prawdy, refresh() pobiera lokale i zapisuje je lokalnie.
-// KAFE-31: wybór lokalu zapamiętany w SelectedCafeStore (DataStore), bez domyślnego lokalu.
+/**
+ * Offline-first: Room jest źródłem prawdy, [refresh] pobiera lokale i zapisuje je lokalnie.
+ *
+ * Wybór lokalu jest zapamiętany w [SelectedCafeStore] (DataStore) i przetrwa restart aplikacji. Domyślnego
+ * lokalu nie ma – bez wyboru [observeSelectedCafe] emituje null, a aplikacja startuje od wyboru lokalu.
+ *
+ * @param clock źródło czasu zapisu synchronizacji; w testach podmieniane.
+ */
 class OfflineFirstCafeRepository(
     private val local: CafeLocalDataSource,
     private val remote: CafeRemoteDataSource,
@@ -30,10 +36,10 @@ class OfflineFirstCafeRepository(
             cafes.firstOrNull { it.id == selectedId }
         }.distinctUntilChanged()
 
-    override suspend fun selectCafe(cafeId: String) {
+    override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> =
         selectedCafeStore.saveSelectedCafeId(cafeId)
-    }
 
+    /** Błąd sieci zwraca bez zapisu, więc zapamiętane lokale zostają bez zmian. */
     override suspend fun refresh(): EmptyResult<DataError> =
         when (val result = remote.fetchCafes()) {
             is Result.Success -> local.saveCafes(result.data, clock.now().toEpochMilliseconds())

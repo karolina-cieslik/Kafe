@@ -33,6 +33,7 @@ private const val INTRO_CROSSFADE_MS = 300
  */
 @Composable
 fun App(appStartViewModel: AppStartViewModel = koinViewModel()) {
+    // Jeden ImageLoader Coila dla całej aplikacji; crossfade łagodzi pojawianie się zdjęć produktów.
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .crossfade(true)

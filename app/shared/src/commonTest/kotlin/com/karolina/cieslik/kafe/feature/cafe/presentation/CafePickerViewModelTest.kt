@@ -8,6 +8,7 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.domain.OpeningHours
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -30,7 +31,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-// KAFE-29 / KAFE-31: CafePickerViewModel ze wstrzykiwanym zegarem i strefą.
+/** CafePickerViewModel ze wstrzykiwanym zegarem i strefą. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CafePickerViewModelTest {
 
@@ -40,15 +41,26 @@ class CafePickerViewModelTest {
         var remoteCafes: List<Cafe> = seedCafes
         var refreshResult: EmptyResult<DataError> = Result.Success(Unit)
         var refreshCount = 0
+        var selectError: DataError.Local? = null
+        var selectCount = 0
+        /** Gdy ustawione, zapis wyboru czeka na jego ukończenie (zapis „w trakcie”). */
+        var selectGate: CompletableDeferred<Unit>? = null
+        /** Gdy ustawione, odświeżanie czeka na jego ukończenie (odświeżanie „w trakcie”). */
+        var refreshGate: CompletableDeferred<Unit>? = null
 
         override fun observeCafes(): Flow<List<Cafe>> = cafes
         override fun observeSelectedCafe(): Flow<Cafe?> =
             combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
-        override suspend fun selectCafe(cafeId: String) {
+        override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
+            selectCount++
+            selectGate?.await()
+            selectError?.let { return Result.Failure(it) }
             selectedId.value = cafeId
+            return Result.Success(Unit)
         }
         override suspend fun refresh(): EmptyResult<DataError> {
             refreshCount++
+            refreshGate?.await()
             if (refreshResult is Result.Success) cafes.value = remoteCafes
             return refreshResult
         }
@@ -133,6 +145,65 @@ class CafePickerViewModelTest {
     }
 
     @Test
+    fun failedSaveEmitsSelectionFailedWithoutCafeChosenAndAllowsRetry() = runVmTest { env ->
+        env.repository.selectError = DataError.Local.UNKNOWN
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+
+        assertEquals(null, env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.SelectionFailed), env.events)
+
+        env.repository.selectError = null
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+
+        assertEquals("rynek", env.repository.selectedId.value)
+        assertEquals(listOf(CafePickerEvent.SelectionFailed, CafePickerEvent.CafeChosen), env.events)
+    }
+
+    @Test
+    fun secondSelectionWhileSavingIsIgnored() = runVmTest { env ->
+        val gate = CompletableDeferred<Unit>().also { env.repository.selectGate = it }
+
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+        env.viewModel.onAction(CafePickerAction.CafeSelected("dluga"))
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.repository.selectCount)
+        assertEquals("rynek", env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen), env.events)
+    }
+
+    @Test
+    fun selectionIsAcceptedAgainAfterPreviousSaveCompleted() = runVmTest { env ->
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+        env.viewModel.onAction(CafePickerAction.CafeSelected("dluga"))
+        advanceUntilIdle()
+
+        assertEquals(2, env.repository.selectCount)
+        assertEquals("dluga", env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen, CafePickerEvent.CafeChosen), env.events)
+    }
+
+    @Test
+    fun retryWhileRefreshingDoesNotStartSecondRefresh() = runVmTest(
+        FakeCafeRepository().apply { refreshGate = CompletableDeferred() },
+    ) { env ->
+        assertEquals(CafePickerUiState.Loading, env.viewModel.state.value)
+
+        env.viewModel.onAction(CafePickerAction.Retry)
+        advanceUntilIdle()
+        env.repository.refreshGate?.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.repository.refreshCount)
+        assertEquals(3, env.content.cafes.size)
+    }
+
+    @Test
     fun unknownCafeIsIgnored() = runVmTest { env ->
         env.viewModel.onAction(CafePickerAction.CafeSelected("missing"))
         advanceUntilIdle()
@@ -175,7 +246,6 @@ class CafePickerViewModelTest {
         assertEquals(emptyList(), env.content.cafes)
     }
 
-    // Błąd od testera: w niedzielę o 1:00 lokal z soboty 18:00–2:00 był „Otwarte”, ale z etykietą „Dziś zamknięte”.
     @Test
     fun overnightCafeOpenFromYesterdayShowsClosingTime() {
         val cafe = Cafe("nocna", "Kafe Nocna", "ul. Nocna 1", 0.0, 0.0, listOf(hours(Weekday.SATURDAY, 18, 2)))

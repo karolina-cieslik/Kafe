@@ -33,7 +33,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // KAFE-2: Adres API z gradle property `kafe.apiBaseUrl` (np. w ~/.gradle/gradle.properties); placeholder do czasu backendu.
+        // Adres API z gradle property `kafe.apiBaseUrl` (np. w ~/.gradle/gradle.properties); placeholder do czasu backendu.
         val apiBaseUrl = providers.gradleProperty("kafe.apiBaseUrl").getOrElse("https://api.kafe.invalid/")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }

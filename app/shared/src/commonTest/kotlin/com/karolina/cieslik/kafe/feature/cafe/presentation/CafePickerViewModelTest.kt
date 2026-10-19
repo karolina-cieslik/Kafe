@@ -8,6 +8,7 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.domain.OpeningHours
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -40,15 +41,23 @@ class CafePickerViewModelTest {
         var remoteCafes: List<Cafe> = seedCafes
         var refreshResult: EmptyResult<DataError> = Result.Success(Unit)
         var refreshCount = 0
+        var selectCount = 0
+        /** Gdy ustawione, zapis wyboru czeka na jego ukończenie (zapis „w trakcie”). */
+        var selectGate: CompletableDeferred<Unit>? = null
+        /** Gdy ustawione, odświeżanie czeka na jego ukończenie (odświeżanie „w trakcie”). */
+        var refreshGate: CompletableDeferred<Unit>? = null
 
         override fun observeCafes(): Flow<List<Cafe>> = cafes
         override fun observeSelectedCafe(): Flow<Cafe?> =
             combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
         override suspend fun selectCafe(cafeId: String) {
+            selectCount++
+            selectGate?.await()
             selectedId.value = cafeId
         }
         override suspend fun refresh(): EmptyResult<DataError> {
             refreshCount++
+            refreshGate?.await()
             if (refreshResult is Result.Success) cafes.value = remoteCafes
             return refreshResult
         }
@@ -130,6 +139,48 @@ class CafePickerViewModelTest {
         assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen), env.events)
         // Flaga pierwszego uruchomienia nie znika po wyborze.
         assertTrue(env.content.isFirstLaunch)
+    }
+
+    @Test
+    fun secondSelectionWhileSavingIsIgnored() = runVmTest { env ->
+        val gate = CompletableDeferred<Unit>().also { env.repository.selectGate = it }
+
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+        env.viewModel.onAction(CafePickerAction.CafeSelected("dluga"))
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.repository.selectCount)
+        assertEquals("rynek", env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen), env.events)
+    }
+
+    @Test
+    fun selectionIsAcceptedAgainAfterPreviousSaveCompleted() = runVmTest { env ->
+        env.viewModel.onAction(CafePickerAction.CafeSelected("rynek"))
+        advanceUntilIdle()
+        env.viewModel.onAction(CafePickerAction.CafeSelected("dluga"))
+        advanceUntilIdle()
+
+        assertEquals(2, env.repository.selectCount)
+        assertEquals("dluga", env.repository.selectedId.value)
+        assertEquals(listOf<CafePickerEvent>(CafePickerEvent.CafeChosen, CafePickerEvent.CafeChosen), env.events)
+    }
+
+    @Test
+    fun retryWhileRefreshingDoesNotStartSecondRefresh() = runVmTest(
+        FakeCafeRepository().apply { refreshGate = CompletableDeferred() },
+    ) { env ->
+        assertEquals(CafePickerUiState.Loading, env.viewModel.state.value)
+
+        env.viewModel.onAction(CafePickerAction.Retry)
+        advanceUntilIdle()
+        env.repository.refreshGate?.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.repository.refreshCount)
+        assertEquals(3, env.content.cafes.size)
     }
 
     @Test

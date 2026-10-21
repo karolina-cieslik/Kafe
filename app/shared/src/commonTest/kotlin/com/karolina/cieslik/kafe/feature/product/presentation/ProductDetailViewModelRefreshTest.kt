@@ -69,7 +69,6 @@ class ProductDetailViewModelRefreshTest {
                 menuRepository = menus,
                 getProductDetails = GetProductDetails(menus),
                 priceCalculator = PriceCalculator(),
-                dispatcher = context.dispatcher,
             ),
         )
         backgroundScope.launch { viewModel.state.collect {} }

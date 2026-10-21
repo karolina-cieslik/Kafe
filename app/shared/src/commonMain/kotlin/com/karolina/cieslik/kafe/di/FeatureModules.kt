@@ -22,21 +22,9 @@ import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
 import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
 import kotlin.time.Clock
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.datetime.TimeZone
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
-
-/** Kwalifikator dispatchera do pracy IO (zapytania i mapowanie danych w ViewModelach). */
-val IoDispatcher = named("IoDispatcher")
-
-/** Dispatchery wstrzykiwane przez DI, żeby testy mogły je podmienić. */
-val dispatchersModule = module {
-    single<CoroutineDispatcher>(IoDispatcher) { Dispatchers.IO }
-}
 
 /**
  * Lokale sieci, zapamiętany wybór lokalu (DataStore), wybór lokalu i ekran startowy. Lokalnie Room
@@ -53,10 +41,9 @@ val cafeModule = module {
             cafeRepository = get(),
             clock = Clock.System,
             timeZone = CafeTimeZone,
-            dispatcher = get(IoDispatcher),
         )
     }
-    viewModel { AppStartViewModel(cafeRepository = get(), dispatcher = get(IoDispatcher)) }
+    viewModel { AppStartViewModel(cafeRepository = get()) }
 }
 
 /**
@@ -76,7 +63,6 @@ val menuModule = module {
             cafeRepository = get(),
             menuRepository = get(),
             getMenuForCafe = get(),
-            dispatcher = get(IoDispatcher),
         )
     }
 }
@@ -95,7 +81,6 @@ val productModule = module {
             menuRepository = get(),
             getProductDetails = get(),
             priceCalculator = get(),
-            dispatcher = get(IoDispatcher),
         )
     }
 }

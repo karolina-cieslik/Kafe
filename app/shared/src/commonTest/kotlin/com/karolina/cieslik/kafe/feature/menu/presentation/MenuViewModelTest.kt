@@ -42,7 +42,6 @@ class MenuViewModelTest {
             cafeRepository = cafeRepository,
             menuRepository = menuRepository,
             getMenuForCafe = GetMenuForCafe(menuRepository),
-            dispatcher = dispatcher,
         ),
     )
 

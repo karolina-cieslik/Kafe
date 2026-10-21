@@ -24,7 +24,6 @@ internal fun kafeModules(networkConfig: NetworkConfig) = listOf(
     networkModule,
     databaseModule,
     preferencesModule,
-    dispatchersModule,
     cafeModule,
     menuModule,
     productModule,

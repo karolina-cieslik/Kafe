@@ -85,7 +85,7 @@ class CafePickerViewModelTest {
         val clock = object : Clock {
             override fun now() = now
         }
-        val viewModel = CafePickerViewModel(repository, clock, TimeZone.of("Europe/Warsaw"), dispatcher)
+        val viewModel = CafePickerViewModel(repository, clock, TimeZone.of("Europe/Warsaw"))
         val events = mutableListOf<CafePickerEvent>()
         val collectors = listOf(
             launch { viewModel.state.collect {} },

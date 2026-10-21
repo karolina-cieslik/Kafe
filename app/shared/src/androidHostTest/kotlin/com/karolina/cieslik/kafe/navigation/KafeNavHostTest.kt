@@ -35,7 +35,6 @@ import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailTestTags
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -88,7 +87,7 @@ class KafeNavHostTest {
         startKoin {
             modules(
                 module {
-                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus), Dispatchers.Main) }
+                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus)) }
                     viewModel { (productId: String) ->
                         ProductDetailViewModel(
                             productId = productId,
@@ -96,10 +95,9 @@ class KafeNavHostTest {
                             menuRepository = menus,
                             getProductDetails = GetProductDetails(menus),
                             priceCalculator = PriceCalculator(),
-                            dispatcher = Dispatchers.Main,
                         )
                     }
-                    viewModel { CafePickerViewModel(cafes, fixedClock, TimeZone.of("Europe/Warsaw"), Dispatchers.Main) }
+                    viewModel { CafePickerViewModel(cafes, fixedClock, TimeZone.of("Europe/Warsaw")) }
                 },
             )
         }

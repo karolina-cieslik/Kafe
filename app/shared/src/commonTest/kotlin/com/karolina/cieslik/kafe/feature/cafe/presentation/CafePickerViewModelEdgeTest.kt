@@ -35,7 +35,6 @@ class CafePickerViewModelEdgeTest {
         Cafe(id, name, "ul. Testowa 1", 0.0, 0.0, hours)
 
     private fun TestScope.contentAt(
-        dispatcher: kotlinx.coroutines.test.TestDispatcher,
         track: (CafePickerViewModel) -> CafePickerViewModel,
         instant: String,
         cafes: List<Cafe>,
@@ -43,7 +42,7 @@ class CafePickerViewModelEdgeTest {
         val clock = object : Clock {
             override fun now() = Instant.parse(instant)
         }
-        val viewModel = track(CafePickerViewModel(StaticCafeRepository(cafes), clock, warsaw, dispatcher))
+        val viewModel = track(CafePickerViewModel(StaticCafeRepository(cafes), clock, warsaw))
         backgroundScope.launch { viewModel.state.collect {} }
         advanceUntilIdle()
         return assertIs<CafePickerUiState.Content>(viewModel.state.value)
@@ -55,19 +54,19 @@ class CafePickerViewModelEdgeTest {
     fun winterTimeUsesUtcPlusOne() = runViewModelTest { context ->
         val cafes = listOf(cafe("a"))
         // 7 grudnia 2026 (poniedziałek), CET = UTC+1.
-        assertFalse(isOpen(contentAt(context.dispatcher, context::track, "2026-12-07T05:59:00Z", cafes)))
-        assertTrue(isOpen(contentAt(context.dispatcher, context::track, "2026-12-07T06:00:00Z", cafes)))
-        assertTrue(isOpen(contentAt(context.dispatcher, context::track, "2026-12-07T18:59:00Z", cafes)))
-        assertFalse(isOpen(contentAt(context.dispatcher, context::track, "2026-12-07T19:00:00Z", cafes)))
+        assertFalse(isOpen(contentAt(context::track, "2026-12-07T05:59:00Z", cafes)))
+        assertTrue(isOpen(contentAt(context::track, "2026-12-07T06:00:00Z", cafes)))
+        assertTrue(isOpen(contentAt(context::track, "2026-12-07T18:59:00Z", cafes)))
+        assertFalse(isOpen(contentAt(context::track, "2026-12-07T19:00:00Z", cafes)))
     }
 
     @Test
     fun summerTimeUsesUtcPlusTwo() = runViewModelTest { context ->
         val cafes = listOf(cafe("a"))
         // 6 lipca 2026 (poniedziałek), CEST = UTC+2.
-        assertFalse(isOpen(contentAt(context.dispatcher, context::track, "2026-07-06T04:59:00Z", cafes)))
-        assertTrue(isOpen(contentAt(context.dispatcher, context::track, "2026-07-06T05:00:00Z", cafes)))
-        assertFalse(isOpen(contentAt(context.dispatcher, context::track, "2026-07-06T18:00:00Z", cafes)))
+        assertFalse(isOpen(contentAt(context::track, "2026-07-06T04:59:00Z", cafes)))
+        assertTrue(isOpen(contentAt(context::track, "2026-07-06T05:00:00Z", cafes)))
+        assertFalse(isOpen(contentAt(context::track, "2026-07-06T18:00:00Z", cafes)))
     }
 
     @Test
@@ -75,8 +74,8 @@ class CafePickerViewModelEdgeTest {
         // 29 marca 2026 (niedziela): 2:00 CET -> 3:00 CEST. Lokal otwarty 3:00–4:00.
         val cafes = listOf(cafe("a", hours = everyDay(3 * 60, 4 * 60)))
 
-        assertTrue(isOpen(contentAt(context.dispatcher, context::track, "2026-03-29T01:30:00Z", cafes)))
-        assertFalse(isOpen(contentAt(context.dispatcher, context::track, "2026-03-29T00:59:00Z", cafes)))
+        assertTrue(isOpen(contentAt(context::track, "2026-03-29T01:30:00Z", cafes)))
+        assertFalse(isOpen(contentAt(context::track, "2026-03-29T00:59:00Z", cafes)))
     }
 
     @Test
@@ -84,7 +83,7 @@ class CafePickerViewModelEdgeTest {
         // Niedziela 23:30 UTC = poniedziałek 0:30 w Warszawie (zima). Otwarte tylko w poniedziałki od 0:00.
         val mondayOnly = listOf(cafe("a", hours = listOf(OpeningHours(Weekday.MONDAY, 0, 60))))
 
-        val content = contentAt(context.dispatcher, context::track, "2026-12-06T23:30:00Z", mondayOnly)
+        val content = contentAt(context::track, "2026-12-06T23:30:00Z", mondayOnly)
 
         assertTrue(isOpen(content))
         assertEquals("Dziś 0:00–1:00", content.cafes.single().openingHoursLabel)
@@ -95,12 +94,12 @@ class CafePickerViewModelEdgeTest {
         val overnight = listOf(cafe("a", hours = listOf(OpeningHours(Weekday.SATURDAY, 18 * 60, 2 * 60))))
 
         // Niedziela 2:00 (zima) – już zamknięte, w niedzielę brak godzin.
-        val sundayAfterClosing = contentAt(context.dispatcher, context::track, "2026-12-06T01:00:00Z", overnight).cafes.single()
+        val sundayAfterClosing = contentAt(context::track, "2026-12-06T01:00:00Z", overnight).cafes.single()
         assertFalse(sundayAfterClosing.isOpenNow)
         assertEquals(CAFE_CLOSED_TODAY, sundayAfterClosing.openingHoursLabel)
 
         // Sobota 12:00 – zamknięte, etykieta z pełnym zakresem przez północ.
-        val saturdayNoon = contentAt(context.dispatcher, context::track, "2026-12-05T11:00:00Z", overnight).cafes.single()
+        val saturdayNoon = contentAt(context::track, "2026-12-05T11:00:00Z", overnight).cafes.single()
         assertFalse(saturdayNoon.isOpenNow)
         assertEquals("Dziś 18:00–2:00", saturdayNoon.openingHoursLabel)
     }
@@ -110,7 +109,7 @@ class CafePickerViewModelEdgeTest {
         val cafes = listOf("Kafe Żoliborz", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Sopot", "Kafe Łazienki", "Kafe Mokotów")
             .mapIndexed { index, name -> cafe("c$index", name) }
 
-        val content = contentAt(context.dispatcher, context::track, "2026-10-19T08:00:00Z", cafes)
+        val content = contentAt(context::track, "2026-10-19T08:00:00Z", cafes)
 
         assertEquals(
             listOf("Kafe Łazienki", "Kafe Mokotów", "Kafe Sopot", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Żoliborz"),
@@ -123,7 +122,7 @@ class CafePickerViewModelEdgeTest {
         // Sobota 18:00–2:00, w niedzielę zamknięte. Niedziela 1:00 (zima) – lokal wciąż otwarty od soboty.
         val overnight = listOf(cafe("a", hours = listOf(OpeningHours(Weekday.SATURDAY, 18 * 60, 2 * 60))))
 
-        val cafeUi = contentAt(context.dispatcher, context::track, "2026-12-06T00:00:00Z", overnight).cafes.single()
+        val cafeUi = contentAt(context::track, "2026-12-06T00:00:00Z", overnight).cafes.single()
 
         assertTrue(cafeUi.isOpenNow)
         assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")

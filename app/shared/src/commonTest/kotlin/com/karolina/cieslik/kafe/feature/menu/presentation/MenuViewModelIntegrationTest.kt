@@ -62,7 +62,6 @@ class MenuViewModelIntegrationTest {
                 cafeRepository = cafeRepository,
                 menuRepository = menuRepository,
                 getMenuForCafe = GetMenuForCafe(menuRepository),
-                dispatcher = dispatcher,
             ),
         )
         return Setup(viewModel, cafeRepository, switchable)

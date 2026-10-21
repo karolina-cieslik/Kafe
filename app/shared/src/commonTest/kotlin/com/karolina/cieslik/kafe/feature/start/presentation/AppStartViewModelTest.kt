@@ -41,7 +41,7 @@ class AppStartViewModelTest {
             val dispatcher = StandardTestDispatcher(testScheduler)
             Dispatchers.setMain(dispatcher)
             val repository = FakeCafeRepository(selected)
-            val viewModel = AppStartViewModel(repository, dispatcher)
+            val viewModel = AppStartViewModel(repository)
             try {
                 assertEquals(AppStartState.Loading, viewModel.state.value)
                 advanceUntilIdle()

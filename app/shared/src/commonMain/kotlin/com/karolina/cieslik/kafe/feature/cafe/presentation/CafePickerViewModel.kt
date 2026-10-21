@@ -11,7 +11,6 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 import com.karolina.cieslik.kafe.feature.cafe.domain.isOpenAt
 import com.karolina.cieslik.kafe.feature.cafe.domain.openingHoursOn
 import com.karolina.cieslik.kafe.feature.cafe.domain.previous
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -36,13 +35,11 @@ import kotlin.time.Clock
  *
  * @param clock źródło bieżącego czasu; w testach stały.
  * @param timeZone strefa godzin otwarcia lokali (Europe/Warsaw).
- * @param dispatcher dispatcher odświeżania; w testach testowy.
  */
 class CafePickerViewModel(
     private val cafeRepository: CafeRepository,
     private val clock: Clock,
     private val timeZone: TimeZone,
-    private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val refreshStatus = MutableStateFlow<RefreshStatus>(RefreshStatus.Idle)
@@ -98,7 +95,7 @@ class CafePickerViewModel(
     private fun startRefresh() {
         refreshJob?.cancel()
         refreshStatus.value = RefreshStatus.InProgress
-        refreshJob = viewModelScope.launch(dispatcher) {
+        refreshJob = viewModelScope.launch {
             refreshStatus.value = when (val result = cafeRepository.refresh()) {
                 is Result.Success -> RefreshStatus.Done
                 is Result.Failure -> RefreshStatus.Failed(result.error)

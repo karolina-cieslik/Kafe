@@ -32,12 +32,12 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 
 - Kod suspend testujemy w `runTest { ... }` (wirtualny czas, więc `delay` nie spowalnia testów).
 - Flow testujemy biblioteką **Turbine** (`app.cash.turbine`): `flow.test { awaitItem(); ... }`. Pod koniec bloku Turbine sprawdza, czy nie zostały nieodebrane emisje.
-- ViewModele testujemy helperem `runViewModelTest` z `core/testing/RunViewModelTest.kt`, który podmienia `Dispatchers.Main`, bo z niego korzysta `viewModelScope`. `context.dispatcher` wstrzykujemy do ViewModelu, żeby wszystko działało na jednym schedulerze. Każdy VM opakowujemy w `context.track(...)`: po teście helper anuluje jego `viewModelScope` przed `resetMain`. Bez tego subskrypcje `stateIn`/`shareIn` sięgną do Main już po teście i rzucą „Dispatchers.Main accessed after resetMain”.
+- ViewModele testujemy helperem `runViewModelTest` z `core/testing/RunViewModelTest.kt`, który podmienia `Dispatchers.Main`, bo z niego korzysta `viewModelScope`. ViewModel nie dostaje dispatchera, więc cały test działa na jednym schedulerze (`context.dispatcher.scheduler`). Każdy VM opakowujemy w `context.track(...)`: po teście helper anuluje jego `viewModelScope` przed `resetMain`. Bez tego subskrypcje `stateIn`/`shareIn` sięgną do Main już po teście i rzucą „Dispatchers.Main accessed after resetMain”.
 
   ```kotlin
   @Test
   fun initialLoadEmitsLoadingThenContent() = runViewModelTest { context ->
-      val viewModel = context.track(MenuViewModel(..., dispatcher = context.dispatcher))
+      val viewModel = context.track(MenuViewModel(...))
 
       viewModel.state.test {
           assertIs<MenuUiState.Loading>(awaitItem())
@@ -47,7 +47,7 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
   ```
 
 - Domyślnie używamy `StandardTestDispatcher`. Korutyny nie startują wtedy od razu, więc kolejność emisji jest deterministyczna, a do przesuwania czasu służy `advanceUntilIdle()`. `UnconfinedTestDispatcher` stosujemy tylko wtedy, gdy test świadomie sprawdza wyłącznie stan końcowy.
-- W kodzie produkcyjnym nie używamy `Dispatchers.IO` ani `Dispatchers.Default` na sztywno. Dispatcher wstrzykujemy przez konstruktor lub Koin.
+- ViewModele nie ustawiają dispatchera (`launch`, `flowOn`): działają na `Dispatchers.Main.immediate` z `viewModelScope`, a funkcje suspend i Flow z warstwy danych są main-safe (Room przez `setQueryCoroutineContext`, DataStore i Ktor wykonują I/O na własnych wątkach). Jeśli warstwa danych lub use case potrzebuje innego wątku (kod blokujący, ciężkie mapowanie), przełącza się sam (`withContext` / `flowOn`) z dispatcherem wstrzykniętym przez konstruktor, żeby test mógł go podmienić.
 
 ## Testy UI (Compose) na Robolectric
 

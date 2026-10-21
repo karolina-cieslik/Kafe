@@ -84,7 +84,7 @@ class ProductDetailViewModelTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menus = FakeMenuRepository().apply { savedMenu?.let { menus.value = mapOf("a" to it) } }
-        val viewModel = ProductDetailViewModel(productId, cafes, menus, GetProductDetails(menus), PriceCalculator(), dispatcher)
+        val viewModel = ProductDetailViewModel(productId, cafes, menus, GetProductDetails(menus), PriceCalculator())
         val events = mutableListOf<ProductDetailEvent>()
         val collectors = listOf(
             launch { viewModel.state.collect {} },
@@ -219,7 +219,7 @@ class ProductDetailViewModelTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menus = FakeMenuRepository().apply { refreshResult = Result.Failure(DataError.Remote.NO_INTERNET) }
-        val viewModel = ProductDetailViewModel("latte", cafes, menus, GetProductDetails(menus), PriceCalculator(), dispatcher)
+        val viewModel = ProductDetailViewModel("latte", cafes, menus, GetProductDetails(menus), PriceCalculator())
         val collector = launch { viewModel.state.collect {} }
         try {
             advanceUntilIdle()

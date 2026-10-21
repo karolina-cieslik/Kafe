@@ -13,7 +13,6 @@ import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
-import com.karolina.cieslik.kafe.di.IoDispatcher
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerTestTags
@@ -25,8 +24,6 @@ import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuTestTags
 import com.karolina.cieslik.kafe.feature.start.presentation.KafeIntroTestTags
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -66,7 +63,6 @@ class MainActivityRecreationTest {
         Settings.Global.putFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
         loadKoinModules(
             module {
-                single<CoroutineDispatcher>(IoDispatcher) { Dispatchers.Unconfined }
                 single<CafeRepository> { cafes }
                 single<MenuRepository> { RecreationFakeMenuRepository(sampleMenu()) }
             },

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.navigation.KafeRoute
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +17,6 @@ import kotlinx.coroutines.launch
  */
 class AppStartViewModel(
     private val cafeRepository: CafeRepository,
-    private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AppStartState>(AppStartState.Loading)
@@ -26,7 +24,7 @@ class AppStartViewModel(
     val state: StateFlow<AppStartState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch(dispatcher) {
+        viewModelScope.launch {
             val selectedCafe = cafeRepository.observeSelectedCafe().first()
             _state.value = AppStartState.Ready(if (selectedCafe == null) KafeRoute.CafePicker else KafeRoute.Menu)
         }

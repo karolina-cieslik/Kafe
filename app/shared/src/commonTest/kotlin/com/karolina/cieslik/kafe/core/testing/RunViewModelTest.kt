@@ -14,10 +14,10 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
 /**
- * KAFE-27: Kontekst testu ViewModelu przekazywany do ciała [runViewModelTest].
+ * Kontekst testu ViewModelu przekazywany do ciała [runViewModelTest].
  *
- * @property dispatcher dispatcher testu – ten sam, który podmienia `Dispatchers.Main`. Wstrzykuj go do ViewModelu
- * (parametr `dispatcher`), żeby cały test dzielił jeden scheduler i wirtualny czas (`advanceUntilIdle()`).
+ * @property dispatcher dispatcher testu – ten sam, który podmienia `Dispatchers.Main`, więc `viewModelScope`
+ * i cały test dzielą jeden scheduler i wirtualny czas (`dispatcher.scheduler.advanceUntilIdle()`).
  */
 class ViewModelTestContext(val dispatcher: TestDispatcher) {
     private val viewModels = mutableListOf<ViewModel>()

@@ -12,7 +12,6 @@ import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.ProductLookup
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -42,7 +40,6 @@ import kotlinx.coroutines.launch
  * niedostępne opcje są odznaczane i UI dostaje o tym komunikat w infoMessage.
  *
  * @param productId produkt z trasy nawigacji.
- * @param dispatcher dispatcher odczytu i odświeżania danych; w testach testowy.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductDetailViewModel(
@@ -51,7 +48,6 @@ class ProductDetailViewModel(
     private val menuRepository: MenuRepository,
     getProductDetails: GetProductDetails,
     private val priceCalculator: PriceCalculator,
-    private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     /** Wybór klienta dla konkretnego lokalu – po zmianie lokalu dostępność jest inna, więc start od nowa. */
@@ -76,7 +72,6 @@ class ProductDetailViewModel(
             } else {
                 getProductDetails(cafeId, productId)
                     .map { LookupOfCafe(cafeId, it) }
-                    .flowOn(dispatcher)
             }
         }
         .onEach { result ->
@@ -129,7 +124,7 @@ class ProductDetailViewModel(
         if (result == null) {
             // Brak wybranego lokalu – ponawiamy pobranie lokali, menu ruszy po wyborze pierwszego.
             refreshError.value = null
-            refreshJob = viewModelScope.launch(dispatcher) {
+            refreshJob = viewModelScope.launch {
                 (cafeRepository.refresh() as? Result.Failure)?.let { refreshError.value = CafeError(null, it.error) }
             }
         } else {
@@ -141,7 +136,7 @@ class ProductDetailViewModel(
         refreshJob?.cancel()
         refreshedCafeId = cafeId
         refreshError.value = null
-        refreshJob = viewModelScope.launch(dispatcher) {
+        refreshJob = viewModelScope.launch {
             (menuRepository.refresh(cafeId) as? Result.Failure)?.let { refreshError.value = CafeError(cafeId, it.error) }
         }
     }

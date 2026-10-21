@@ -63,7 +63,7 @@ class MenuViewModelCafeErrorTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menu = FakeMenuRepository()
-        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu), dispatcher)
+        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu))
         val collector = launch { viewModel.state.collect {} }
         try {
             block(viewModel, cafes)
@@ -103,7 +103,7 @@ class MenuViewModelCafeErrorTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository().apply { refreshResult = Result.Success(Unit) }
         val menu = FakeMenuRepository()
-        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu), dispatcher)
+        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu))
         try {
             val first = launch { viewModel.state.collect {} }
             advanceUntilIdle()

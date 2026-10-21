@@ -26,7 +26,6 @@ import com.karolina.cieslik.kafe.feature.menu.presentation.product
 import com.karolina.cieslik.kafe.feature.start.presentation.AppStartViewModel
 import com.karolina.cieslik.kafe.feature.start.presentation.KafeIntroTestTags
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -69,8 +68,8 @@ class AppStartUiTest {
         startKoin {
             modules(
                 module {
-                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus), Dispatchers.Main) }
-                    viewModel { CafePickerViewModel(cafes, clock, TimeZone.of("Europe/Warsaw"), Dispatchers.Main) }
+                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus)) }
+                    viewModel { CafePickerViewModel(cafes, clock, TimeZone.of("Europe/Warsaw")) }
                 },
             )
         }
@@ -83,7 +82,7 @@ class AppStartUiTest {
 
     private fun setApp() {
         composeRule.mainClock.autoAdvance = false
-        val appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        val appStartViewModel = AppStartViewModel(cafes)
         composeRule.setContent { App(appStartViewModel = appStartViewModel) }
     }
 
@@ -135,7 +134,7 @@ class AppStartUiTest {
     @Test
     fun introIsNotShownAgainAfterStateRestoration() {
         cafes.selectedId.value = "krakow"
-        val appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        val appStartViewModel = AppStartViewModel(cafes)
         val restorationTester = StateRestorationTester(composeRule)
         composeRule.mainClock.autoAdvance = false
         restorationTester.setContent { App(appStartViewModel = appStartViewModel) }
@@ -151,7 +150,7 @@ class AppStartUiTest {
     @Test
     fun afterProcessDeathWithStartStillLoadingBrandBackdropIsShownInsteadOfIntro() {
         cafes.selectedId.value = "krakow"
-        var appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        var appStartViewModel = AppStartViewModel(cafes)
         val restorationTester = StateRestorationTester(composeRule)
         composeRule.mainClock.autoAdvance = false
         restorationTester.setContent { App(appStartViewModel = appStartViewModel) }
@@ -159,7 +158,7 @@ class AppStartUiTest {
 
         // given: nowy proces – zapisany stan wraca, a nowy AppStartViewModel czeka na odczyt wyboru
         cafes.blockSelected()
-        appStartViewModel = AppStartViewModel(cafes, Dispatchers.Main)
+        appStartViewModel = AppStartViewModel(cafes)
         restorationTester.emulateSavedInstanceStateRestore()
 
         composeRule.onNodeWithTag(KafeIntroTestTags.INTRO).assertDoesNotExist()

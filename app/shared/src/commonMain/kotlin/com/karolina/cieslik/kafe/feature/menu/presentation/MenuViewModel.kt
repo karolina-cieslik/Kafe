@@ -10,7 +10,6 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.CafeMenu
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -22,7 +21,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -37,15 +35,12 @@ import kotlinx.coroutines.launch
  * Offline-first: zapamiętane dane od razu, a przy pierwszej obserwacji odświeżenie w tle – lokali, a potem
  * menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych danych nie blokuje ekranu; bez zapamiętanych
  * danych kończy się stanem Error z „Spróbuj ponownie”.
- *
- * @param dispatcher dispatcher odświeżania i mapowania menu; w testach testowy.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MenuViewModel(
     private val cafeRepository: CafeRepository,
     private val menuRepository: MenuRepository,
     getMenuForCafe: GetMenuForCafe,
-    private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val selectedCategoryId = MutableStateFlow<String?>(null)
@@ -84,7 +79,6 @@ class MenuViewModel(
             } else {
                 getMenuForCafe(cafeId)
                     .map { MenuOfCafe(cafeId, it) }
-                    .flowOn(dispatcher)
                     .onStart { if (cafeId !in refreshedMenuCafeIds.value) startMenuRefresh(cafeId) }
             }
         }
@@ -146,7 +140,7 @@ class MenuViewModel(
         status: MutableStateFlow<RefreshStatus>,
         key: String,
         refresh: suspend () -> EmptyResult<DataError>,
-    ): Job = viewModelScope.launch(dispatcher) {
+    ): Job = viewModelScope.launch {
         val newStatus = when (val result = refresh()) {
             is Result.Success -> RefreshStatus.Idle
             is Result.Failure -> RefreshStatus.Failed(key, result.error)

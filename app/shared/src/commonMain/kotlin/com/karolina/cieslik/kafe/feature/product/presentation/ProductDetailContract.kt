@@ -139,6 +139,7 @@ sealed interface ProductDetailAction {
      *
      * @property groupId id grupy modyfikatorów (z [ModifierGroupUi.id]).
      * @property optionId id opcji, której ilość się zmienia.
+     * @property delta zmiana ilości: +1 albo -1.
      */
     data class OptionQuantityChanged(
         val groupId: String,

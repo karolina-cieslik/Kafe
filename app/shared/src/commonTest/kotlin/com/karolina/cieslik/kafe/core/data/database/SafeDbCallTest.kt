@@ -19,10 +19,10 @@ class SafeDbCallTest {
         assertEquals(Result.Success(42), safeDbCall { 42 })
     }
 
-    // Na hoście JVM SQLiteException to atrapa android.database.SQLException bez komunikatu,
-    // dlatego rozpoznawanie pełnego dysku testujemy na poziomie komunikatu.
     @Test
     fun sqliteFullMessagesAreRecognizedAsDiskFull() {
+        // Na hoście JVM SQLiteException to atrapa android.database.SQLException bez komunikatu,
+        // dlatego rozpoznawanie pełnego dysku testujemy na poziomie komunikatu.
         assertTrue(isDiskFullMessage("Error code: 13, message: database or disk is full"))
         assertTrue(isDiskFullMessage("SQLITE_FULL"))
         assertFalse(isDiskFullMessage("Error code: 1, message: no such table"))

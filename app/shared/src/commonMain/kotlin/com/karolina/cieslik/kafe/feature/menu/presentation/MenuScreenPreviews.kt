@@ -38,6 +38,7 @@ internal object MenuPreviewData {
         categories = listOf(coffee, tea, desserts),
         selectedCategoryId = coffee.id,
         isRefreshing = false,
+        cartItemCount = 3,
     )
 
     val search = content.copy(
@@ -61,6 +62,10 @@ private fun MenuContentPreview() = MenuPreview(MenuPreviewData.content)
 @Preview
 @Composable
 private fun MenuRefreshingPreview() = MenuPreview(MenuPreviewData.content.copy(isRefreshing = true))
+
+@Preview
+@Composable
+private fun MenuCartOverflowPreview() = MenuPreview(MenuPreviewData.content.copy(cartItemCount = 120))
 
 @PreviewLightDark
 @Composable

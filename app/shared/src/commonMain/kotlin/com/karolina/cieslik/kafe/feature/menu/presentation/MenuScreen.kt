@@ -197,8 +197,7 @@ private fun MenuContent(
     Column(modifier = Modifier.fillMaxSize()) {
         MenuHeader(
             cafeName = state.cafeName,
-            // TODO(KAFE-12): state.cartItemCount, gdy dojdzie do kontraktu menu.
-            cartItemCount = 0,
+            cartItemCount = state.cartItemCount,
             searchQuery = state.searchQuery,
             searchEnabled = true,
             onAction = onAction,

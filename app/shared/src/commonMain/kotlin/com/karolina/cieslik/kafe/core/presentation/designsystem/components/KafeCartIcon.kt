@@ -95,12 +95,15 @@ fun KafeCartIcon(
     }
 }
 
+/** Liczby w podglądach: bez licznika, jedna i dwie cyfry, przepełnienie („99+”). */
+private val PREVIEW_COUNTS = listOf(0, 3, 42, 120)
+
 @PreviewLightDark
 @Composable
 private fun KafeCartIconPreview() {
     KafePreview {
         Row(horizontalArrangement = Arrangement.spacedBy(KafeTheme.spacing.s)) {
-            listOf(0, 3, 42, 120).forEach { KafeCartIcon(itemCount = it) }
+            PREVIEW_COUNTS.forEach { KafeCartIcon(itemCount = it) }
         }
     }
 }
@@ -115,7 +118,7 @@ private fun KafeCartIconOnHeaderPreview() {
                 .background(KafeTheme.extendedColors.header)
                 .padding(KafeTheme.spacing.l),
         ) {
-            listOf(0, 3, 42, 120).forEach {
+            PREVIEW_COUNTS.forEach {
                 KafeCartIcon(itemCount = it, tint = KafeTheme.extendedColors.onHeader)
             }
         }

@@ -66,6 +66,7 @@ val menuModule = module {
             cafeRepository = get(),
             menuRepository = get(),
             getMenuForCafe = get(),
+            cartRepository = get(),
         )
     }
 }
@@ -84,6 +85,7 @@ val productModule = module {
             menuRepository = get(),
             getProductDetails = get(),
             priceCalculator = get(),
+            addToCart = get(),
         )
     }
 }

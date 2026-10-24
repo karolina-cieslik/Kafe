@@ -7,6 +7,7 @@ import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.CafeMenu
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
@@ -34,13 +35,14 @@ import kotlinx.coroutines.launch
  *
  * Offline-first: zapamiętane dane od razu, a przy pierwszej obserwacji odświeżenie w tle – lokali, a potem
  * menu wybranego lokalu. Błąd odświeżenia przy zapamiętanych danych nie blokuje ekranu; bez zapamiętanych
- * danych kończy się stanem Error z „Spróbuj ponownie”.
+ * danych kończy się stanem Error z „Spróbuj ponownie”. Licznik sztuk w koszyku pochodzi z [CartRepository].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MenuViewModel(
     private val cafeRepository: CafeRepository,
     private val menuRepository: MenuRepository,
     getMenuForCafe: GetMenuForCafe,
+    cartRepository: CartRepository,
 ) : ViewModel() {
 
     private val selectedCategoryId = MutableStateFlow<String?>(null)
@@ -83,9 +85,13 @@ class MenuViewModel(
             }
         }
 
+    private val cartItemCount: Flow<Int> = cartRepository.observeCart()
+        .map { it.itemCount }
+        .distinctUntilChanged()
+
     /**
      * Stan ekranu. Zaczyna od [MenuUiState.Loading], aktualizuje się po każdej zmianie lokalu, menu, statusu
-     * odświeżania, kategorii i wyszukiwania. Obserwacja trwa jeszcze 5 s po zniknięciu ostatniego kolektora,
+     * odświeżania, kategorii, wyszukiwania i liczby sztuk w koszyku. Obserwacja trwa jeszcze 5 s po zniknięciu ostatniego kolektora,
      * żeby obrót ekranu nie restartował odświeżania.
      */
     val state: StateFlow<MenuUiState> = combine(
@@ -93,7 +99,7 @@ class MenuViewModel(
         menuOfSelectedCafe,
         combine(cafesRefresh, menuRefresh, ::RefreshStatuses),
         selectedCategoryId,
-        searchQuery,
+        combine(searchQuery, cartItemCount, ::QueryAndCart),
         ::buildState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MenuUiState.Loading)
 
@@ -158,8 +164,9 @@ class MenuViewModel(
         menuOfCafe: MenuOfCafe?,
         refresh: RefreshStatuses,
         selectedCategoryId: String?,
-        query: String,
+        queryAndCart: QueryAndCart,
     ): MenuUiState {
+        val query = queryAndCart.query
         if (cafe == null) {
             // Idle po udanym refresh też daje Loading: Room emituje zapisane lokale chwilę po zakończeniu zapisu.
             val cafes = refresh.cafes
@@ -186,12 +193,15 @@ class MenuViewModel(
                 ?: categories.firstOrNull()?.id,
             isRefreshing = status is RefreshStatus.InProgress,
             searchQuery = query,
+            cartItemCount = queryAndCart.cartItemCount,
         )
     }
 
     private data class MenuOfCafe(val cafeId: String, val menu: CafeMenu?)
 
     private data class RefreshStatuses(val cafes: RefreshStatus, val menu: RefreshStatus)
+
+    private data class QueryAndCart(val query: String, val cartItemCount: Int)
 
     /** [key] – id lokalu dla menu albo [CAFES_KEY] dla listy lokali. */
     private sealed interface RefreshStatus {

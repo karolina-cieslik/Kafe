@@ -54,6 +54,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.CategoryChip
+import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeCartIcon
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeEmptyState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeErrorState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.ProductCard
@@ -94,6 +95,9 @@ object MenuTestTags {
 
     /** Rząd chipów kategorii. */
     const val CATEGORIES = "menuCategories"
+
+    /** Ikona koszyka z licznikiem w nagłówku. */
+    const val CART = "menuCart"
 
     /** Karta produktu o danym id. */
     fun product(id: String) = "menuProduct_$id"
@@ -152,7 +156,7 @@ fun MenuScreen(
 private fun MenuLoading(onAction: (MenuAction) -> Unit) {
     val loadingDescription = stringResource(Res.string.ds_loading)
     Column(modifier = Modifier.fillMaxSize()) {
-        MenuHeader(cafeName = null, searchQuery = "", searchEnabled = false, onAction = onAction)
+        MenuHeader(cafeName = null, cartItemCount = 0, searchQuery = "", searchEnabled = false, onAction = onAction)
         CategoryChipsSkeleton()
         MenuGrid(
             state = rememberLazyGridState(),
@@ -193,6 +197,8 @@ private fun MenuContent(
     Column(modifier = Modifier.fillMaxSize()) {
         MenuHeader(
             cafeName = state.cafeName,
+            // TODO(KAFE-12): state.cartItemCount, gdy dojdzie do kontraktu menu.
+            cartItemCount = 0,
             searchQuery = state.searchQuery,
             searchEnabled = true,
             onAction = onAction,
@@ -296,10 +302,11 @@ private fun LazyGridScope.products(category: CategoryUi, onAction: (MenuAction) 
     }
 }
 
-/** Przypięty ciemny nagłówek: lokal + wyszukiwarka. Pasek statusu wchodzi w jego tło. */
+/** Przypięty ciemny nagłówek: lokal z ikoną koszyka + wyszukiwarka. Pasek statusu wchodzi w jego tło. */
 @Composable
 private fun MenuHeader(
     cafeName: String?,
+    cartItemCount: Int,
     searchQuery: String,
     searchEnabled: Boolean,
     onAction: (MenuAction) -> Unit,
@@ -315,10 +322,21 @@ private fun MenuHeader(
             .padding(horizontal = spacing.screenHorizontal)
             .padding(top = spacing.m, bottom = spacing.l),
     ) {
-        CafeSelector(
-            cafeName = cafeName,
-            onClick = { onAction(MenuAction.ChangeCafeClicked) },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Box zajmuje resztę szerokości, a obszar kliknięcia lokalu zostaje szeroki jak jego treść.
+            Box(Modifier.weight(1f)) {
+                CafeSelector(
+                    cafeName = cafeName,
+                    onClick = { onAction(MenuAction.ChangeCafeClicked) },
+                )
+            }
+            Spacer(Modifier.width(spacing.s))
+            KafeCartIcon(
+                itemCount = cartItemCount,
+                tint = colors.onHeader,
+                modifier = Modifier.testTag(MenuTestTags.CART),
+            )
+        }
         Spacer(Modifier.height(spacing.m))
         SearchField(
             query = searchQuery,

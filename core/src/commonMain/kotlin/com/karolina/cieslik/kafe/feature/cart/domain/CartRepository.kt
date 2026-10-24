@@ -47,10 +47,12 @@ interface CartRepository {
     /**
      * „Cofnij” po [remove]: wstawia [item] z tym samym id, więc wraca na to samo miejsce w kolejności. Gdy
      * w międzyczasie dodano identyczną konfigurację, zostaje istniejąca pozycja (jej id i miejsce) z ilością
-     * równą sumie, przyciętą do 20.
+     * równą sumie, przyciętą do 20. Gdy pozycja o tym id już jest w koszyku (np. podwójne „Cofnij”), nic się
+     * nie zmienia – ilość się nie podwaja.
      *
      * @return [AddToCartOutcome.Added] po wstawieniu; [AddToCartOutcome.QuantityIncreased] albo
-     * [AddToCartOutcome.CappedAtLimit] po scaleniu; [DataError.Local] przy błędzie bazy.
+     * [AddToCartOutcome.CappedAtLimit] po scaleniu; [AddToCartOutcome.QuantityIncreased] z niezmienioną pozycją,
+     * gdy już była w koszyku; [DataError.Local] przy błędzie bazy.
      */
     suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local>
 

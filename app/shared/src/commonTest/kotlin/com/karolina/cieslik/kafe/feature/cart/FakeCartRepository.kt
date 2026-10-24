@@ -15,11 +15,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /**
  * Koszyk do testów prezentacji: [cart] steruje tym, co emituje [observeCart], a [add] zapisuje wywołania
  * i zwraca [addResult] (domyślnie nowa pozycja zbudowana z dodawanej). [addGate] pozwala zatrzymać zapis
- * w trakcie, np. żeby sprawdzić podwójne kliknięcie.
+ * w trakcie, np. żeby sprawdzić podwójne kliknięcie; [completed] zawiera tylko zapisy, które przeszły bramkę.
  */
 internal class FakeCartRepository(initial: Cart = Cart.EMPTY) : CartRepository {
     val cart = MutableStateFlow(initial)
     val added = mutableListOf<NewCartItem>()
+    val completed = mutableListOf<NewCartItem>()
     var addResult: ((NewCartItem) -> Result<AddToCartOutcome, DataError.Local>)? = null
     var addGate: CompletableDeferred<Unit>? = null
 
@@ -28,6 +29,7 @@ internal class FakeCartRepository(initial: Cart = Cart.EMPTY) : CartRepository {
     override suspend fun add(item: NewCartItem): Result<AddToCartOutcome, DataError.Local> {
         added += item
         addGate?.await()
+        completed += item
         return addResult?.invoke(item)
             ?: Result.Success(AddToCartOutcome.Added(item.toCartItem(id = added.size.toLong())))
     }

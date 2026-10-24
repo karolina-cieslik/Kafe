@@ -5,6 +5,7 @@ import com.karolina.cieslik.kafe.core.domain.Error
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.product.domain.ConfigurationIssue
 import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
+import com.karolina.cieslik.kafe.feature.product.domain.PricedOption
 import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 
@@ -36,6 +37,8 @@ class AddToCart(
      * Waliduje [configuration] względem [details] ([ProductConfiguration.validate]), liczy cenę jednej sztuki
      * z dopłatami ([PriceCalculator]) i dodaje pozycję przez [CartRepository.add]. Do koszyka trafiają tylko
      * opcje z grup produktu – te same, które liczy cena. Liczba sztuk jest przycinana do 1–20.
+     * Zakłada konfigurację zbudowaną przez [ProductConfiguration] – limitów w grupach (np. maks. 4 shoty) nie
+     * sprawdza ponownie.
      *
      * @return wynik z repozytorium ([AddToCartOutcome]); [AddToCartError.InvalidConfiguration] bez zapisu, gdy
      * konfiguracja jest niepoprawna; [AddToCartError.Storage] przy błędzie bazy.
@@ -45,14 +48,21 @@ class AddToCart(
         configuration: ProductConfiguration,
     ): Result<AddToCartOutcome, AddToCartError> {
         configuration.validate(details)?.let { return Result.Failure(AddToCartError.InvalidConfiguration(it)) }
+        val selections = configuration.selectionsIn(details)
+        // validate gwarantuje, że wybrany rozmiar istnieje w produkcie.
+        val sizePrice = details.product.sizes.first { it.code == configuration.size }.price
         val item = NewCartItem(
             productId = details.product.id,
             productName = details.product.name,
             size = configuration.size,
-            selections = configuration.selectionsIn(details),
+            selections = selections,
             quantity = configuration.quantity
                 .coerceIn(ProductConfiguration.MIN_QUANTITY, ProductConfiguration.MAX_QUANTITY),
-            unitPrice = configuration.copy(quantity = 1).totalPrice(details, priceCalculator),
+            // Cena z tej samej listy co migawka opcji – nie mogą się rozjechać.
+            unitPrice = priceCalculator.unitPrice(
+                sizePrice,
+                selections.map { PricedOption(it.surcharge, it.quantity) },
+            ),
         )
         return when (val result = cartRepository.add(item)) {
             is Result.Success -> result

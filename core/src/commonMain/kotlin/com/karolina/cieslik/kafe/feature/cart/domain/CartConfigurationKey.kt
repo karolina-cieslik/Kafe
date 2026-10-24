@@ -11,7 +11,7 @@ import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
  * pomijane.
  * Znaki separatorów w id są poprzedzane `\`, żeby różne konfiguracje nie dały tego samego klucza.
  *
- * Format zapisany w bazie – zmiana wymaga migracji.
+ * Format zapisany w bazie (razem z escapowaniem) – zmiana wymaga migracji.
  */
 fun cartConfigurationKey(productId: String, size: SizeCode, selections: List<CartSelection>): String {
     val options = selections

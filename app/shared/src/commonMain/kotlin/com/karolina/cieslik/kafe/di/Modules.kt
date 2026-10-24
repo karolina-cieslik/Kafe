@@ -22,6 +22,7 @@ val databaseModule = module {
     single { get<KafeDatabase>().syncMetadataDao() }
     single { get<KafeDatabase>().menuDao() }
     single { get<KafeDatabase>().cafeDao() }
+    single { get<KafeDatabase>().cartDao() }
 }
 
 /** DataStore Preferences – jedna instancja na plik, dlatego single. PreferencesFactory dostarcza [platformModule]. */

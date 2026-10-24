@@ -20,6 +20,7 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 
 - `./gradlew detekt` analizuje cały katalog `src` każdego modułu (wszystkie source sety KMP, także iOS i testy) bez rozwiązywania typów. Konfiguracja wspólna w `build.gradle.kts` (blok `subprojects`), reguły w `config/detekt/detekt.yml` jako nadpisania domyślnego zestawu.
 - Kod produkcyjny musi mieć KDoc na publicznych klasach, funkcjach i właściwościach (`UndocumentedPublic*`). Testy są z tego zwolnione, wartości enumów też.
+- `TODO` tylko w formie `TODO(KAFE-<n>): …`; `TODO` bez ticketu, `FIXME`, `XXX` i `STOPSHIP` w komentarzach łamią build (`ForbiddenComment`).
 - Zastane naruszenia są w `detekt-baseline.xml` każdego modułu. Nowe naruszenie łamie build. Baseline tylko się kurczy: po poprawce uruchamiamy `./gradlew detektBaseline` i commitujemy mniejszy plik. Nie dopisujemy do niego nowego kodu. Cel to puste baseline.
 - Raport: `<moduł>/build/reports/detekt/detekt.html`; w CI w artefakcie `reports`.
 - Wersja 2.0.0-alpha, bo 1.23.x nie obsługuje Gradle 9 ani Kotlina 2.4. Wersja jest przypięta, więc reguły zmieniają się tylko przy świadomym podbiciu.

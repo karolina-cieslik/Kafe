@@ -32,6 +32,17 @@ naming:
     ignoreAnnotated: ['Composable']
 
 style:
+  ForbiddenComment:
+    # TODO tylko z ticketem (CLAUDE.md), FIXME/XXX/STOPSHIP wcale. Wartości to wyrażenia regularne.
+    comments:
+      - value: 'TODO(?!\(KAFE-\d+\): )'
+        reason: 'TODO tylko z ticketem: `TODO(KAFE-<n>): …`.'
+      - value: 'FIXME'
+        reason: 'FIXME niedozwolone – popraw albo zapisz jako TODO(KAFE-<n>).'
+      - value: 'XXX'
+        reason: 'XXX niedozwolone – popraw albo zapisz jako TODO(KAFE-<n>).'
+      - value: 'STOPSHIP'
+        reason: 'STOPSHIP niedozwolone w repozytorium.'
   MagicNumber:
     excludes: *testSources
     # Zakresy (np. kody HTTP `in 500..599`) są czytelne bez nazwanych stałych.

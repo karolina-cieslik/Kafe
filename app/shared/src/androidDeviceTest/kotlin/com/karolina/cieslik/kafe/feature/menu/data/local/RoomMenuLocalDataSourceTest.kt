@@ -97,9 +97,15 @@ class RoomMenuLocalDataSourceTest {
         val menuB = MenuDto(
             categories = listOf(CategoryDto("d", "Herbaty", 1)),
             products = listOf(
-                ProductDto("tea", "d", "Herbata", sizes = listOf(ProductSizeDto("M", 300, 1100)), modifierGroupIds = listOf("milk")),
+                ProductDto(
+                    "tea", "d", "Herbata",
+                    sizes = listOf(ProductSizeDto("M", 300, 1100)),
+                    modifierGroupIds = listOf("milk"),
+                ),
             ),
-            modifierGroups = listOf(ModifierGroupDto("milk", "Mleko", "SINGLE", options = listOf(ModifierOptionDto("cow", "Krowie", 0)))),
+            modifierGroups = listOf(
+                ModifierGroupDto("milk", "Mleko", "SINGLE", options = listOf(ModifierOptionDto("cow", "Krowie", 0))),
+            ),
         )
         val availabilityA = AvailabilityDto(products = mapOf("espresso" to false))
         val availabilityB = AvailabilityDto(modifierOptions = mapOf("cow" to false))

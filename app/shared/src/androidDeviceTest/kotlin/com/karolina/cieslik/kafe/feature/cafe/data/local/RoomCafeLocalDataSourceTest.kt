@@ -81,7 +81,10 @@ class RoomCafeLocalDataSourceTest {
             collector.cancel()
             freshDatabase.close()
 
-            assertEquals(listOf(null, listOf("krakow", "gdansk")), emissions.value.map { cafes -> cafes?.map { it.id } })
+            assertEquals(
+                listOf(null, listOf("krakow", "gdansk")),
+                emissions.value.map { cafes -> cafes?.map { it.id } },
+            )
         }
     }
 

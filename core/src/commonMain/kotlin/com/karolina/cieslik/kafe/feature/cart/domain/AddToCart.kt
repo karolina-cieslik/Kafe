@@ -12,10 +12,18 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 /** Błąd dodania do koszyka. */
 sealed interface AddToCartError : Error {
 
-    /** Konfiguracji nie można zamówić – [issue] mówi dlaczego (ta sama walidacja co na ekranie produktu). */
+    /**
+     * Konfiguracji nie można zamówić (ta sama walidacja co na ekranie produktu).
+     *
+     * @property issue powód odrzucenia konfiguracji.
+     */
     data class InvalidConfiguration(val issue: ConfigurationIssue) : AddToCartError
 
-    /** Zapis w koszyku się nie udał. */
+    /**
+     * Zapis w koszyku się nie udał.
+     *
+     * @property error błąd lokalnej bazy z repozytorium.
+     */
     data class Storage(val error: DataError.Local) : AddToCartError
 }
 
@@ -47,7 +55,8 @@ class AddToCart(
             productName = details.product.name,
             size = configuration.size,
             selections = selections,
-            quantity = configuration.quantity.coerceIn(ProductConfiguration.MIN_QUANTITY, ProductConfiguration.MAX_QUANTITY),
+            quantity = configuration.quantity
+                .coerceIn(ProductConfiguration.MIN_QUANTITY, ProductConfiguration.MAX_QUANTITY),
             // Cena z tej samej listy co migawka opcji – nie mogą się rozjechać.
             unitPrice = priceCalculator.unitPrice(sizePrice, selections.map { PricedOption(it.surcharge, it.quantity) }),
         )

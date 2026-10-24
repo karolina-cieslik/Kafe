@@ -19,7 +19,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// KAFE-6: MenuViewModel – ładowanie (AC 6), błąd i ponowienie (AC 7), offline-first (AC 8), kategorie, wyszukiwarka, nawigacja (AC 9).
+/** MenuViewModel – ładowanie, błąd i ponowienie, offline-first, kategorie, wyszukiwarka, nawigacja. */
 class MenuViewModelTest {
 
     private val krakow = cafe("krakow", name = "Kafe Rynek")
@@ -51,7 +51,7 @@ class MenuViewModelTest {
         advanceUntilIdle()
     }
 
-    // --- AC 6: pierwsze ładowanie ---
+    // --- Pierwsze ładowanie ---
 
     @Test
     fun firstLoadWithoutCacheShowsLoadingThenContent() = runViewModelTest { context ->
@@ -93,7 +93,7 @@ class MenuViewModelTest {
         assertEquals(MenuUiState.Loading, viewModel.state.value)
     }
 
-    // --- AC 7: brak sieci i brak cache ---
+    // --- Brak sieci i brak cache ---
 
     @Test
     fun noInternetWithoutCacheShowsConnectionError() = runViewModelTest { context ->
@@ -159,7 +159,7 @@ class MenuViewModelTest {
         assertEquals(MenuUiState.Error(MENU_ERROR_GENERIC), viewModel.state.value)
     }
 
-    // --- AC 8: zapamiętane menu od razu, odświeżenie w tle ---
+    // --- Zapamiętane menu od razu, odświeżenie w tle ---
 
     @Test
     fun cachedMenuIsShownImmediatelyWhileRefreshingInBackground() = runViewModelTest { context ->
@@ -236,7 +236,7 @@ class MenuViewModelTest {
         assertEquals(listOf("krakow"), repository.refreshCalls)
     }
 
-    // --- AC 2: mapowanie produktu ---
+    // --- Mapowanie produktu ---
 
     @Test
     fun productIsMappedWithFormattedPriceAndSubtitle() = runViewModelTest { context ->
@@ -337,7 +337,7 @@ class MenuViewModelTest {
         assertEquals(3, assertIs<MenuUiState.Content>(viewModel.state.value).categories.sumOf { it.products.size })
     }
 
-    // --- AC 9 i zmiana lokalu: zdarzenia nawigacyjne ---
+    // --- Zdarzenia nawigacyjne (produkt, zmiana lokalu) ---
 
     @Test
     fun productClickedEmitsNavigateToProduct() = runViewModelTest { context ->

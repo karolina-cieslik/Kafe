@@ -15,7 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-// KAFE-2: Test DAO na prawdziwym SQLite (BundledSQLiteDriver, baza w pamięci).
+/** Test DAO na prawdziwym SQLite (BundledSQLiteDriver, baza w pamięci). */
 @RunWith(AndroidJUnit4::class)
 class SyncMetadataDaoTest {
 

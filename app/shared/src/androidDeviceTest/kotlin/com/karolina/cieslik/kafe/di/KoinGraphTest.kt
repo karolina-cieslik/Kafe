@@ -7,6 +7,8 @@ import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataDao
 import com.karolina.cieslik.kafe.core.data.network.NetworkConfig
 import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import io.ktor.client.HttpClient
 import org.junit.runner.RunWith
@@ -33,6 +35,8 @@ class KoinGraphTest {
             assertNotNull(koinApp.koin.get<SyncMetadataDao>())
             assertNotNull(koinApp.koin.get<MenuRepository>())
             assertNotNull(koinApp.koin.get<CafeRepository>())
+            assertNotNull(koinApp.koin.get<CartRepository>())
+            assertNotNull(koinApp.koin.get<AddToCart>())
             // DataStore z prawdziwą ścieżką z Context.
             assertNotNull(koinApp.koin.get<SelectedCafeStore>())
         } finally {

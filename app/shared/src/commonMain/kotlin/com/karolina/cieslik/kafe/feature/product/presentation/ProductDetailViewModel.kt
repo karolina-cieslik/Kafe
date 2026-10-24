@@ -17,7 +17,9 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.ProductLookup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Szczegóły i konfiguracja produktu [productId] w wybranym lokalu.
@@ -99,8 +102,8 @@ class ProductDetailViewModel(
      * zmiany są ignorowane. Dodanie do koszyka zapisuje pozycję i emituje [ProductDetailEvent.AddedToCart]
      * (z `limitReached`, gdy pozycja doszła do 20 sztuk) albo [ProductDetailEvent.AddToCartFailed] przy błędzie
      * zapisu; niepoprawna konfiguracja nic nie zapisuje i nie emituje zdarzenia. Kliknięcie w trakcie zapisu jest
-     * ignorowane, a konfiguracja na ekranie po dodaniu zostaje bez zmian. Retry nie startuje drugiego pobierania,
-     * gdy jedno trwa.
+     * ignorowane, a konfiguracja na ekranie po dodaniu zostaje bez zmian. Rozpoczęty zapis kończy się także po
+     * zamknięciu ekranu (bez zdarzenia). Retry nie startuje drugiego pobierania, gdy jedno trwa.
      */
     fun onAction(action: ProductDetailAction) {
         when (action) {
@@ -125,7 +128,9 @@ class ProductDetailViewModel(
         val (cafeId, details) = currentDetails() ?: return
         val selected = effectiveConfiguration(configuration.value, cafeId, details).configuration
         addToCartJob = viewModelScope.launch {
-            val event = when (val result = addToCart(details, selected)) {
+            // „Dodaj” i od razu „Wstecz” czyści VM – zapis i tak ma się dokończyć, ale zdarzenie już nie.
+            val result = withContext(NonCancellable) { addToCart(details, selected) }
+            val event = when (result) {
                 is Result.Success -> ProductDetailEvent.AddedToCart(
                     productName = result.data.item.productName,
                     limitReached = result.data is AddToCartOutcome.CappedAtLimit,
@@ -136,6 +141,8 @@ class ProductDetailViewModel(
                     is AddToCartError.Storage -> ProductDetailEvent.AddToCartFailed
                 }
             }
+            // send do buforowanego kanału nie zawiesza się, więc sam nie zauważy anulowania VM.
+            ensureActive()
             eventChannel.send(event)
         }
     }

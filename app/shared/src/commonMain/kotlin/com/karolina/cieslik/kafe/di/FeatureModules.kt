@@ -88,7 +88,10 @@ val productModule = module {
     }
 }
 
-/** Koszyk: repozytorium na Room (DAO z databaseModule) i przypadek użycia dodania; kalkulator ceny z [productModule]. */
+/**
+ * Koszyk: repozytorium na Room (DAO z databaseModule) i przypadek użycia dodania; kalkulator ceny
+ * z [productModule].
+ */
 val cartModule = module {
     single<CartRepository> { RoomCartRepository(dao = get()) }
     factory { AddToCart(cartRepository = get(), priceCalculator = get()) }

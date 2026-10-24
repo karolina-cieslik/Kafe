@@ -43,10 +43,10 @@ abstract class CartDao {
     }
 
     /**
-     * „Cofnij” usunięcia: wstawia [item] z jego id, więc wraca na swoje miejsce w kolejności. Gdy w międzyczasie
-     * dodano tę samą konfigurację, zostaje istniejąca pozycja (id, miejsce i migawka – nowsza) z sumą ilości
-     * przyciętą do 20. Ponowne przywrócenie pozycji, która już jest w koszyku, niczego nie zmienia i zwraca
-     * [CartWriteKind.INCREASED] z istniejącym wierszem.
+     * „Cofnij” usunięcia: wstawia [item] z jego id, więc wraca na swoje miejsce w kolejności. Gdy
+     * w międzyczasie dodano tę samą konfigurację, zostaje istniejąca pozycja (id, miejsce i migawka – nowsza)
+     * z sumą ilości przyciętą do 20. Ponowne przywrócenie pozycji, która już jest w koszyku, niczego nie zmienia
+     * i zwraca [CartWriteKind.INCREASED] z istniejącym wierszem.
      *
      * Jedna transakcja z tych samych powodów co [add].
      */

@@ -5,7 +5,10 @@ package com.karolina.cieslik.kafe.feature.cafe.domain
  * warstwa prezentacji ze wstrzykiwanego zegara i strefy Europe/Warsaw, więc domena nie zależy od
  * kotlinx-datetime.
  */
-const val MINUTES_IN_DAY = 24 * 60
+const val MINUTES_IN_DAY = 24 * MINUTES_PER_HOUR
+
+/** Liczba minut w godzinie – godziny otwarcia zapisujemy w minutach od północy. */
+const val MINUTES_PER_HOUR = 60
 
 /** Godziny w dniu [day]; null = brak wpisu, czyli lokal zamknięty w tym dniu (zasada modelu). */
 fun Cafe.openingHoursOn(day: Weekday): OpeningHours? = openingHours.firstOrNull { it.day == day }

@@ -6,6 +6,7 @@ import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cafe.domain.MINUTES_PER_HOUR
 import com.karolina.cieslik.kafe.feature.cafe.domain.PolishAlphabeticalOrder
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 import com.karolina.cieslik.kafe.feature.cafe.domain.isOpenAt
@@ -44,7 +45,7 @@ class CafePickerViewModel(
 
     private val refreshStatus = MutableStateFlow<RefreshStatus>(RefreshStatus.Idle)
 
-    /** Bieżące odświeżenie; null = jeszcze nie startowało. Dostęp tylko z wątku Main (viewModelScope / onAction). */
+    /** Bieżące odświeżenie; null = jeszcze nie startowało. Dostęp tylko z wątku Main (viewModelScope, onAction). */
     private var refreshJob: Job? = null
     private var selectJob: Job? = null
     /** Raz ustalone „pierwsze uruchomienie” nie znika po wyborze – UI nie mignie przyciskiem „wstecz”. */
@@ -118,7 +119,7 @@ class CafePickerViewModel(
         }
         val now = clock.now().toLocalDateTime(timeZone)
         val today = Weekday.valueOf(now.dayOfWeek.name)
-        val minuteOfDay = now.hour * 60 + now.minute
+        val minuteOfDay = now.hour * MINUTES_PER_HOUR + now.minute
         return CafePickerUiState.Content(
             cafes = cafes.sortedWith(compareBy(PolishAlphabeticalOrder) { it.name }).map { cafe ->
                 CafeUi(
@@ -148,7 +149,10 @@ class CafePickerViewModel(
 /** Otwarte jeszcze z wczoraj (godziny przez północ) – „Do 2:00”, żeby etykieta nie przeczyła „otwarte teraz”. */
 internal fun Cafe.todayLabel(today: Weekday, minuteOfDay: Int): String {
     val yesterday = openingHoursOn(today.previous())
-    if (yesterday != null && yesterday.closesAtMinute <= yesterday.opensAtMinute && minuteOfDay < yesterday.closesAtMinute) {
+    val openSinceYesterday = yesterday != null &&
+        yesterday.closesAtMinute <= yesterday.opensAtMinute &&
+        minuteOfDay < yesterday.closesAtMinute
+    if (yesterday != null && openSinceYesterday) {
         return "Do ${yesterday.closesAtMinute.toClockLabel()}"
     }
     val hours = openingHoursOn(today) ?: return CAFE_CLOSED_TODAY
@@ -156,7 +160,8 @@ internal fun Cafe.todayLabel(today: Weekday, minuteOfDay: Int): String {
 }
 
 /** Minuty od północy jako godzina, np. 450 → „7:30”. */
-internal fun Int.toClockLabel(): String = "${this / 60}:${(this % 60).toString().padStart(2, '0')}"
+internal fun Int.toClockLabel(): String =
+    "${this / MINUTES_PER_HOUR}:${(this % MINUTES_PER_HOUR).toString().padStart(2, '0')}"
 
 /** Komunikat błędu: osobny dla braku sieci i timeoutu, ogólny dla pozostałych błędów. */
 internal fun DataError.toCafePickerErrorMessage(): String = when (this) {
@@ -164,7 +169,7 @@ internal fun DataError.toCafePickerErrorMessage(): String = when (this) {
     else -> CAFE_PICKER_ERROR_GENERIC
 }
 
-/** Etykieta dnia bez godzin otwarcia. Teksty docelowo w zasobach stringów (composeResources), gdy dojdzie lokalizacja. */
+/** Etykieta dnia bez godzin otwarcia. Teksty docelowo w zasobach stringów (composeResources) przy lokalizacji. */
 internal const val CAFE_CLOSED_TODAY = "Dziś zamknięte"
 /** Brak połączenia przy pobieraniu lokali. */
 internal const val CAFE_PICKER_ERROR_NO_CONNECTION = "Nie udało się pobrać listy lokali. Sprawdź połączenie."

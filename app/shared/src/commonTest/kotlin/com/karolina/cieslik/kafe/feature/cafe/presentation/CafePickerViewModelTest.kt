@@ -128,7 +128,9 @@ class CafePickerViewModelTest {
     }
 
     @Test
-    fun storedChoiceIsMarkedAndItIsNotFirstLaunch() = runVmTest(FakeCafeRepository(seedCafes, selectedId = "dluga")) { env ->
+    fun storedChoiceIsMarkedAndItIsNotFirstLaunch() = runVmTest(
+        FakeCafeRepository(seedCafes, selectedId = "dluga"),
+    ) { env ->
         assertFalse(env.content.isFirstLaunch)
         assertEquals("dluga", env.content.cafes.single { it.isSelected }.id)
     }
@@ -242,7 +244,9 @@ class CafePickerViewModelTest {
     }
 
     @Test
-    fun emptyListFromServerIsContentNotEndlessLoading() = runVmTest(FakeCafeRepository().apply { remoteCafes = emptyList() }) { env ->
+    fun emptyListFromServerIsContentNotEndlessLoading() = runVmTest(
+        FakeCafeRepository().apply { remoteCafes = emptyList() },
+    ) { env ->
         assertEquals(emptyList(), env.content.cafes)
     }
 

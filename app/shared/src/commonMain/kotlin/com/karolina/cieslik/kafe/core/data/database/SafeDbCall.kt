@@ -9,7 +9,10 @@ import kotlinx.coroutines.CancellationException
  * Odpowiednik `safeCall` dla bazy: wykonuje [execute] i zamienia wyjątki na [DataError.Local]
  * ([DataError.Local.DISK_FULL] przy pełnym dysku, w pozostałych przypadkach [DataError.Local.UNKNOWN]).
  * CancellationException jest przepuszczany dalej, żeby nie łamać structured concurrency.
+ * Łapie każdy Exception celowo: Room i sterowniki SQLite rzucają różne typy, a wywołujący dostaje zawsze
+ * [DataError.Local].
  */
+@Suppress("TooGenericExceptionCaught")
 suspend inline fun <T> safeDbCall(execute: () -> T): Result<T, DataError.Local> =
     try {
         Result.Success(execute())

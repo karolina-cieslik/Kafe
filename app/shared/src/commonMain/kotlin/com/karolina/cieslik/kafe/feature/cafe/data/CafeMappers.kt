@@ -1,6 +1,7 @@
 package com.karolina.cieslik.kafe.feature.cafe.data
 
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.OpeningHoursDto
+import com.karolina.cieslik.kafe.feature.cafe.domain.MINUTES_PER_HOUR
 import com.karolina.cieslik.kafe.feature.cafe.domain.OpeningHours
 import com.karolina.cieslik.kafe.feature.cafe.domain.Weekday
 
@@ -21,5 +22,5 @@ internal fun String.toMinuteOfDayOrNull(): Int? {
     if (parts.size != 2) return null
     val hours = parts[0].toIntOrNull()?.takeIf { it in 0..23 } ?: return null
     val minutes = parts[1].toIntOrNull()?.takeIf { it in 0..59 } ?: return null
-    return hours * 60 + minutes
+    return hours * MINUTES_PER_HOUR + minutes
 }

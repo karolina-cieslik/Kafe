@@ -51,7 +51,7 @@ class DataStoreSelectedCafeStore(private val dataStore: DataStore<Preferences>) 
         try {
             dataStore.edit { it[SELECTED_CAFE_ID] = cafeId }
             Result.Success(Unit)
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             Result.Failure(DataError.Local.UNKNOWN)
         }
 

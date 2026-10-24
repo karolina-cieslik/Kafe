@@ -91,8 +91,8 @@ class MenuViewModel(
 
     /**
      * Stan ekranu. Zaczyna od [MenuUiState.Loading], aktualizuje się po każdej zmianie lokalu, menu, statusu
-     * odświeżania, kategorii, wyszukiwania i liczby sztuk w koszyku. Obserwacja trwa jeszcze 5 s po zniknięciu ostatniego kolektora,
-     * żeby obrót ekranu nie restartował odświeżania.
+     * odświeżania, kategorii, wyszukiwania i liczby sztuk w koszyku. Obserwacja trwa jeszcze 5 s po zniknięciu
+     * ostatniego kolektora, żeby obrót ekranu nie restartował odświeżania.
      */
     val state: StateFlow<MenuUiState> = combine(
         selectedCafe,

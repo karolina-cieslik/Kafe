@@ -126,7 +126,10 @@ class AddToCartTest {
         addToCart(details(), configuration(quantity = 25))
         addToCart(details(), configuration(quantity = 0))
 
-        assertEquals(listOf(ProductConfiguration.MAX_QUANTITY, ProductConfiguration.MIN_QUANTITY), repository.added.map { it.quantity })
+        assertEquals(
+            listOf(ProductConfiguration.MAX_QUANTITY, ProductConfiguration.MIN_QUANTITY),
+            repository.added.map { it.quantity },
+        )
     }
 
     private fun cartItem(quantity: Int) = CartItem(
@@ -141,7 +144,8 @@ class AddToCartTest {
 
     private inner class RecordingCartRepository : CartRepository {
         val added = mutableListOf<NewCartItem>()
-        var result: Result<AddToCartOutcome, DataError.Local> = Result.Success(AddToCartOutcome.Added(cartItem(quantity = 1)))
+        var result: Result<AddToCartOutcome, DataError.Local> =
+            Result.Success(AddToCartOutcome.Added(cartItem(quantity = 1)))
 
         override fun observeCart(): Flow<Cart> = flowOf(Cart.EMPTY)
 
@@ -150,7 +154,8 @@ class AddToCartTest {
             return result
         }
 
-        override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> = error("nieużywane")
+        override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> =
+            error("nieużywane")
 
         override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
 

@@ -43,8 +43,8 @@ class KafeDatabaseMigrationTest {
                 assertEquals("Klasyki", statement.getText(0))
             }
             connection.execSQL(
-                "INSERT INTO cart_items (productId, productName, sizeCode, selectionsJson, configurationKey, quantity, " +
-                    "unitPriceGrosze) VALUES ('latte', 'Caffè latte', 'M', '[]', 'latte|M|', 1, 1400)",
+                "INSERT INTO cart_items (productId, productName, sizeCode, selectionsJson, configurationKey, " +
+                    "quantity, unitPriceGrosze) VALUES ('latte', 'Caffè latte', 'M', '[]', 'latte|M|', 1, 1400)",
             )
             connection.prepare("SELECT id, quantity FROM cart_items").use { statement ->
                 statement.step()

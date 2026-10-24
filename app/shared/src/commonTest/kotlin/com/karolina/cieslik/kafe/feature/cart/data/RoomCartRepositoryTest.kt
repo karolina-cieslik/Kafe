@@ -22,7 +22,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
-/** Scalanie, limit 20, „Cofnij” i odczyt koszyka – logika DAO na tabeli w pamięci (Room testuje CartDaoTest na urządzeniu). */
+/**
+ * Scalanie, limit 20, „Cofnij” i odczyt koszyka – logika DAO na tabeli w pamięci (Room testuje CartDaoTest
+ * na urządzeniu).
+ */
 class RoomCartRepositoryTest {
 
     private val dao = InMemoryCartDao()
@@ -38,8 +41,10 @@ class RoomCartRepositoryTest {
         unitPrice: Money = Money(1_600),
     ) = NewCartItem(productId, name, SizeCode.M, selections, quantity, unitPrice)
 
-    private suspend fun addedItem(item: NewCartItem): CartItem =
-        assertIs<Result.Success<AddToCartOutcome>>(repository.add(item)).data.item
+    private suspend fun addedItem(item: NewCartItem): CartItem = repository.add(item).outcome().item
+
+    private fun Result<AddToCartOutcome, DataError.Local>.outcome(): AddToCartOutcome =
+        assertIs<Result.Success<AddToCartOutcome>>(this).data
 
     @Test
     fun emptyCartEmitsEmpty() = runTest {
@@ -52,7 +57,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.add(newItem(productId = "flat-white", quantity = 2))
 
-        val added = assertIs<AddToCartOutcome.Added>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        val added = assertIs<AddToCartOutcome.Added>(result.outcome())
         assertEquals(2, added.item.quantity)
         assertEquals(listOf("latte", "flat-white"), repository.observeCart().first().items.map { it.productId })
     }
@@ -62,10 +67,15 @@ class RoomCartRepositoryTest {
         val first = addedItem(newItem(quantity = 2))
 
         val result = repository.add(
-            newItem(quantity = 3, name = "Latte", unitPrice = Money(1_700), selections = listOf(oat.copy(surcharge = Money(250)))),
+            newItem(
+                quantity = 3,
+                name = "Latte",
+                unitPrice = Money(1_700),
+                selections = listOf(oat.copy(surcharge = Money(250))),
+            ),
         )
 
-        val increased = assertIs<AddToCartOutcome.QuantityIncreased>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        val increased = assertIs<AddToCartOutcome.QuantityIncreased>(result.outcome())
         assertEquals(first.id, increased.item.id)
         assertEquals(5, increased.item.quantity)
         assertEquals("Latte", increased.item.productName)
@@ -80,7 +90,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.add(newItem(quantity = 10))
 
-        val capped = assertIs<AddToCartOutcome.CappedAtLimit>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        val capped = assertIs<AddToCartOutcome.CappedAtLimit>(result.outcome())
         assertEquals(20, capped.item.quantity)
     }
 
@@ -90,7 +100,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.add(newItem(quantity = 5))
 
-        assertIs<AddToCartOutcome.QuantityIncreased>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        assertIs<AddToCartOutcome.QuantityIncreased>(result.outcome())
     }
 
     @Test
@@ -133,7 +143,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(second)
 
-        assertIs<AddToCartOutcome.Added>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        assertIs<AddToCartOutcome.Added>(result.outcome())
         val items = repository.observeCart().first().items
         assertEquals(listOf("a", "b", "c"), items.map { it.productId })
         assertEquals(listOf(first.id, second.id), items.take(2).map { it.id })
@@ -147,7 +157,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(removed)
 
-        val increased = assertIs<AddToCartOutcome.QuantityIncreased>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        val increased = assertIs<AddToCartOutcome.QuantityIncreased>(result.outcome())
         assertEquals(readded.id, increased.item.id)
         assertEquals(6, increased.item.quantity)
         assertEquals(Money(1_800), increased.item.unitPrice)
@@ -162,7 +172,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(removed)
 
-        val capped = assertIs<AddToCartOutcome.CappedAtLimit>(assertIs<Result.Success<AddToCartOutcome>>(result).data)
+        val capped = assertIs<AddToCartOutcome.CappedAtLimit>(result.outcome())
         assertEquals(20, capped.item.quantity)
     }
 
@@ -258,7 +268,9 @@ class RoomCartRepositoryTest {
 
         private fun insertRow(item: CartItemEntity): Long {
             val id = if (item.id == 0L) lastId + 1 else item.id
-            check(rows.value.none { it.id == id || it.configurationKey == item.configurationKey }) { "UNIQUE constraint failed" }
+            check(rows.value.none { it.id == id || it.configurationKey == item.configurationKey }) {
+                "UNIQUE constraint failed"
+            }
             lastId = maxOf(lastId, id)
             rows.value = rows.value + item.copy(id = id)
             return id

@@ -32,7 +32,10 @@ internal fun CartItem.toEntity() = CartItemEntity(
     unitPriceGrosze = unitPrice.grosze,
 )
 
-/** Null dla wiersza, którego nie da się odczytać (nieznany rozmiar, błędny JSON) – koszyk go pomija zamiast się wysypać. */
+/**
+ * Null dla wiersza, którego nie da się odczytać (nieznany rozmiar, błędny JSON) – koszyk go pomija zamiast się
+ * wysypać.
+ */
 internal fun CartItemEntity.toDomainOrNull(): CartItem? {
     val size = SizeCode.entries.firstOrNull { it.name == sizeCode } ?: return null
     val selections = try {

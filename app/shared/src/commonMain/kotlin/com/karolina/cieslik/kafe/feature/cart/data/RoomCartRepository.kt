@@ -36,11 +36,14 @@ class RoomCartRepository(private val dao: CartDao) : CartRepository {
         safeDbCall { dao.add(item.toEntity()) }.toOutcome()
 
     override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> {
-        require(quantity >= ProductConfiguration.MIN_QUANTITY) { "Ilość $quantity < 1 – do usuwania pozycji służy remove" }
-        val updated = safeDbCall { dao.updateQuantity(itemId, quantity.coerceAtMost(ProductConfiguration.MAX_QUANTITY)) }
-        return when (updated) {
+        require(quantity >= ProductConfiguration.MIN_QUANTITY) {
+            "Ilość $quantity < 1 – do usuwania pozycji służy remove"
+        }
+        val capped = quantity.coerceAtMost(ProductConfiguration.MAX_QUANTITY)
+        return when (val updated = safeDbCall { dao.updateQuantity(itemId, capped) }) {
             is Result.Failure -> updated
-            is Result.Success -> if (updated.data == 0) Result.Failure(DataError.Local.NOT_FOUND) else Result.Success(Unit)
+            is Result.Success ->
+                if (updated.data == 0) Result.Failure(DataError.Local.NOT_FOUND) else Result.Success(Unit)
         }
     }
 

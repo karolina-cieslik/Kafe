@@ -9,6 +9,9 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
+import com.karolina.cieslik.kafe.feature.cart.data.RoomCartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.local.RoomMenuLocalDataSource
@@ -83,4 +86,10 @@ val productModule = module {
             priceCalculator = get(),
         )
     }
+}
+
+/** Koszyk: repozytorium na Room (DAO z databaseModule) i przypadek użycia dodania; kalkulator ceny z [productModule]. */
+val cartModule = module {
+    single<CartRepository> { RoomCartRepository(dao = get()) }
+    factory { AddToCart(cartRepository = get(), priceCalculator = get()) }
 }

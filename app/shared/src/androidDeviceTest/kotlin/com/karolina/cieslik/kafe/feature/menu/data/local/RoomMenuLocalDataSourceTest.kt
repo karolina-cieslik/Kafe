@@ -12,11 +12,17 @@ import com.karolina.cieslik.kafe.feature.menu.data.remote.ModifierGroupDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.ModifierOptionDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.ProductDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.ProductSizeDto
+import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroupType
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
 import org.junit.runner.RunWith
@@ -87,6 +93,37 @@ class RoomMenuLocalDataSourceTest {
     }
 
     @Test
+    fun observerNeverSeesHalfWrittenMenu() = runTest {
+        val menuB = MenuDto(
+            categories = listOf(CategoryDto("d", "Herbaty", 1)),
+            products = listOf(
+                ProductDto("tea", "d", "Herbata", sizes = listOf(ProductSizeDto("M", 300, 1100)), modifierGroupIds = listOf("milk")),
+            ),
+            modifierGroups = listOf(ModifierGroupDto("milk", "Mleko", "SINGLE", options = listOf(ModifierOptionDto("cow", "Krowie", 0)))),
+        )
+        val availabilityA = AvailabilityDto(products = mapOf("espresso" to false))
+        val availabilityB = AvailabilityDto(modifierOptions = mapOf("cow" to false))
+        dataSource.saveMenu("cafe", menuB, availabilityB, syncedAtEpochMillis = 1)
+        val expectedB = assertNotNull(dataSource.observeMenu("cafe").first())
+        dataSource.saveMenu("cafe", menu, availabilityA, syncedAtEpochMillis = 2)
+        val expectedA = assertNotNull(dataSource.observeMenu("cafe").first())
+        val emissions = MutableStateFlow<List<Menu?>>(emptyList())
+        val collector = launch(Dispatchers.IO) {
+            dataSource.observeMenu("cafe").collect { menu -> emissions.update { it + menu } }
+        }
+
+        repeat(SAVE_ROUNDS) { round ->
+            val (dto, availability) = if (round % 2 == 0) menuB to availabilityB else menu to availabilityA
+            dataSource.saveMenu("cafe", dto, availability, syncedAtEpochMillis = round + 3L)
+        }
+        val last = if ((SAVE_ROUNDS - 1) % 2 == 0) expectedB else expectedA
+        withContext(Dispatchers.IO) { withTimeout(5_000) { emissions.first { it.lastOrNull() == last } } }
+        collector.cancel()
+
+        assertEquals(emptyList(), emissions.value.filterNot { it == expectedA || it == expectedB })
+    }
+
+    @Test
     fun savingOneCafeKeepsAvailabilityOfAnother() = runTest {
         dataSource.saveMenu("a", menu, AvailabilityDto(products = mapOf("latte" to false)), syncedAtEpochMillis = 1)
         dataSource.saveMenu("b", menu, AvailabilityDto(), syncedAtEpochMillis = 2)
@@ -130,5 +167,9 @@ class RoomMenuLocalDataSourceTest {
         assertEquals(ModifierGroupType.QUANTITY, saved.modifierGroups.single { it.id == "shots" }.type)
         assertEquals(mapOf("latte" to setOf(SizeCode.S)), saved.unavailableSizes)
         assertEquals(setOf("oat"), saved.unavailableOptionIds)
+    }
+
+    private companion object {
+        const val SAVE_ROUNDS = 20
     }
 }

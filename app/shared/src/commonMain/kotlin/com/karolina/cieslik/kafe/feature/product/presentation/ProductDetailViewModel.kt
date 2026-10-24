@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartError
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
@@ -48,6 +51,7 @@ class ProductDetailViewModel(
     private val menuRepository: MenuRepository,
     getProductDetails: GetProductDetails,
     private val priceCalculator: PriceCalculator,
+    private val addToCart: AddToCart,
 ) : ViewModel() {
 
     /** Wybór klienta dla konkretnego lokalu – po zmianie lokalu dostępność jest inna, więc start od nowa. */
@@ -58,6 +62,7 @@ class ProductDetailViewModel(
     private var current: LookupOfCafe? = null
     private var refreshJob: Job? = null
     private var refreshedCafeId: String? = null
+    private var addToCartJob: Job? = null
 
     private val eventChannel = Channel<ProductDetailEvent>(Channel.BUFFERED)
     /** Jednorazowe zdarzenia (dodanie do koszyka, powrót); każde trafia do jednego kolektora. */
@@ -91,8 +96,11 @@ class ProductDetailViewModel(
 
     /**
      * Obsługuje akcję użytkownika. Zmiany konfiguracji działają tylko, gdy produkt jest znaleziony; niedozwolone
-     * zmiany są ignorowane. Dodanie do koszyka emituje [ProductDetailEvent.AddedToCart] tylko dla poprawnej
-     * konfiguracji. Retry nie startuje drugiego pobierania, gdy jedno trwa.
+     * zmiany są ignorowane. Dodanie do koszyka zapisuje pozycję i emituje [ProductDetailEvent.AddedToCart]
+     * (z `limitReached`, gdy pozycja doszła do 20 sztuk) albo [ProductDetailEvent.AddToCartFailed] przy błędzie
+     * zapisu; niepoprawna konfiguracja nic nie zapisuje i nie emituje zdarzenia. Kliknięcie w trakcie zapisu jest
+     * ignorowane, a konfiguracja na ekranie po dodaniu zostaje bez zmian. Retry nie startuje drugiego pobierania,
+     * gdy jedno trwa.
      */
     fun onAction(action: ProductDetailAction) {
         when (action) {
@@ -105,17 +113,31 @@ class ProductDetailViewModel(
             is ProductDetailAction.OptionQuantityChanged ->
                 updateConfiguration { details -> changeOptionQuantity(action.groupId, action.optionId, action.delta, details) }
             is ProductDetailAction.QuantityChanged -> updateConfiguration { changeQuantity(action.delta) }
-            ProductDetailAction.AddToCartClicked -> addToCart()
+            ProductDetailAction.AddToCartClicked -> addCurrentToCart()
             ProductDetailAction.BackClicked -> sendEvent(ProductDetailEvent.NavigateBack)
             ProductDetailAction.Retry -> retry()
         }
     }
 
-    private fun addToCart() {
+    private fun addCurrentToCart() {
+        // Podwójne kliknięcie nie dodaje dwóch sztuk – drugie trafia w trwający zapis.
+        if (addToCartJob?.isActive == true) return
         val (cafeId, details) = currentDetails() ?: return
-        if (effectiveConfiguration(configuration.value, cafeId, details).configuration.validate(details) != null) return
-        // TODO(KAFE-12): zapis do koszyka; na razie tylko potwierdzenie dla UI (snackbar).
-        sendEvent(ProductDetailEvent.AddedToCart(details.product.name))
+        val selected = effectiveConfiguration(configuration.value, cafeId, details).configuration
+        addToCartJob = viewModelScope.launch {
+            val event = when (val result = addToCart(details, selected)) {
+                is Result.Success -> ProductDetailEvent.AddedToCart(
+                    productName = result.data.item.productName,
+                    limitReached = result.data is AddToCartOutcome.CappedAtLimit,
+                )
+                is Result.Failure -> when (result.error) {
+                    // Przycisk jest wtedy nieaktywny (canAddToCart), a powód pokazuje infoMessage.
+                    is AddToCartError.InvalidConfiguration -> return@launch
+                    is AddToCartError.Storage -> ProductDetailEvent.AddToCartFailed
+                }
+            }
+            eventChannel.send(event)
+        }
     }
 
     private fun retry() {

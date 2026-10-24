@@ -23,6 +23,8 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerTestTags
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.presentation.FakeMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuTestTags
@@ -87,7 +89,7 @@ class KafeNavHostTest {
         startKoin {
             modules(
                 module {
-                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus)) }
+                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus), FakeCartRepository()) }
                     viewModel { (productId: String) ->
                         ProductDetailViewModel(
                             productId = productId,
@@ -95,6 +97,7 @@ class KafeNavHostTest {
                             menuRepository = menus,
                             getProductDetails = GetProductDetails(menus),
                             priceCalculator = PriceCalculator(),
+                            addToCart = AddToCart(FakeCartRepository(), PriceCalculator()),
                         )
                     }
                     viewModel { CafePickerViewModel(cafes, fixedClock, TimeZone.of("Europe/Warsaw")) }

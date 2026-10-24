@@ -15,6 +15,7 @@ import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerTestTags
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.presentation.FakeMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuTestTags
@@ -68,7 +69,7 @@ class AppStartUiTest {
         startKoin {
             modules(
                 module {
-                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus)) }
+                    viewModel { MenuViewModel(cafes, menus, GetMenuForCafe(menus), FakeCartRepository()) }
                     viewModel { CafePickerViewModel(cafes, clock, TimeZone.of("Europe/Warsaw")) }
                 },
             )

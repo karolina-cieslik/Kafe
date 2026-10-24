@@ -6,6 +6,7 @@ import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.Category
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
@@ -63,7 +64,7 @@ class MenuViewModelCafeErrorTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menu = FakeMenuRepository()
-        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu))
+        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu), FakeCartRepository())
         val collector = launch { viewModel.state.collect {} }
         try {
             block(viewModel, cafes)
@@ -103,7 +104,7 @@ class MenuViewModelCafeErrorTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository().apply { refreshResult = Result.Success(Unit) }
         val menu = FakeMenuRepository()
-        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu))
+        val viewModel = MenuViewModel(cafes, menu, GetMenuForCafe(menu), FakeCartRepository())
         try {
             val first = launch { viewModel.state.collect {} }
             advanceUntilIdle()

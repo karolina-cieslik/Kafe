@@ -16,6 +16,7 @@ sealed interface MenuUiState {
      * (domyślnie pierwsza kategoria).
      * @property isRefreshing trwa odświeżanie menu w tle – dane na ekranie są z pamięci.
      * @property searchQuery tekst wyszukiwarki dokładnie tak, jak go wpisano.
+     * @property cartItemCount suma sztuk wszystkich pozycji w koszyku (licznik na ikonie koszyka); 0 = pusty.
      */
     data class Content(
         val cafeName: String,
@@ -23,6 +24,7 @@ sealed interface MenuUiState {
         val selectedCategoryId: String?,
         val isRefreshing: Boolean,
         val searchQuery: String = "",
+        val cartItemCount: Int = 0,
     ) : MenuUiState
 
     /**

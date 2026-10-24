@@ -49,6 +49,8 @@ fun ProductDetailRoute(
                     snackbarHostState.currentSnackbarData?.dismiss()
                     snackbarHostState.showSnackbar(message)
                 }
+                // TODO(KAFE-12): snackbar błędu zapisu i komunikat o limicie 20 szt. – ekran w PR ui.
+                ProductDetailEvent.AddToCartFailed -> Unit
                 ProductDetailEvent.NavigateBack -> currentOnNavigateBack()
             }
         }

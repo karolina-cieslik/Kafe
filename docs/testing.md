@@ -87,6 +87,6 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 ## Znane problemy
 
 - `kotlin.test.Ignore` nie przyjmuje powodu – przy `@Ignore` piszemy powód w komentarzu w tej samej linii (`@Ignore // KAFE-XX BUG …`).
-- Migracje Room (2→3) nie mają testu na danych (brak `room-testing`/`MigrationTestHelper`, wymaga emulatora) – walidację robi tylko kompilator AutoMigration.
+- Migracje Room testujemy na danych w `KafeDatabaseMigrationTest` (`androidDeviceTest`, tylko emulator): `MigrationTestHelper` z `room-testing` (zależność tylko w `androidDeviceTest`) tworzy bazę w starej wersji, wstawia wiersze i uruchamia `runMigrationsAndValidate`. Schematy z `app/shared/schemas` plugin Room sam pakuje do assetów testowego APK. Test na danych ma na razie tylko migracja 3→4; 1→2 i 2→3 sprawdza wyłącznie kompilator AutoMigration.
 
 - **`Money(Long.MIN_VALUE).format()`** zwraca niepoprawny tekst (`--92 233…,-8 zł`), bo `-grosze` przepełnia `Long`. W praktyce nieosiągalne (kwoty w groszach są o rzędy wielkości mniejsze). Zostawione bez poprawki na decyzję koordynatora (KAFE-6). Brak testu, żeby nie utrwalać błędnego zachowania.

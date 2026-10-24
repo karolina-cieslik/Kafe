@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataDao
 import com.karolina.cieslik.kafe.core.data.database.sync.SyncMetadataEntity
+import com.karolina.cieslik.kafe.feature.cart.data.local.CartDao
+import com.karolina.cieslik.kafe.feature.cart.data.local.CartItemEntity
 import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeDao
 import com.karolina.cieslik.kafe.feature.cafe.data.local.CafeEntity
 import com.karolina.cieslik.kafe.feature.cafe.data.local.OpeningHoursEntity
@@ -33,6 +35,9 @@ import com.karolina.cieslik.kafe.feature.menu.data.local.SizeAvailabilityEntity
  * Migracja 2→3 jest bezpieczna dla danych: tylko tworzy tabele i dodaje kolumnę dopuszczającą NULL,
  * niczego nie usuwa ani nie przepisuje. Zapamiętane menu zostaje, ale bez modyfikatorów i domyślnego
  * rozmiaru – uzupełnią się przy najbliższym odświeżeniu menu.
+ *
+ * - Wersja 4 dodała koszyk: tabela `cart_items` z unikalnym indeksem na `configurationKey`, bez kluczy obcych
+ *   do menu. Migracja 3→4 tylko tworzy tabelę, więc menu, lokale i znaczniki synchronizacji zostają bez zmian.
  */
 @Database(
     entities = [
@@ -48,10 +53,15 @@ import com.karolina.cieslik.kafe.feature.menu.data.local.SizeAvailabilityEntity
         ProductModifierGroupEntity::class,
         SizeAvailabilityEntity::class,
         ModifierOptionAvailabilityEntity::class,
+        CartItemEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
+    ],
 )
 @ConstructedBy(KafeDatabaseConstructor::class)
 abstract class KafeDatabase : RoomDatabase() {
@@ -64,6 +74,9 @@ abstract class KafeDatabase : RoomDatabase() {
 
     /** DAO lokali sieci. */
     abstract fun cafeDao(): CafeDao
+
+    /** DAO koszyka. */
+    abstract fun cartDao(): CartDao
 
     /** Stałe bazy. */
     companion object {

@@ -147,8 +147,17 @@ sealed interface ProductDetailAction {
 
 /** Jednorazowe zdarzenia ekranu produktu – zbiera je route ekranu. */
 sealed interface ProductDetailEvent {
-    /** Produkt [productName] dodany do koszyka – UI pokazuje potwierdzenie. */
-    data class AddedToCart(val productName: String) : ProductDetailEvent
+    /**
+     * Produkt dodany do koszyka (nowa pozycja albo zwiększona ilość identycznej) – UI pokazuje potwierdzenie.
+     *
+     * @property productName nazwa produktu do komunikatu „Dodano do koszyka: …”.
+     * @property limitReached pozycja w koszyku doszła do limitu 20 sztuk i nadmiar nie został dodany – UI
+     * pokazuje „W koszyku jest już maks. 20 szt. tej pozycji” zamiast zwykłego potwierdzenia.
+     */
+    data class AddedToCart(val productName: String, val limitReached: Boolean = false) : ProductDetailEvent
+
+    /** Zapis w koszyku się nie udał (błąd bazy) – UI pokazuje „Nie udało się dodać do koszyka. Spróbuj ponownie.”. */
+    data object AddToCartFailed : ProductDetailEvent
 
     /** Powrót do poprzedniego ekranu. */
     data object NavigateBack : ProductDetailEvent

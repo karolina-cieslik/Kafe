@@ -8,6 +8,10 @@ import com.karolina.cieslik.kafe.feature.cafe.data.local.SelectedCafeStore
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.data.local.CartDao
+import com.karolina.cieslik.kafe.feature.cart.data.local.CartItemEntity
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
@@ -52,6 +56,18 @@ class FeatureModulesTest {
                 }
             }
         }
+        single<CartDao> {
+            object : CartDao() {
+                override fun observeItems(): Flow<List<CartItemEntity>> = flowOf(emptyList())
+                override suspend fun updateQuantity(id: Long, quantity: Int): Int = 0
+                override suspend fun deleteAll() = Unit
+                override suspend fun findByKey(configurationKey: String): CartItemEntity? = null
+                override suspend fun findById(id: Long): CartItemEntity? = null
+                override suspend fun insert(item: CartItemEntity): Long = 1
+                override suspend fun update(item: CartItemEntity) = Unit
+                override suspend fun deleteById(id: Long) = Unit
+            }
+        }
         single<CafeLocalDataSource> {
             object : CafeLocalDataSource {
                 override fun observeCafes(): Flow<List<Cafe>?> = flowOf(null)
@@ -62,16 +78,18 @@ class FeatureModulesTest {
     }
 
     @Test
-    fun menuAndCafeDefinitionsAreResolvable() {
+    fun featureDefinitionsAreResolvable() {
         val koin = koinApplication {
             allowOverride(true)
-            modules(cafeModule, menuModule, productModule, fakeLocalModule)
+            modules(cafeModule, menuModule, productModule, cartModule, fakeLocalModule)
         }.koin
 
         try {
             assertSame(koin.get<CafeRepository>(), koin.get<CafeRepository>())
             assertSame(koin.get<MenuRepository>(), koin.get<MenuRepository>())
             assertNotNull(koin.get<GetMenuForCafe>())
+            assertSame(koin.get<CartRepository>(), koin.get<CartRepository>())
+            assertNotNull(koin.get<AddToCart>())
         } finally {
             koin.close()
         }

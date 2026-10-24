@@ -29,6 +29,7 @@ class AddToCart(
      * Waliduje [configuration] względem [details] ([ProductConfiguration.validate]), liczy cenę jednej sztuki
      * z dopłatami ([PriceCalculator]) i dodaje pozycję przez [CartRepository.add]. Do koszyka trafiają tylko
      * opcje z grup produktu – te same, które liczy cena. Liczba sztuk jest przycinana do 1–20.
+     * Zakłada konfigurację zbudowaną przez [ProductConfiguration] – limitów w grupach (np. maks. 4 shoty) nie sprawdza ponownie.
      *
      * @return wynik z repozytorium ([AddToCartOutcome]); [AddToCartError.InvalidConfiguration] bez zapisu, gdy
      * konfiguracja jest niepoprawna; [AddToCartError.Storage] przy błędzie bazy.

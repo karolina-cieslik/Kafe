@@ -1,0 +1,126 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionNaming:MainViewController.kt:fun MainViewController</ID>
+    <ID>LongMethod:KafeIntro.kt:@Composable fun KafeIntro</ID>
+    <ID>LongMethod:ProductCard.kt:@Composable fun ProductCard</ID>
+    <ID>LongMethod:ProductDetailScreen.kt:@Composable private fun ProductDetailContent</ID>
+    <ID>MagicNumber:CafeMappers.kt:60</ID>
+    <ID>MagicNumber:CafePickerViewModel.kt:60</ID>
+    <ID>MagicNumber:KafeIntro.kt:0.5f</ID>
+    <ID>MagicNumber:KafeIntro.kt:0.65f</ID>
+    <ID>MagicNumber:KafeIntro.kt:0.7f</ID>
+    <ID>MagicNumber:KafeIntro.kt:0.85f</ID>
+    <ID>MagicNumber:ProductCard.kt:0.5f</ID>
+    <ID>MagicNumber:ProductCard.kt:0.7f</ID>
+    <ID>MagicNumber:SafeCall.kt:401</ID>
+    <ID>MagicNumber:SafeCall.kt:404</ID>
+    <ID>MagicNumber:SafeCall.kt:408</ID>
+    <ID>MagicNumber:SafeCall.kt:429</ID>
+    <ID>MagicNumber:SeedMenuRemoteDataSource.kt:SeedMenuRemoteDataSource$4</ID>
+    <ID>MagicNumber:SizeSelector.kt:0.4f</ID>
+    <ID>MatchingDeclarationName:AppStartContract.kt:AppStartState</ID>
+    <ID>MatchingDeclarationName:CafePickerScreen.kt:CafePickerTestTags</ID>
+    <ID>MatchingDeclarationName:CafePickerScreenPreviews.kt:CafePickerPreviewData</ID>
+    <ID>MatchingDeclarationName:KafeBadge.kt:KafeBadgeStyle</ID>
+    <ID>MatchingDeclarationName:MenuScreenPreviews.kt:MenuPreviewData</ID>
+    <ID>MatchingDeclarationName:Platform.android.kt:AndroidPlatform : Platform</ID>
+    <ID>MatchingDeclarationName:Platform.ios.kt:IOSPlatform : Platform</ID>
+    <ID>MatchingDeclarationName:ProductDetailScreen.kt:ProductDetailTestTags</ID>
+    <ID>MatchingDeclarationName:ProductDetailScreenPreviews.kt:ProductDetailPreviewData</ID>
+    <ID>MatchingDeclarationName:RunViewModelTest.kt:ViewModelTestContext</ID>
+    <ID>MatchingDeclarationName:SizeSelector.kt:SizeOptionUi</ID>
+    <ID>MatchingDeclarationName:Spacing.kt:KafeSpacing</ID>
+    <ID>MaxLineLength:CafePickerScreen.kt:text = stringResource(if (cafe.isOpenNow) Res.string.cafe_picker_open else Res.string.cafe_picker_closed)</ID>
+    <ID>MaxLineLength:CafePickerScreenPreviews.kt:CafePickerPreviewData$CafeUi("mokotow", "Kafe Mokotów", "ul. Puławska 45, Warszawa", "Dziś 8:00–20:00", isOpenNow = true, isSelected = false)</ID>
+    <ID>MaxLineLength:CafePickerScreenPreviews.kt:CafePickerPreviewData$CafeUi("oliwa", "Kafe Oliwa", "ul. Grunwaldzka 410, Gdańsk", "Otwieramy jutro o 8:00", isOpenNow = false, isSelected = false)</ID>
+    <ID>MaxLineLength:CafePickerScreenPreviews.kt:CafePickerPreviewData$CafeUi("rynek", "Kafe Rynek", "Rynek Główny 12, Kraków", "Dziś 7:00–21:00", isOpenNow = true, isSelected = true)</ID>
+    <ID>MaxLineLength:CafePickerScreenPreviews.kt:private</ID>
+    <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$private val dluga = CafeUi("dluga", "Kafe Długa", "ul. Długa 45, Gdańsk", "Dziś 8:00–19:00", isOpenNow = true, isSelected = false)</ID>
+    <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$private val rynek = CafeUi("rynek", "Kafe Rynek", "Rynek Główny 12, Kraków", "Dziś zamknięte", isOpenNow = false, isSelected = true)</ID>
+    <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$val top = { id: String -&gt; composeRule.onNodeWithTag(CafePickerTestTags.cafe(id)).fetchSemanticsNode().boundsInRoot.top }</ID>
+    <ID>MaxLineLength:CafePickerViewModel.kt:/** Etykieta dnia bez godzin otwarcia. Teksty docelowo w zasobach stringów (composeResources), gdy dojdzie lokalizacja. */</ID>
+    <ID>MaxLineLength:CafePickerViewModel.kt:if</ID>
+    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$/** „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku i spójność etykiety godzin ze statusem. */</ID>
+    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")</ID>
+    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$val</ID>
+    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:StaticCafeRepository$override fun observeSelectedCafe: Flow&lt;Cafe?&gt;</ID>
+    <ID>MaxLineLength:CafePickerViewModelTest.kt:CafePickerViewModelTest$fun</ID>
+    <ID>MaxLineLength:CafeRemoteDataSource.kt:SeedCafes$listOf("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY").map { OpeningHoursDto(it, weekdays.first, weekdays.second) }</ID>
+    <ID>MaxLineLength:DataStoreSelectedCafeStoreTest.kt:DataStoreSelectedCafeStoreTest$val dataStore: DataStore&lt;Preferences&gt; = PreferenceDataStoreFactory.createWithPath(scope = scope) { file.toOkioPath() }</ID>
+    <ID>MaxLineLength:FeatureModulesTest.kt:FeatureModulesTest.&lt;no name provided&gt;$override suspend</ID>
+    <ID>MaxLineLength:KafeButtons.kt:KafeSecondaryButton(text = "Spróbuj ponownie", onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth())</ID>
+    <ID>MaxLineLength:KafeNavHostTest.kt:KafeNavHostTest$/** Nawigacja na prawdziwych ekranach: Menu → ProductDetail(productId), Menu → CafePicker, powrót z zachowanym stanem i wybór lokalu (z menu i przy pierwszym uruchomieniu). */</ID>
+    <ID>MaxLineLength:KafeNavHostTest.kt:KafeNavHostTest$assertTrue("Oczekiwana trasa ${T::class.simpleName}, jest ${destination?.route}", destination?.hasRoute&lt;T&gt;() == true)</ID>
+    <ID>MaxLineLength:KafeOptionGroups.kt:QuantityOptionUi("shot", "Dodatkowe espresso", "+3,00 zł", quantity = 4, canIncrease = false, canDecrease = true)</ID>
+    <ID>MaxLineLength:KafeStepper.kt:KafeStepper(value = 0, label = "Dodatkowe espresso", onDecrease = {}, onIncrease = {}, canDecrease = false, canIncrease = true)</ID>
+    <ID>MaxLineLength:KafeStepper.kt:KafeStepper(value = 4, label = "Dodatkowe espresso", onDecrease = {}, onIncrease = {}, canDecrease = true, canIncrease = false)</ID>
+    <ID>MaxLineLength:KafeStepper.kt:style = if (size == KafeStepperSize.Large) KafeTheme.typography.titleLarge else KafeTheme.typography.titleSmall</ID>
+    <ID>MaxLineLength:MenuLocalDataSource.kt:private fun String.toSizeCodeOrNull: SizeCode?</ID>
+    <ID>MaxLineLength:MenuRoute.kt:*</ID>
+    <ID>MaxLineLength:MenuScreenTest.kt:MenuScreenTest$composeRule.onNode(hasTestTag(MenuTestTags.CATEGORIES) and hasAnyAncestor(hasTestTag(MenuTestTags.GRID))).assertDoesNotExist()</ID>
+    <ID>MaxLineLength:MenuScreenTest.kt:MenuScreenTest$composeRule.onNode(hasTestTag(MenuTestTags.HEADER) and hasAnyAncestor(hasTestTag(MenuTestTags.GRID))).assertDoesNotExist()</ID>
+    <ID>MaxLineLength:MenuViewModelCafeErrorTest.kt:MenuViewModelCafeErrorTest.FakeCafeRepository$if (refreshResult is Result.Success) cafes.value = listOf(Cafe("a", "Kafe A", "ul. Testowa 1", 0.0, 0.0, emptyList()))</ID>
+    <ID>MaxLineLength:MenuViewModelIntegrationTest.kt:MenuViewModelIntegrationTest$val cafeRepository = OfflineFirstCafeRepository(InMemoryCafeLocal(), switchable, InMemorySelectedCafeStore(selectedCafeId))</ID>
+    <ID>MaxLineLength:MenuViewModelIntegrationTest.kt:MenuViewModelIntegrationTest$val menuRepository = OfflineFirstMenuRepository(InMemoryMenuLocal(), SeedMenuRemoteDataSource(latency = Duration.ZERO))</ID>
+    <ID>MaxLineLength:MenuViewModelIntegrationTest.kt:MenuViewModelIntegrationTest$val products = assertIs&lt;MenuUiState.Content&gt;(viewModel.state.value).categories.flatMap { it.products }.associateBy { it.id }</ID>
+    <ID>MaxLineLength:MenuViewModelTest.kt:MenuViewModelTest$ProductUi(id = "espresso", name = "Espresso", subtitle = "Podwójne", priceLabel = "9,00 zł", imageUrl = null, isAvailable = true)</ID>
+    <ID>MaxLineLength:MenuViewModelTest.kt:MenuViewModelTest$val viewModel = context.createViewModel(menuRepository = FakeMenuRepository(cached = mapOf("krakow" to sampleMenu)))</ID>
+    <ID>MaxLineLength:OfflineFirstCafeRepositoryTest.kt:OfflineFirstCafeRepositoryTest$private fun cafeDto</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest$ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "QUANTITY", false, 0, null), options).toDomainOrNull()</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest$ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "single", true, 5, "missing"), options).toDomainOrNull()</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest$assertNull(ModifierGroupWithOptions(ModifierGroupEntity("g", "G", "MULTI", false, 1, null), options).toDomainOrNull())</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest$product = ProductEntity("p", "c", "Latte", description = " ", imageUrl = "", sortOrder = 1, isActive = true)</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest$product.defaultSize?.let { code -&gt; assertNotNull(product.sizes.firstOrNull { it.code == code }, product.id) }</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest.FakeRemote$var availability: Result&lt;AvailabilityDto, DataError.Remote&gt; = Result.Success(AvailabilityDto(products = mapOf("p" to false)))</ID>
+    <ID>MaxLineLength:OfflineFirstMenuRepositoryTest.kt:OfflineFirstMenuRepositoryTest.FakeRemote$var menu: Result&lt;MenuDto, DataError.Remote&gt; = Result.Success(MenuDto(categories = listOf(CategoryDto("c", "Kawy", 1))))</ID>
+    <ID>MaxLineLength:PreferencesFactoryTest.kt:PreferencesFactoryTest$/** DataStore aplikacji z [createDataStore] zastępuje uszkodzony plik preferencji pustym, zamiast blokować zapis (Robolectric). */</ID>
+    <ID>MaxLineLength:ProductCard.kt:Box(block.width(KafeTheme.spacing.xxxl + KafeTheme.spacing.l).height(KafeTheme.spacing.l + KafeTheme.spacing.xs))</ID>
+    <ID>MaxLineLength:ProductDetailScreenTest.kt:ProductDetailScreenTest$composeRule.onNodeWithTag(ProductDetailTestTags.option("milk", "soy")).performScrollTo().assertIsNotEnabled().performClick()</ID>
+    <ID>MaxLineLength:ProductDetailScreenTest.kt:ProductDetailScreenTest$composeRule.onNodeWithTag(ProductDetailTestTags.option("syrup", "vanilla")).scrollAboveBottomBar().assertIsSelected().performClick()</ID>
+    <ID>MaxLineLength:ProductDetailScreenTest.kt:ProductDetailScreenTest$listOf&lt;ProductDetailAction&gt;(ProductDetailAction.QuantityChanged(+1), ProductDetailAction.QuantityChanged(-1))</ID>
+    <ID>MaxLineLength:ProductDetailScreenTest.kt:ProductDetailScreenTest$val lastRowBottom = composeRule.onNodeWithContentDescription("Zmniejsz: Liczba sztuk").fetchSemanticsNode().boundsInRoot.bottom</ID>
+    <ID>MaxLineLength:ProductDetailViewModel.kt:ProductDetailViewModel$(menuRepository.refresh(cafeId) as? Result.Failure)?.let { refreshError.value = CafeError(cafeId, it.error) }</ID>
+    <ID>MaxLineLength:ProductDetailViewModel.kt:ProductDetailViewModel$updateConfiguration { details -&gt; changeOptionQuantity(action.groupId, action.optionId, action.delta, details) }</ID>
+    <ID>MaxLineLength:ProductDetailViewModelRefreshTest.kt:ProductDetailViewModelRefreshTest$assertTrue(anyMilkSelected || !env.content.canAddToCart, "Brak widocznego wyboru mleka, a „Dodaj do koszyka” jest aktywne")</ID>
+    <ID>MaxLineLength:ProductDetailViewModelTest.kt:ProductDetailViewModelTest$/** ProductDetailViewModel na fake'owych repozytoriach; na końcu regresje od testera – odświeżenie menu w trakcie konfiguracji. */</ID>
+    <ID>MaxLineLength:ProductDetailViewModelTest.kt:ProductDetailViewModelTest$env.menus.menus.value = mapOf("a" to menu().copy(modifierGroups = listOf(milk.copy(options = milk.options.take(1)), shots, syrup)))</ID>
+    <ID>MaxLineLength:ProductDetailViewModelTest.kt:ProductDetailViewModelTest.Companion$id = "shots"</ID>
+    <ID>MaxLineLength:ProductDetailViewModelTest.kt:ProductDetailViewModelTest.Companion$options = listOf(ModifierOption("milk-cow", "Krowie", Money.ZERO), ModifierOption("milk-oat", "Owsiane", Money(200)))</ID>
+    <ID>MaxLineLength:ProductDetailViewModelTest.kt:ProductDetailViewModelTest.Companion$sortOrder = 1</ID>
+    <ID>MaxLineLength:ReducedMotion.kt:*</ID>
+    <ID>MaxLineLength:RoomMenuLocalDataSourceTest.kt:RoomMenuLocalDataSourceTest$ModifierGroupDto("shots", "Shoty", "QUANTITY", maxQuantity = 4, options = listOf(ModifierOptionDto("shot", "Shot", 300)))</ID>
+    <ID>MaxLineLength:RoomMenuLocalDataSourceTest.kt:RoomMenuLocalDataSourceTest$ProductDto("latte", "c", "Latte", sizes = listOf(ProductSizeDto("S", 250, 1400), ProductSizeDto("M", 350, 1600)))</ID>
+    <ID>MaxLineLength:RoomMenuLocalDataSourceTest.kt:RoomMenuLocalDataSourceTest$dataSource.saveMenu("cafe", menu, AvailabilityDto(products = mapOf("espresso" to false)), syncedAtEpochMillis = 1)</ID>
+    <ID>MaxLineLength:RoomMenuLocalDataSourceTest.kt:RoomMenuLocalDataSourceTest$dataSource.saveMenu("cafe", menu.copy(products = menu.products.take(1)), AvailabilityDto(), syncedAtEpochMillis = 2)</ID>
+    <ID>MaxLineLength:RoomMenuLocalDataSourceTest.kt:RoomMenuLocalDataSourceTest$options = listOf(ModifierOptionDto("oat", "Owsiane", 200, 2), ModifierOptionDto("cow", "Krowie", 0, 1))</ID>
+    <ID>MaxLineLength:SearchField.kt:*</ID>
+    <ID>MaxLineLength:SeedMenuRemoteDataSource.kt:SeedMenu$"cold-brew"</ID>
+    <ID>MaxLineLength:SeedMenuRemoteDataSource.kt:SeedMenu$"flat-white"</ID>
+    <ID>MaxLineLength:SeedMenuRemoteDataSource.kt:SeedMenu$// Americano: domyślne M niedostępne → wybór S. Cappuccino: wszystkie rozmiary niedostępne → produkt niedostępny.</ID>
+    <ID>MaxLineLength:SeedMenuRemoteDataSource.kt:SeedMenu$product("cheesecake", SNACKS, "Sernik baskijski", "Kremowy, z karmelizowaną skórką", 2, size("S", null, 1600))</ID>
+    <ID>MaxLineLength:SeedMenuRemoteDataSource.kt:SeedMenu$product("lavender-lemonade", SEASONAL, "Lemoniada lawendowa", "Orzeźwiająca, letnia", 2, size("M", 400, 1400), active = false)</ID>
+    <ID>MaxLineLength:SizeSelector.kt:SizeOptionUi(id = "L", label = "L", volumeLabel = "450 ml", priceLabel = "16,00 zł", isAvailable = false)</ID>
+    <ID>NewLineAtEndOfFile:MainViewController.kt:com.karolina.cieslik.kafe.MainViewController.kt</ID>
+    <ID>NewLineAtEndOfFile:MenuUiMappers.kt:com.karolina.cieslik.kafe.feature.menu.presentation.MenuUiMappers.kt</ID>
+    <ID>NewLineAtEndOfFile:Platform.android.kt:com.karolina.cieslik.kafe.Platform.android.kt</ID>
+    <ID>NewLineAtEndOfFile:Platform.ios.kt:com.karolina.cieslik.kafe.Platform.ios.kt</ID>
+    <ID>NewLineAtEndOfFile:Platform.kt:com.karolina.cieslik.kafe.Platform.kt</ID>
+    <ID>NewLineAtEndOfFile:SharedCommonTest.kt:com.karolina.cieslik.kafe.SharedCommonTest.kt</ID>
+    <ID>NewLineAtEndOfFile:SharedLogicAndroidHostTest.kt:com.karolina.cieslik.kafe.SharedLogicAndroidHostTest.kt</ID>
+    <ID>NewLineAtEndOfFile:SharedLogicIOSTest.kt:com.karolina.cieslik.kafe.SharedLogicIOSTest.kt</ID>
+    <ID>SwallowedException:SafeCall.kt:e: ContentConvertException</ID>
+    <ID>SwallowedException:SafeCall.kt:e: NoTransformationFoundException</ID>
+    <ID>SwallowedException:SafeCall.kt:e: SerializationException</ID>
+    <ID>SwallowedException:SelectedCafeStore.kt:DataStoreSelectedCafeStore$e: IOException</ID>
+    <ID>TooGenericExceptionCaught:SafeCall.kt:e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SafeDbCall.kt:e: Exception</ID>
+    <ID>TooManyFunctions:MenuDao.kt:MenuDao</ID>
+    <ID>TooManyFunctions:MenuScreen.kt:com.karolina.cieslik.kafe.feature.menu.presentation.MenuScreen.kt</ID>
+    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionQuantityChanged$val groupId: String</ID>
+    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionQuantityChanged$val optionId: String</ID>
+    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionSelected$val groupId: String</ID>
+    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionSelected$val optionId: String</ID>
+  </CurrentIssues>
+</SmellBaseline>

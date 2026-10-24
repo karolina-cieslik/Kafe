@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.detekt)
 }
 
 kotlin {
@@ -92,7 +93,7 @@ kotlin {
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.test)
         }
-        // KAFE-27: Testy Compose na JVM (Robolectric) – uruchamiane w CI razem z testAndroidHostTest.
+        // Testy Compose na JVM (Robolectric) – uruchamiane w CI razem z testAndroidHostTest.
         getByName("androidHostTest").dependencies {
             implementation(libs.junit)
             implementation(libs.robolectric)

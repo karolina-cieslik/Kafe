@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:MainActivityRecreationTest.kt:MainActivityRecreationTest$/** Po odtworzeniu MainActivity (np. po zmianie motywu w tle) od pierwszej klatki widoczny jest ekran docelowy, a nie intro. */</ID>
+  </CurrentIssues>
+</SmellBaseline>

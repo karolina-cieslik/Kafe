@@ -30,6 +30,8 @@ sqlite = "2.7.1"
 turbine = "1.2.1"
 robolectric = "4.16"
 androidx-compose-uiTest = "1.12.1"
+# Wersja alpha, bo detekt 1.23.x nie obsługuje Gradle 9 ani Kotlina 2.4; podbić przy stabilnej 2.0.0.
+detekt = "2.0.0-alpha.6"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -88,3 +90,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }

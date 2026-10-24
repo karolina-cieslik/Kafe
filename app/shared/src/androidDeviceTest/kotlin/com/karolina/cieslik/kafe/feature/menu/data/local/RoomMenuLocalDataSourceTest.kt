@@ -139,7 +139,8 @@ class RoomMenuLocalDataSourceTest {
         dataSource.saveMenu("cafe", menu, AvailabilityDto(), syncedAtEpochMillis = 1)
         val repriced = menu.copy(
             products = menu.products.map { product ->
-                if (product.id == "latte") product.copy(sizes = product.sizes.map { it.copy(priceGrosze = it.priceGrosze + 100) }) else product
+                if (product.id != "latte") return@map product
+                product.copy(sizes = product.sizes.map { it.copy(priceGrosze = it.priceGrosze + 100) })
             },
         )
 
@@ -154,7 +155,10 @@ class RoomMenuLocalDataSourceTest {
     fun changeOnlyInRelationTableIsEmitted() = runTest {
         val groups = listOf(
             ModifierGroupDto("milk", "Mleko", "SINGLE", options = listOf(ModifierOptionDto("cow", "Krowie", 0))),
-            ModifierGroupDto("syrup", "Syrop", "SINGLE", options = listOf(ModifierOptionDto("vanilla", "Waniliowy", 150))),
+            ModifierGroupDto(
+                "syrup", "Syrop", "SINGLE",
+                options = listOf(ModifierOptionDto("vanilla", "Waniliowy", 150)),
+            ),
         )
         fun withLatteGroup(groupId: String) = menu.copy(
             products = menu.products.map { if (it.id == "latte") it.copy(modifierGroupIds = listOf(groupId)) else it },
@@ -165,7 +169,9 @@ class RoomMenuLocalDataSourceTest {
         // Zapis tylko do tabeli relacji – saveMenu przepisuje wszystkie tabele, więc nie sprawdziłby wyzwalacza.
         val emissions = collectWhile(dataSource.observeMenu("cafe")) {
             database.useWriterConnection { connection ->
-                connection.execSQL("UPDATE menu_product_modifier_groups SET groupId = 'syrup' WHERE productId = 'latte'")
+                connection.execSQL(
+                    "UPDATE menu_product_modifier_groups SET groupId = 'syrup' WHERE productId = 'latte'",
+                )
             }
         }
 

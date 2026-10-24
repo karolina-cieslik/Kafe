@@ -1,7 +1,5 @@
 # Testy w Kafe
 
-Ten opis powstał w ramach KAFE-27.
-
 ## Rodzaje testów i taski Gradle
 
 | Rodzaj | Source set | Task | Gdzie się uruchamia |
@@ -15,14 +13,22 @@ Ten opis powstał w ramach KAFE-27.
 Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 
 ```
-./gradlew :app:androidApp:assembleDebug :app:shared:assembleAndroidDeviceTest :core:testAndroidHostTest :app:shared:testAndroidHostTest :app:androidApp:testDebugUnitTest :app:androidApp:lintDebug
+./gradlew :app:androidApp:assembleDebug :app:shared:assembleAndroidDeviceTest :core:testAndroidHostTest :app:shared:testAndroidHostTest :app:androidApp:testDebugUnitTest detekt :app:androidApp:lintDebug
 ```
+
+## Detekt
+
+- `./gradlew detekt` analizuje cały katalog `src` każdego modułu (wszystkie source sety KMP, także iOS i testy) bez rozwiązywania typów. Konfiguracja wspólna w `build.gradle.kts` (blok `subprojects`), reguły w `config/detekt/detekt.yml` jako nadpisania domyślnego zestawu.
+- Kod produkcyjny musi mieć KDoc na publicznych klasach, funkcjach i właściwościach (`UndocumentedPublic*`). Testy są z tego zwolnione, wartości enumów też.
+- Zastane naruszenia są w `detekt-baseline.xml` każdego modułu. Nowe naruszenie łamie build. Baseline tylko się kurczy: po poprawce uruchamiamy `./gradlew detektBaseline` i commitujemy mniejszy plik. Nie dopisujemy do niego nowego kodu. Cel to puste baseline.
+- Raport: `<moduł>/build/reports/detekt/detekt.html`; w CI w artefakcie `reports`.
+- Wersja 2.0.0-alpha, bo 1.23.x nie obsługuje Gradle 9 ani Kotlina 2.4. Wersja jest przypięta, więc reguły zmieniają się tylko przy świadomym podbiciu.
 
 ## Konwencje
 
 - **Nazwy testów w camelCase**, bez backticków ze spacjami. `commonTest` trafia także do APK testów instrumentalnych, a DEX poniżej API 30 (minSdk 29) odrzuca spacje w nazwach.
 - Nazwa opisuje zachowanie: `retryAfterErrorEmitsLoadingThenContent`, a nie `testRetry`.
-- Każda klasa testowa zaczyna się komentarzem z ID ticketu, np. `// KAFE-6: ...`.
+- Klasa testowa może mieć jednozdaniowy KDoc o tym, co pokrywa (`/** Reguły menu – kolejność, puste kategorie… */`), bez numeru ticketu i kryteriów akceptacji. Funkcje testowe nie mają komentarzy, nazwa jest specyfikacją.
 - Struktura given / when / then oddzielona pustymi liniami. Jedno zachowanie na test.
 - Używamy `kotlin.test` (`assertEquals`, `assertIs`, `assertFailsWith`), a nie bezpośrednio JUnit, żeby testy działały w `commonTest`.
 - Zamiast mocków piszemy **ręczne fake'i** za interfejsami, np. `FakeMenuRepository` z `MutableStateFlow` i konfigurowalnym wynikiem `refresh`. Fake'i trzymamy obok testów danego feature'a w `commonTest`.
@@ -81,7 +87,8 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 - Nawigację testujemy w `KafeNavHostTest`: `rememberNavController()` przechwycony w `setContent`, ViewModele z fake'ami podstawione przez `startKoin` w `@Before` (`stopKoin` w `@After`), systemowe wstecz przez `activity.onBackPressedDispatcher` (`createAndroidComposeRule<ComponentActivity>()`).
 - **Nieskończone animacje (intro KAFE-42, para nad filiżanką):** `waitForIdle()` z `autoAdvance = true` nigdy się nie kończy. Zegar prowadzimy ręcznie (`mainClock.autoAdvance = false`, `advanceTimeBy(...)`) i wracamy do auto dopiero, gdy animacja zniknie z drzewa (`AppStartUiTest.finishIntroAndCrossfade`). Reduced motion symulujemy przez `Settings.Global.ANIMATOR_DURATION_SCALE = 0` przed `setContent`.
 - **ViewModel nie może powstawać wewnątrz `setContent`** (lint `ViewModelConstructorInComposable` failuje build) – tworzymy go przed `setContent`.
-- **DataStore na JVM pod Windows** nie nadpisuje istniejącego pliku („Unable to rename …tmp”, także dwa zapisy w jednej sesji). Na Androidzie i w CI (ubuntu) działa. Testy z nadpisaniem pomijamy na Windows przez `Assume`.
+- **DataStore na JVM pod Windows:** zapis z nowej instancji DataStore do pliku, który już istnieje (np. otwarcie pliku po „restarcie” w teście), zwraca sukces i jest widoczny w tej instancji, ale nie trafia na dysk – kolejna instancja czyta stary stan. Kilka zapisów w jednej instancji działa. Na Androidzie i w CI (ubuntu) wszystko działa. Testy, które zapisują po ponownym otwarciu pliku, pomijamy na Windows przez `Assume`.
+- **`StateRestorationTester.emulateSavedInstanceStateRestore()` przy `mainClock.autoAdvance = false`** nie odtwarza kompozycji. Przed restore włączamy `autoAdvance` (jak `AppStartUiTest.finishIntroAndCrossfade`) albo przesuwamy zegar ręcznie (`advanceTimeByFrame()`).
 - Na później: screenshot testy previewów (Compose Preview Screenshot Testing z AGP) jako tani test regresji wizualnej.
 
 ## Znane problemy

@@ -5,33 +5,22 @@ import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 /**
  * Klucz konfiguracji pozycji koszyka: dwie pozycje są „identyczne” (scalane), gdy mają ten sam klucz.
  *
- * Format: `productId|size|groupId:optionId=ilość,optionId=ilość;groupId:…`, grupy i opcje posortowane po id,
- * więc wynik nie zależy od kolejności map. Opcje z ilością ≤ 0 i puste grupy są pomijane – „brak syropu” to ta
- * sama konfiguracja niezależnie od tego, czy grupa jest w mapie. Znaki separatorów w id są poprzedzane `\`,
- * żeby różne konfiguracje nie dały tego samego klucza.
+ * Do klucza wchodzą tylko id produktu, rozmiar oraz pary (groupId, optionId) z ilością – nazwy i dopłaty nie, bo
+ * to migawka, która może się zmienić między dodaniami. Format: `productId|size|groupId:optionId=ilość;…`, opcje
+ * posortowane po (groupId, optionId), więc wynik nie zależy od kolejności listy. Opcje z ilością ≤ 0 są pomijane.
+ * Znaki separatorów w id są poprzedzane `\`, żeby różne konfiguracje nie dały tego samego klucza.
  *
- * Klucz jest zapisywany w bazie (unikalny indeks), więc zmiana formatu wymaga migracji danych koszyka.
+ * Format zapisany w bazie – zmiana wymaga migracji.
  */
-fun cartConfigurationKey(
-    productId: String,
-    size: SizeCode,
-    selections: Map<String, Map<String, Int>>,
-): String {
-    val groups = selections
-        .mapValues { (_, options) -> options.filterValues { it > 0 } }
-        .filterValues { it.isNotEmpty() }
-        .entries
-        .sortedBy { it.key }
-        .map { (groupId, options) ->
-            val optionsPart = options.entries.sortedBy { it.key }.joinToString(",") { (optionId, quantity) ->
-                "${optionId.escapeKeyPart()}=$quantity"
-            }
-            "${groupId.escapeKeyPart()}:$optionsPart"
-        }
-    return "${productId.escapeKeyPart()}|${size.name}|${groups.joinToString(";")}"
+fun cartConfigurationKey(productId: String, size: SizeCode, selections: List<CartSelection>): String {
+    val options = selections
+        .filter { it.quantity > 0 }
+        .sortedWith(compareBy({ it.groupId }, { it.optionId }))
+        .joinToString(";") { "${it.groupId.escapeKeyPart()}:${it.optionId.escapeKeyPart()}=${it.quantity}" }
+    return "${productId.escapeKeyPart()}|${size.name}|$options"
 }
 
-private val KEY_SEPARATORS = setOf('\\', '|', ';', ':', ',', '=')
+private val KEY_SEPARATORS = setOf('\\', '|', ';', ':', '=')
 
 private fun String.escapeKeyPart(): String = buildString {
     this@escapeKeyPart.forEach { char ->

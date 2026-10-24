@@ -13,7 +13,7 @@ class CartTest {
         productId = "latte",
         productName = "Caffè latte",
         size = SizeCode.M,
-        selections = emptyMap(),
+        selections = emptyList(),
         quantity = quantity,
         unitPrice = unitPrice,
     )
@@ -39,9 +39,17 @@ class CartTest {
 
     @Test
     fun itemAndNewItemWithSameConfigurationHaveSameKey() {
-        val selections = mapOf("milk" to mapOf("oat" to 1), "extras" to mapOf("shot" to 2))
-        val item = item(1, 1, Money(1_400)).copy(selections = selections)
-        val newItem = NewCartItem("latte", "Latte", SizeCode.M, selections.entries.reversed().associate { it.toPair() }, 5, Money(1))
+        val oat = CartSelection("milk", "oat", "Owsiane", Money(200), 1)
+        val shots = CartSelection("extras", "shot", "Dodatkowe espresso", Money(300), 2)
+        val item = item(1, 1, Money(1_400)).copy(selections = listOf(oat, shots))
+        val newItem = NewCartItem(
+            productId = "latte",
+            productName = "Latte",
+            size = SizeCode.M,
+            selections = listOf(shots.copy(optionName = "Shot", surcharge = Money(350)), oat),
+            quantity = 5,
+            unitPrice = Money(1),
+        )
 
         assertEquals(item.configurationKey, newItem.configurationKey)
     }

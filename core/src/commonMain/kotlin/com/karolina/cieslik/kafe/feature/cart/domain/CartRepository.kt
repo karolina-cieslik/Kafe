@@ -16,7 +16,7 @@ interface CartRepository {
 
     /**
      * Obserwuje koszyk. Zimny Flow: emituje od razu stan z bazy ([Cart.EMPTY], gdy pusto), potem po każdej
-     * zmianie koszyka. Pozycje w kolejności dodania (od najstarszej).
+     * zmianie koszyka. Pozycje w kolejności dodania (id rosnąco).
      */
     fun observeCart(): Flow<Cart>
 
@@ -30,8 +30,9 @@ interface CartRepository {
     suspend fun add(item: NewCartItem): Result<AddToCartOutcome, DataError.Local>
 
     /**
-     * Ustawia ilość pozycji [itemId] na [quantity] przyciętą do 1–20 (usuwanie to [remove]).
+     * Ustawia ilość pozycji [itemId] na [quantity], przyciętą od góry do 20.
      *
+     * @throws IllegalArgumentException gdy [quantity] < 1 – do usuwania pozycji służy [remove].
      * @return [DataError.Local.NOT_FOUND], gdy pozycji nie ma w koszyku.
      */
     suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local>
@@ -44,10 +45,14 @@ interface CartRepository {
     suspend fun remove(itemId: Long): Result<CartItem, DataError.Local>
 
     /**
-     * „Cofnij” po [remove]: przywraca [item] z tym samym id i miejscem w kolejności. Gdy w międzyczasie dodano
-     * identyczną konfigurację, scala ilości (najwyżej do 20) w jedną pozycję.
+     * „Cofnij” po [remove]: wstawia [item] z tym samym id, więc wraca na to samo miejsce w kolejności. Gdy
+     * w międzyczasie dodano identyczną konfigurację, zostaje istniejąca pozycja (jej id i miejsce) z ilością
+     * równą sumie, przyciętą do 20.
+     *
+     * @return [AddToCartOutcome.Added] po wstawieniu; [AddToCartOutcome.QuantityIncreased] albo
+     * [AddToCartOutcome.CappedAtLimit] po scaleniu; [DataError.Local] przy błędzie bazy.
      */
-    suspend fun restore(item: CartItem): EmptyResult<DataError.Local>
+    suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local>
 
     /** Usuwa wszystkie pozycje. */
     suspend fun clear(): EmptyResult<DataError.Local>

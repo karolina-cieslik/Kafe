@@ -46,7 +46,10 @@ class AddToCartTest {
                 productId = "latte",
                 productName = "Caffè latte",
                 size = SizeCode.M,
-                selections = mapOf("milk" to mapOf("oat" to 1), "extras" to mapOf("shot" to 2)),
+                selections = listOf(
+                    CartSelection("milk", "oat", "Owsiane", Money(200), 1),
+                    CartSelection("extras", "shot", "Dodatkowe espresso", Money(300), 2),
+                ),
                 quantity = 3,
                 unitPrice = Money(2_200),
             ),
@@ -105,8 +108,17 @@ class AddToCartTest {
         addToCart(details(groups = listOf(milkGroup, shotsGroup)), configuration)
 
         val added = repository.added.single()
-        assertEquals(mapOf("milk" to mapOf("cow" to 1)), added.selections)
+        assertEquals(listOf(CartSelection("milk", "cow", "Krowie", Money.ZERO, 1)), added.selections)
         assertEquals(Money(1_400), added.unitPrice)
+    }
+
+    @Test
+    fun optionOutsideProductGroupsDoesNotChangeConfigurationKey() = runTest {
+        addToCart(details(), configuration(selections = mapOf("milk" to mapOf("cow" to 1))))
+        addToCart(details(), configuration(selections = mapOf("milk" to mapOf("cow" to 1), "gone" to mapOf("x" to 1))))
+
+        val (first, second) = repository.added
+        assertEquals(first.configurationKey, second.configurationKey)
     }
 
     @Test
@@ -122,7 +134,7 @@ class AddToCartTest {
         productId = "latte",
         productName = "Caffè latte",
         size = SizeCode.M,
-        selections = mapOf("milk" to mapOf("cow" to 1)),
+        selections = listOf(CartSelection("milk", "cow", "Krowie", Money.ZERO, 1)),
         quantity = quantity,
         unitPrice = Money(1_400),
     )
@@ -142,7 +154,7 @@ class AddToCartTest {
 
         override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
 
-        override suspend fun restore(item: CartItem): EmptyResult<DataError.Local> = error("nieużywane")
+        override suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local> = error("nieużywane")
 
         override suspend fun clear(): EmptyResult<DataError.Local> = error("nieużywane")
     }

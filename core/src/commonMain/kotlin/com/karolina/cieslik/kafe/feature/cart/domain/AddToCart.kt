@@ -52,11 +52,12 @@ class AddToCart(
     }
 
     /** Wybór ograniczony do grup i opcji produktu – opcje usunięte z menu nie wpływają na cenę ani na klucz. */
-    private fun ProductConfiguration.selectionsIn(details: ProductDetails): Map<String, Map<String, Int>> =
-        details.modifierGroups.mapNotNull { group ->
-            val options = group.options
-                .mapNotNull { option -> quantityOf(group.id, option.id).takeIf { it > 0 }?.let { option.id to it } }
-                .toMap()
-            options.takeIf { it.isNotEmpty() }?.let { group.id to it }
-        }.toMap()
+    private fun ProductConfiguration.selectionsIn(details: ProductDetails): List<CartSelection> =
+        details.modifierGroups.flatMap { group ->
+            group.options.mapNotNull { option ->
+                quantityOf(group.id, option.id).takeIf { it > 0 }?.let { quantity ->
+                    CartSelection(group.id, option.id, option.name, option.surcharge, quantity)
+                }
+            }
+        }
 }

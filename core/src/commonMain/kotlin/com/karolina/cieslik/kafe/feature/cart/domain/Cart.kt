@@ -13,7 +13,7 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
  * @property productId id produktu z menu sieci.
  * @property productName nazwa produktu z chwili dodania.
  * @property size wybrany rozmiar.
- * @property selections groupId -> (optionId -> ilość > 0), jak w [ProductConfiguration]; bez pustych grup.
+ * @property selections migawka wybranych opcji, w kolejności grup i opcji produktu.
  * @property quantity liczba sztuk, od [ProductConfiguration.MIN_QUANTITY] do [ProductConfiguration.MAX_QUANTITY].
  * @property unitPrice cena jednej sztuki z dopłatami z chwili dodania (przy scaleniu – z ostatniego dodania).
  */
@@ -22,7 +22,7 @@ data class CartItem(
     val productId: String,
     val productName: String,
     val size: SizeCode,
-    val selections: Map<String, Map<String, Int>>,
+    val selections: List<CartSelection>,
     val quantity: Int,
     val unitPrice: Money,
 ) {
@@ -36,7 +36,7 @@ data class CartItem(
 /**
  * Koszyk – jeden w aplikacji, niezależny od wybranego lokalu.
  *
- * @property items pozycje od najstarszej do najnowszej.
+ * @property items pozycje od najstarszej do najnowszej (id rosnąco).
  */
 data class Cart(val items: List<CartItem>) {
 
@@ -59,7 +59,7 @@ data class Cart(val items: List<CartItem>) {
  * @property productId id produktu z menu sieci.
  * @property productName nazwa produktu w chwili dodania.
  * @property size wybrany rozmiar.
- * @property selections groupId -> (optionId -> ilość > 0); tylko opcje z grup produktu, bez pustych grup.
+ * @property selections migawka wybranych opcji – tylko opcje z grup produktu z ilością > 0.
  * @property quantity liczba dodawanych sztuk, 1–20.
  * @property unitPrice cena jednej sztuki z dopłatami.
  */
@@ -67,7 +67,7 @@ data class NewCartItem(
     val productId: String,
     val productName: String,
     val size: SizeCode,
-    val selections: Map<String, Map<String, Int>>,
+    val selections: List<CartSelection>,
     val quantity: Int,
     val unitPrice: Money,
 ) {
@@ -75,7 +75,24 @@ data class NewCartItem(
     val configurationKey: String get() = cartConfigurationKey(productId, size, selections)
 }
 
-/** Wynik dodania do koszyka. */
+/**
+ * Migawka wybranej opcji z chwili dodania – ekran koszyka opisze pozycję także wtedy, gdy opcja zniknie z menu.
+ *
+ * @property groupId id grupy modyfikatorów.
+ * @property optionId id opcji w grupie.
+ * @property optionName nazwa opcji w chwili dodania.
+ * @property surcharge dopłata za jedną sztukę opcji w chwili dodania.
+ * @property quantity ilość opcji w jednej sztuce produktu, > 0 (dla SINGLE zawsze 1).
+ */
+data class CartSelection(
+    val groupId: String,
+    val optionId: String,
+    val optionName: String,
+    val surcharge: Money,
+    val quantity: Int,
+)
+
+/** Wynik dodania do koszyka (także scalenia przy „Cofnij”, [CartRepository.restore]). */
 sealed interface AddToCartOutcome {
 
     /** Pozycja w koszyku po operacji. */

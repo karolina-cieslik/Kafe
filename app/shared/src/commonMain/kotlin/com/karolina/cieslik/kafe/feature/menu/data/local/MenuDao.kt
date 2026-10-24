@@ -19,7 +19,9 @@ abstract class MenuDao {
     /**
      * Wyzwalacz zmian: emituje od razu i ponownie po każdym zatwierdzonym zapisie którejkolwiek tabeli menu,
      * dostępności lub `sync_metadata`. Wartość nie ma znaczenia – zapytanie istnieje tylko po to, żeby Room
-     * śledził wszystkie te tabele jednym strumieniem; dane czyta [loadMenu].
+     * śledził wszystkie te tabele jednym strumieniem; dane czyta [loadMenu]. Lista tabel musi odpowiadać
+     * tabelom czytanym przez [loadMenu], także tym czytanym tylko przez relacje Room (rozmiary, opcje,
+     * przypisania grup) – nowa tabela w odczycie bez wpisu tutaj nie wywoła emisji.
      */
     @Query(
         "SELECT (SELECT COUNT(*) FROM menu_categories) + (SELECT COUNT(*) FROM menu_products) + " +

@@ -1,6 +1,8 @@
 package com.karolina.cieslik.kafe.feature.menu.data.local
 
 import androidx.room.Room
+import androidx.room.execSQL
+import androidx.room.useWriterConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -146,6 +148,28 @@ class RoomMenuLocalDataSourceTest {
         }
 
         assertEquals(listOf(1500L, 1700L), emissions.last()?.latteSizePrices())
+    }
+
+    @Test
+    fun changeOnlyInRelationTableIsEmitted() = runTest {
+        val groups = listOf(
+            ModifierGroupDto("milk", "Mleko", "SINGLE", options = listOf(ModifierOptionDto("cow", "Krowie", 0))),
+            ModifierGroupDto("syrup", "Syrop", "SINGLE", options = listOf(ModifierOptionDto("vanilla", "Waniliowy", 150))),
+        )
+        fun withLatteGroup(groupId: String) = menu.copy(
+            products = menu.products.map { if (it.id == "latte") it.copy(modifierGroupIds = listOf(groupId)) else it },
+            modifierGroups = groups,
+        )
+        dataSource.saveMenu("cafe", withLatteGroup("milk"), AvailabilityDto(), syncedAtEpochMillis = 1)
+
+        // Zapis tylko do tabeli relacji – saveMenu przepisuje wszystkie tabele, więc nie sprawdziłby wyzwalacza.
+        val emissions = collectWhile(dataSource.observeMenu("cafe")) {
+            database.useWriterConnection { connection ->
+                connection.execSQL("UPDATE menu_product_modifier_groups SET groupId = 'syrup' WHERE productId = 'latte'")
+            }
+        }
+
+        assertEquals(listOf("syrup"), emissions.last()?.products?.single { it.id == "latte" }?.modifierGroupIds)
     }
 
     /**

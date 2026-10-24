@@ -77,7 +77,8 @@ abstract class CafeDao {
 
     /**
      * Wyzwalacz zmian: emituje od razu i ponownie po każdym zatwierdzonym zapisie tabel `cafes`,
-     * `cafe_opening_hours` lub `sync_metadata`. Wartość nie ma znaczenia – dane czyta [loadCafes].
+     * `cafe_opening_hours` lub `sync_metadata`. Wartość nie ma znaczenia – dane czyta [loadCafes]. Lista tabel
+     * musi odpowiadać tabelom czytanym przez [loadCafes], także przez relację (`cafe_opening_hours`).
      */
     @Query(
         "SELECT (SELECT COUNT(*) FROM cafes) + (SELECT COUNT(*) FROM cafe_opening_hours) + " +

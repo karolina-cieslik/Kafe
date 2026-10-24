@@ -285,6 +285,20 @@ class ProductDetailViewModelTest {
     }
 
     @Test
+    fun saveStartedBeforeScreenClosesCompletesWithoutEvent() = runVmTest { env ->
+        val gate = CompletableDeferred<Unit>()
+        env.cart.addGate = gate
+
+        act(env, ProductDetailAction.AddToCartClicked)
+        env.viewModel.viewModelScope.cancel()
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.cart.completed.size)
+        assertTrue(env.events.isEmpty())
+    }
+
+    @Test
     fun clickDuringSaveIsIgnored() = runVmTest { env ->
         val gate = CompletableDeferred<Unit>()
         env.cart.addGate = gate

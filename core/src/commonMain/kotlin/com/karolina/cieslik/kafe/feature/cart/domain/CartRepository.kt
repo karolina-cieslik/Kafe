@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Trwały koszyk (lokalna baza) – działa offline, jeden dla całej aplikacji, niezależnie od lokalu.
  *
- * Ilość każdej pozycji mieści się w [ProductConfiguration.MIN_QUANTITY]..[ProductConfiguration.MAX_QUANTITY] (1–20).
+ * Ilość każdej pozycji mieści się w [ProductConfiguration.MIN_QUANTITY]..[ProductConfiguration.MAX_QUANTITY]
+ * (1–20).
  * Błędy zapisu i odczytu to [DataError.Local] (np. [DataError.Local.DISK_FULL]).
  */
 interface CartRepository {

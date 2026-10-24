@@ -16,10 +16,13 @@ import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroupType
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -130,6 +133,41 @@ class RoomMenuLocalDataSourceTest {
     }
 
     @Test
+    fun priceChangeWithSameRowCountIsEmitted() = runTest {
+        dataSource.saveMenu("cafe", menu, AvailabilityDto(), syncedAtEpochMillis = 1)
+        val repriced = menu.copy(
+            products = menu.products.map { product ->
+                if (product.id == "latte") product.copy(sizes = product.sizes.map { it.copy(priceGrosze = it.priceGrosze + 100) }) else product
+            },
+        )
+
+        val emissions = collectWhile(dataSource.observeMenu("cafe")) {
+            dataSource.saveMenu("cafe", repriced, AvailabilityDto(), syncedAtEpochMillis = 2)
+        }
+
+        assertEquals(listOf(1500L, 1700L), emissions.last()?.latteSizePrices())
+    }
+
+    /**
+     * Zbiera emisje [flow] w tle, wykonuje [write] i czeka, aż strumień się uspokoi (brak nowych emisji przez
+     * [QUIET_MILLIS]) – zwraca wszystkie zebrane wartości.
+     */
+    private suspend fun <T> TestScope.collectWhile(flow: Flow<T>, write: suspend () -> Unit): List<T> {
+        val emissions = MutableStateFlow<List<T>>(emptyList())
+        val collector = launch(Dispatchers.IO) { flow.collect { value -> emissions.update { it + value } } }
+        withContext(Dispatchers.IO) { withTimeout(5_000) { emissions.first { it.isNotEmpty() } } }
+        write()
+        withContext(Dispatchers.IO) {
+            withTimeout(5_000) { emissions.first { it.size >= 2 } }
+            delay(QUIET_MILLIS)
+        }
+        collector.cancel()
+        return emissions.value
+    }
+
+    private fun Menu.latteSizePrices() = products.single { it.id == "latte" }.sizes.map { it.price.grosze }
+
+    @Test
     fun savingOneCafeKeepsAvailabilityOfAnother() = runTest {
         dataSource.saveMenu("a", menu, AvailabilityDto(products = mapOf("latte" to false)), syncedAtEpochMillis = 1)
         dataSource.saveMenu("b", menu, AvailabilityDto(), syncedAtEpochMillis = 2)
@@ -177,5 +215,6 @@ class RoomMenuLocalDataSourceTest {
 
     private companion object {
         const val SAVE_ROUNDS = 20
+        const val QUIET_MILLIS = 300L
     }
 }

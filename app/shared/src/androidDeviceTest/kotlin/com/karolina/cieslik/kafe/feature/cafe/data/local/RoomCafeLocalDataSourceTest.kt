@@ -62,6 +62,25 @@ class RoomCafeLocalDataSourceTest {
     }
 
     @Test
+    fun openingHoursChangeWithSameRowCountIsEmitted() = runTest {
+        dataSource.saveCafes(cafesA, syncedAtEpochMillis = 1)
+        val changed = cafesA.map { cafe ->
+            cafe.copy(openingHours = cafe.openingHours.map { it.copy(closes = "22:00") })
+        }
+        val emissions = MutableStateFlow<List<List<Cafe>?>>(emptyList())
+        val collector = launch(Dispatchers.IO) {
+            dataSource.observeCafes().collect { cafes -> emissions.update { it + listOf(cafes) } }
+        }
+        withContext(Dispatchers.IO) { withTimeout(5_000) { emissions.first { it.isNotEmpty() } } }
+
+        dataSource.saveCafes(changed, syncedAtEpochMillis = 2)
+        val updated = withContext(Dispatchers.IO) { withTimeout(5_000) { emissions.first { it.size >= 2 } } }
+        collector.cancel()
+
+        assertEquals(22 * 60, updated.last()?.single { it.id == "krakow" }?.openingHours?.single()?.closesAtMinute)
+    }
+
+    @Test
     fun firstSaveNeverShowsSyncedButEmptyCafes() = runTest {
         repeat(ROUNDS) {
             val context = InstrumentationRegistry.getInstrumentation().targetContext

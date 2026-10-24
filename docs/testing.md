@@ -21,6 +21,7 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
 - `./gradlew detekt` analizuje cały katalog `src` każdego modułu (wszystkie source sety KMP, także iOS i testy) bez rozwiązywania typów. Konfiguracja wspólna w `build.gradle.kts` (blok `subprojects`), reguły w `config/detekt/detekt.yml` jako nadpisania domyślnego zestawu.
 - Kod produkcyjny musi mieć KDoc na publicznych klasach, funkcjach i właściwościach (`UndocumentedPublic*`). Testy są z tego zwolnione, wartości enumów też.
 - `TODO` tylko w formie `TODO(KAFE-<n>): …`; `TODO` bez ticketu, `FIXME`, `XXX` i `STOPSHIP` w komentarzach łamią build (`ForbiddenComment`).
+- Formę komentarzy (KDoc nad deklaracją, a nie `//`; numery ticketów tylko w `TODO(KAFE-<n>)` i przy `@Ignore`) sprawdza `tools/kdoc_form.py` – krok CI po detekcie. Lokalnie: `python -I -X utf8 tools/kdoc_form.py . HEAD` (czyta zacommitowaną rewizję). W testach dozwolone są `// given / when / then` i znaczniki sekcji `// --- … ---`.
 - Zastane naruszenia są w `detekt-baseline.xml` każdego modułu. Nowe naruszenie łamie build. Baseline tylko się kurczy: po poprawce uruchamiamy `./gradlew detektBaseline` i commitujemy mniejszy plik. Nie dopisujemy do niego nowego kodu. Cel to puste baseline.
 - Raport: `<moduł>/build/reports/detekt/detekt.html`; w CI w artefakcie `reports`.
 - Wersja 2.0.0-alpha, bo 1.23.x nie obsługuje Gradle 9 ani Kotlina 2.4. Wersja jest przypięta, więc reguły zmieniają się tylko przy świadomym podbiciu.
@@ -53,6 +54,7 @@ Lokalnie przed commitem uruchamiamy to samo, co CI (`.github/workflows/ci.yml`):
   }
   ```
 
+- Zdarzenia jednorazowe (`Channel` + `receiveAsFlow`) zbieramy w `backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.events.collect { … } }`. Na `StandardTestDispatcher` w `backgroundScope` zdarzenie docierało do listy dopiero przy następnej akcji, a nie po `advanceUntilIdle()`.
 - Domyślnie używamy `StandardTestDispatcher`. Korutyny nie startują wtedy od razu, więc kolejność emisji jest deterministyczna, a do przesuwania czasu służy `advanceUntilIdle()`. `UnconfinedTestDispatcher` stosujemy tylko wtedy, gdy test świadomie sprawdza wyłącznie stan końcowy.
 - ViewModele nie ustawiają dispatchera (`launch`, `flowOn`): działają na `Dispatchers.Main.immediate` z `viewModelScope`, a funkcje suspend i Flow z warstwy danych są main-safe (Room przez `setQueryCoroutineContext`, DataStore i Ktor wykonują I/O na własnych wątkach). Jeśli warstwa danych lub use case potrzebuje innego wątku (kod blokujący, ciężkie mapowanie), przełącza się sam (`withContext` / `flowOn`) z dispatcherem wstrzykniętym przez konstruktor, żeby test mógł go podmienić.
 

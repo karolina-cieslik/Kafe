@@ -43,6 +43,8 @@
     <string name="product_detail_quantity">Liczba sztuk</string>
     <string name="product_detail_add_to_cart">Dodaj do koszyka</string>
     <string name="product_detail_added_to_cart">Dodano do koszyka: %1$s</string>
+    <string name="product_detail_cart_limit_reached">W koszyku jest już maks. %1$d szt. tej pozycji</string>
+    <string name="product_detail_add_to_cart_failed">Nie udało się dodać do koszyka. Spróbuj ponownie.</string>
 
     <!-- Wybór lokalu -->
     <string name="cafe_picker_title">Wybierz kawiarnię</string>

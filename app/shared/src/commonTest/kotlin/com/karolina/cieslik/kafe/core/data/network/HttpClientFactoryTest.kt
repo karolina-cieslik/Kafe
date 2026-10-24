@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-2: Testy konfiguracji klienta HTTP – base URL, JSON, timeouty, brak wyjątków dla 4xx/5xx.
+/** Konfiguracja klienta HTTP – base URL, JSON, timeouty, brak wyjątków dla 4xx/5xx. */
 class HttpClientFactoryTest {
 
     @Serializable

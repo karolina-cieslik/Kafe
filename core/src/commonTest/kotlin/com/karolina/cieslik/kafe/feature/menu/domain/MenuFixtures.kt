@@ -2,8 +2,8 @@ package com.karolina.cieslik.kafe.feature.menu.domain
 
 import com.karolina.cieslik.kafe.core.domain.Money
 
-// KAFE-6: Buildery danych testowych menu – domyślne wartości, nadpisujemy tylko to, co istotne dla testu.
-/** Kategoria; [sortOrder] decyduje o kolejności (AC 3 KAFE-6), nazwa domyślnie równa id. */
+// Buildery danych testowych menu – domyślne wartości, nadpisujemy tylko to, co istotne dla testu.
+/** Kategoria; [sortOrder] decyduje o kolejności, nazwa domyślnie równa id. */
 internal fun category(id: String, sortOrder: Int = 0, name: String = id) =
     Category(id = id, name = name, sortOrder = sortOrder)
 

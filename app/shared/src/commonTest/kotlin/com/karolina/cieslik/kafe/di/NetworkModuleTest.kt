@@ -13,7 +13,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-// KAFE-2: Graf DI warstwy sieci – rozwiązywanie zależności i zamykanie HttpClient razem z Koinem.
+/** Graf DI warstwy sieci – rozwiązywanie zależności i zamykanie HttpClient razem z Koinem. */
 class NetworkModuleTest {
 
     private val testPlatformModule = module {

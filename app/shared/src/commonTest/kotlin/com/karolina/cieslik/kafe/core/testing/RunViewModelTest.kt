@@ -35,7 +35,7 @@ class ViewModelTestContext(val dispatcher: TestDispatcher) {
 }
 
 /**
- * KAFE-27: Uruchamia test ViewModelu w `runTest` z `Dispatchers.Main` podmienionym na [testDispatcher]
+ * Uruchamia test ViewModelu w `runTest` z `Dispatchers.Main` podmienionym na [testDispatcher]
  * (z niego korzysta `viewModelScope`).
  *
  * Każdy VM utworzony w teście przekazuj przez [ViewModelTestContext.track]. Subskrypcje `stateIn`/`shareIn`

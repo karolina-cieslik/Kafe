@@ -1,4 +1,4 @@
-# KAFE-27: CI – build Androida, testy JVM i lint. iOS pomijamy (brak runnera macOS w MVP).
+# CI – build Androida, testy JVM, detekt i lint. iOS pomijamy (brak runnera macOS w MVP).
 name: CI
 
 on:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      # KAFE-27: jednorazowy build na CI – demon Gradle niepotrzebny.
+      # Jednorazowy build na CI – demon Gradle niepotrzebny.
       GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
       - name: Checkout
@@ -33,19 +33,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # KAFE-27: ubuntu-latest ma preinstalowany Android SDK (ANDROID_HOME) z zaakceptowanymi licencjami;
+      # ubuntu-latest ma preinstalowany Android SDK (ANDROID_HOME) z zaakceptowanymi licencjami;
       # brakującą platformę (compileSdk 37) i build-tools AGP pobiera sam przy pierwszym buildzie.
-      - name: Android SDK (diagnostyka)
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" || true
-
       - name: Gradle (cache)
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
 
-      # KAFE-27: Robolectric pobiera obrazy android-all do ~/.m2 przy pierwszym teście UI.
+      # Robolectric pobiera obrazy android-all do ~/.m2 przy pierwszym teście UI.
       - name: Cache Robolectric
         uses: actions/cache@v4
         with:
@@ -55,7 +50,7 @@ jobs:
       - name: Assemble debug
         run: ./gradlew :app:androidApp:assembleDebug
 
-      # KAFE-27 (R-2): testy urządzeniowe tylko kompilujemy (APK testowe) – bez emulatora na CI,
+      # Testy urządzeniowe tylko kompilujemy (APK testowe) – bez emulatora na CI,
       # ale zmiana DAO / modułu Koin nie zepsuje ich niezauważenie.
       - name: Kompilacja testów urządzeniowych
         run: ./gradlew :app:shared:assembleAndroidDeviceTest
@@ -66,6 +61,10 @@ jobs:
           :core:testAndroidHostTest
           :app:shared:testAndroidHostTest
           :app:androidApp:testDebugUnitTest
+
+      # Zastane naruszenia są w detekt-baseline.xml modułów, nowe łamią build.
+      - name: Detekt
+        run: ./gradlew detekt
 
       - name: Lint
         run: ./gradlew :app:androidApp:lintDebug
@@ -79,5 +78,6 @@ jobs:
             **/build/reports/tests/
             **/build/test-results/
             **/build/reports/lint-results-*.html
+            **/build/reports/detekt/
           if-no-files-found: ignore
           retention-days: 7

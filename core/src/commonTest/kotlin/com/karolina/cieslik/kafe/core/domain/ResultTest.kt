@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-// KAFE-2: Testy operatorów Result.
+/** Operatory Result. */
 class ResultTest {
 
     @Test

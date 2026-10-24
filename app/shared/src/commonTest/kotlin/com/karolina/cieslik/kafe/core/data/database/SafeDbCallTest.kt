@@ -11,7 +11,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-// KAFE-2: Testy mapowania wyjątków bazy na DataError.Local.
+/** Mapowanie wyjątków bazy na DataError.Local. */
 class SafeDbCallTest {
 
     @Test

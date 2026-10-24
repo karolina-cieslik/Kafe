@@ -14,10 +14,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// KAFE-6: Reguły menu – kolejność (AC 3), puste kategorie (AC 4), „Sezonowe” (AC 5), dostępność per lokal, cena bazowa (AC 2).
+/** Reguły menu – kolejność, puste kategorie, „Sezonowe”, dostępność per lokal, cena bazowa. */
 class GetMenuForCafeTest {
 
-    // --- AC 3: kolejność ustalona przez sieć ---
+    // --- Kolejność ustalona przez sieć ---
 
     @Test
     fun categoriesAreOrderedBySortOrderNotAlphabetically() {
@@ -69,7 +69,7 @@ class GetMenuForCafeTest {
         assertEquals(listOf("croissant", "cookie"), cafeMenu.productIds("snacks"))
     }
 
-    // --- AC 4: kategoria bez produktów nie jest wyświetlana ---
+    // --- Kategoria bez produktów nie jest wyświetlana ---
 
     @Test
     fun categoryWithoutProductsIsHidden() {
@@ -119,7 +119,7 @@ class GetMenuForCafeTest {
         assertTrue(menu(categories = emptyList(), products = emptyList()).toCafeMenu().sections.isEmpty())
     }
 
-    // --- AC 5: „Sezonowe” tylko z co najmniej jednym aktywnym produktem ---
+    // --- „Sezonowe” tylko z co najmniej jednym aktywnym produktem ---
 
     @Test
     fun seasonalCategoryWithOnlyInactiveProductsIsHidden() {
@@ -234,7 +234,7 @@ class GetMenuForCafeTest {
         }
     }
 
-    // --- Flow z repozytorium (AC 6–8, edge: produkt usunięty po odświeżeniu) ---
+    // --- Flow z repozytorium (także produkt usunięty po odświeżeniu) ---
 
     @Test
     fun missingCachedMenuEmitsNull() = runTest {
@@ -264,7 +264,7 @@ class GetMenuForCafeTest {
         }
     }
 
-    // --- AC 2: cena bazowa ---
+    // --- Cena bazowa ---
 
     @Test
     fun basePriceIsCheapestSizeRegardlessOfOrder() {

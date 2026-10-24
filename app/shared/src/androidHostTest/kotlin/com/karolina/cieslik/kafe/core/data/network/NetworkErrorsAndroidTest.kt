@@ -9,7 +9,7 @@ import java.net.UnknownHostException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// KAFE-2: Wyjątki zgłaszane przez silnik OkHttp przy braku zasięgu i timeoutach.
+/** Wyjątki zgłaszane przez silnik OkHttp przy braku zasięgu i timeoutach. */
 class NetworkErrorsAndroidTest {
 
     @Test

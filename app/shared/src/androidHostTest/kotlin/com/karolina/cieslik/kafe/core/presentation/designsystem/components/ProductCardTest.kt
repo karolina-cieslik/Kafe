@@ -14,7 +14,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-// KAFE-25 / KAFE-6: ProductCard – dane produktu (AC 2), stan „Chwilowo niedostępny”, kliknięcia.
+/** ProductCard – dane produktu, stan „Chwilowo niedostępny”, kliknięcia. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK])
 class ProductCardTest {

@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:CafeOpeningEdgeTest.kt:CafeOpeningEdgeTest$assertEquals(listOf("kafe", "Kafe Długa", "KAFE RYNEK"), listOf("KAFE RYNEK", "Kafe Długa", "kafe").sortedWith(PolishAlphabeticalOrder))</ID>
+    <ID>MaxLineLength:CafeOpeningEdgeTest.kt:CafeOpeningEdgeTest$listOf("Częstochowa", "Ćmielów", "Lublin", "Łódź", "Opole", "Ostrów", "Sopot", "Ślęza", "Zamość", "Źródło", "Żory")</ID>
+    <ID>MaxLineLength:CafeOpeningEdgeTest.kt:CafeOpeningEdgeTest$val names = listOf("Żory", "Zamość", "Źródło", "Łódź", "Lublin", "Ćmielów", "Częstochowa", "Ślęza", "Sopot", "Opole", "Ostrów")</ID>
+    <ID>MaxLineLength:GetMenuForCafeTest.kt:GetMenuForCafeTest$assertEquals(Money(900), product("croissant", "snacks", sizes = listOf(size(grosze = 900, volumeMl = null))).basePrice)</ID>
+    <ID>MaxLineLength:GetMenuForCafeTest.kt:GetMenuForCafeTest$categories = listOf(category("snacks", sortOrder = 4), category("classic", sortOrder = 1), category("brew", sortOrder = 2))</ID>
+    <ID>MaxLineLength:GetMenuForCafeTest.kt:GetMenuForCafeTest$menus = mapOf("krakow" to menu(categories, listOf(product("espresso", "classic"), product("mocha", "classic", 1))))</ID>
+    <ID>MaxLineLength:GetMenuForCafeTest.kt:GetMenuForCafeTest$products = listOf(product("croissant", "snacks"), product("espresso", "classic"), product("cookie", "snacks"))</ID>
+    <ID>MaxLineLength:GetProductDetailsTest.kt:GetProductDetailsTest$val found = assertIs&lt;ProductLookup.Found&gt;(menu(latte, unavailableProductIds = setOf("latte")).findProduct("latte"))</ID>
+    <ID>MaxLineLength:ProductConfiguration.kt:ProductConfiguration$fun</ID>
+    <ID>MaxLineLength:ProductConfiguration.kt:ProductConfiguration$private fun withGroup</ID>
+    <ID>MaxLineLength:ProductConfiguration.kt:ProductConfiguration.Companion$*</ID>
+    <ID>MaxLineLength:ProductConfigurationEdgeTest.kt:ProductConfigurationEdgeTest$private val oatRemovedGroups = listOf(milkGroup.copy(options = milkGroup.options.filterNot { it.id == "oat" }), shotsGroup, syrupGroup)</ID>
+    <ID>MaxLineLength:ProductConfigurationEdgeTest.kt:ProductConfigurationEdgeTest$val config = initial.changeOptionQuantity("extras", "shot", +1, details).changeOptionQuantity("extras", "shot", -1, details)</ID>
+    <ID>MaxLineLength:ProductConfigurationTest.kt:ProductConfigurationTest$groups = listOf(milk, ProductTestData.shots, ProductTestData.syrup.copy(options = ProductTestData.syrup.options.drop(1)))</ID>
+    <ID>MaxLineLength:ProductConfigurationTest.kt:ProductConfigurationTest$val later = details(groups = listOf(milk.copy(options = milk.options.take(1)), ProductTestData.shots, ProductTestData.syrup))</ID>
+    <ID>NewLineAtEndOfFile:GreetingUtil.kt:com.karolina.cieslik.kafe.GreetingUtil.kt</ID>
+    <ID>ReturnCount:CafeOpening.kt:fun Cafe.isOpenAt: Boolean</ID>
+    <ID>ReturnCount:ProductConfiguration.kt:ProductConfiguration$fun validate: ConfigurationIssue?</ID>
+  </CurrentIssues>
+</SmellBaseline>

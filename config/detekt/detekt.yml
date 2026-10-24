@@ -1,0 +1,52 @@
+# Nadpisania domyślnej konfiguracji detekta (buildUponDefaultConfig = true) – tylko to, co różni się od domyślnych.
+# Zastane naruszenia są w detekt-baseline.xml modułów; cel to puste baseline, nowe naruszenia łamią build.
+# Kotwica &testSources: source sety testów KMP. Domyślne wykluczenia detekta nie znają androidHostTest/androidDeviceTest
+# (nowy plugin AGP dla KMP), więc listę podajemy sami.
+
+comments:
+  # KDoc na publicznym API (CLAUDE.md: klasy, interfejsy, use case'y, funkcje VM, kontrakty UI). Testy bez wymogu.
+  UndocumentedPublicClass:
+    active: true
+    excludes: &testSources
+      - '**/test/**'
+      - '**/commonTest/**'
+      - '**/androidHostTest/**'
+      - '**/androidDeviceTest/**'
+      - '**/iosTest/**'
+  UndocumentedPublicFunction:
+    active: true
+    excludes: *testSources
+  UndocumentedPublicProperty:
+    active: true
+    excludes: *testSources
+    # Wartości enumów (MONDAY, S/M/L) są samoopisowe; ich znaczenie opisuje KDoc enuma.
+    ignoreEnumEntries: true
+
+complexity:
+  TooManyFunctions:
+    excludes: *testSources
+
+naming:
+  FunctionNaming:
+    # Funkcje @Composable nazywamy wielką literą (konwencja Compose).
+    ignoreAnnotated: ['Composable']
+
+style:
+  ForbiddenComment:
+    # TODO tylko z ticketem (CLAUDE.md), FIXME/XXX/STOPSHIP wcale. Wartości to wyrażenia regularne.
+    comments:
+      - value: 'TODO(?!\(KAFE-\d+\): )'
+        reason: 'TODO tylko z ticketem: `TODO(KAFE-<n>): …`.'
+      - value: 'FIXME'
+        reason: 'FIXME niedozwolone – popraw albo zapisz jako TODO(KAFE-<n>).'
+      - value: 'XXX'
+        reason: 'XXX niedozwolone – popraw albo zapisz jako TODO(KAFE-<n>).'
+      - value: 'STOPSHIP'
+        reason: 'STOPSHIP niedozwolone w repozytorium.'
+  MagicNumber:
+    excludes: *testSources
+    # Zakresy (np. kody HTTP `in 500..599`) są czytelne bez nazwanych stałych.
+    ignoreRanges: true
+  ReturnCount:
+    # Wczesne `return` na początku funkcji (warunki brzegowe) nie liczą się do limitu.
+    excludeGuardClauses: true

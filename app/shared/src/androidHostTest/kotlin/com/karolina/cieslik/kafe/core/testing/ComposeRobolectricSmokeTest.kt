@@ -16,7 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-// KAFE-27: Sprawdza, że testy Compose działają na JVM przez Robolectric (bez urządzenia, także w CI).
+/** Sprawdza, że testy Compose działają na JVM przez Robolectric (bez urządzenia, także w CI). */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK])
 class ComposeRobolectricSmokeTest {

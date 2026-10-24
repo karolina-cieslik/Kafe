@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-// KAFE-6: Formatowanie i arytmetyka Money (AC 2 – cena w formacie „12,00 zł”).
+/** Formatowanie i arytmetyka Money (cena w formacie „12,00 zł”). */
 class MoneyTest {
 
     @Test

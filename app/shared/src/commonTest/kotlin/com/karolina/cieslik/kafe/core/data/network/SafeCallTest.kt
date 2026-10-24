@@ -21,7 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-// KAFE-2: Testy mapowania odpowiedzi i wyjątków sieciowych na Result / DataError.Remote.
+/** Mapowanie odpowiedzi i wyjątków sieciowych na Result / DataError.Remote. */
 class SafeCallTest {
 
     @Serializable

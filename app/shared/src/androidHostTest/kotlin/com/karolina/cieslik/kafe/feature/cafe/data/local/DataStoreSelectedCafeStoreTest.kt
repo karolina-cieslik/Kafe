@@ -58,9 +58,9 @@ class DataStoreSelectedCafeStoreTest {
 
     @Test
     fun changedCafeOverridesPreviousChoiceAfterRestart() {
-        // Drugi zapis do istniejącego pliku DataStore na JVM pod Windows kończy się „Unable to rename …tmp”
-        // (podmiana pliku w DataStore/okio na Windows); Android i CI (ubuntu) – OK.
-        assumeFalse("DataStore na JVM/Windows nie nadpisuje pliku", isWindows)
+        // Na JVM pod Windows zapis z nowej instancji DataStore do istniejącego pliku nie trafia na dysk
+        // (kolejna instancja czyta stary stan); Android i CI (ubuntu) – OK. Szczegóły w docs/testing.md.
+        assumeFalse("DataStore na JVM/Windows: zapis po ponownym otwarciu pliku", isWindows)
         session { it.saveSelectedCafeId("krakow-rynek") }
         session { it.saveSelectedCafeId("warszawa-nowy-swiat") }
 

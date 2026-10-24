@@ -27,7 +27,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-// KAFE-6: MenuScreen – stany Loading (AC 6) / Error + „Spróbuj ponownie” (AC 7) / Content (AC 1–2), akcje (AC 9).
+/** MenuScreen – stany Loading / Error + „Spróbuj ponownie” / Content i akcje użytkownika. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "w411dp-h891dp")
 class MenuScreenTest {
@@ -65,7 +65,7 @@ class MenuScreenTest {
         }
     }
 
-    // --- AC 6: Loading ---
+    // --- Loading ---
 
     @Test
     fun loadingShowsSkeletonGridWithLoadingDescription() {
@@ -77,7 +77,7 @@ class MenuScreenTest {
         composeRule.onNodeWithTag(MenuTestTags.GRID).assertDoesNotExist()
     }
 
-    // --- AC 7: Error ---
+    // --- Error ---
 
     @Test
     fun errorShowsMessageAndRetryButton() {
@@ -96,7 +96,7 @@ class MenuScreenTest {
         assertEquals(listOf<MenuAction>(MenuAction.Retry), actions)
     }
 
-    // --- AC 1–2: Content ---
+    // --- Content ---
 
     @Test
     fun contentShowsCafeNameChipsAndProductsOfSelectedCategory() {

@@ -105,6 +105,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.androidx.testRunner)
             implementation(libs.androidx.testExt.junit)
+            implementation(libs.room.testing)
         }
     }
 }

@@ -345,6 +345,30 @@ class KafeNavHostTest {
     }
 
     @Test
+    fun goToMenuFromCartWithoutMenuOnBackStackOpensMenuInPlaceOfCart() {
+        setNavHost(startDestination = KafeRoute.Cart)
+
+        composeRule.onNodeWithText("Przejdź do menu").performClick()
+        composeRule.waitForIdle()
+
+        assertCurrentRoute<KafeRoute.Menu>()
+        assertNull(navController.previousBackStackEntry)
+    }
+
+    @Test
+    fun doubleTapOnBackArrowInCartOpenedOverProductLeavesProduct() {
+        setNavHost()
+        click(MenuTestTags.product("espresso"))
+        openCart()
+        val backArrow = composeRule.onNodeWithContentDescription("Wstecz").fetchSemanticsNode()
+
+        composeRule.runOnUiThread { repeat(2) { backArrow.config[SemanticsActions.OnClick].action?.invoke() } }
+        composeRule.waitForIdle()
+
+        assertCurrentRoute<KafeRoute.ProductDetail>()
+    }
+
+    @Test
     fun openingCartTwiceKeepsSingleCartEntry() {
         setNavHost()
 

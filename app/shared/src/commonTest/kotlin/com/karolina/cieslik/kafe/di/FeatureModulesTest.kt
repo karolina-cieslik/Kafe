@@ -66,6 +66,15 @@ class FeatureModulesTest {
                 override suspend fun insert(item: CartItemEntity): Long = 1
                 override suspend fun update(item: CartItemEntity) = Unit
                 override suspend fun deleteById(id: Long) = Unit
+                override suspend fun incrementQuantity(id: Long, max: Int): Int = 0
+                override suspend fun updateSnapshot(
+                    id: Long,
+                    configurationKey: String,
+                    productName: String,
+                    selectionsJson: String,
+                    unitPriceGrosze: Long,
+                ) = Unit
+                override suspend fun getAll(): List<CartItemEntity> = emptyList()
             }
         }
         single<CafeLocalDataSource> {

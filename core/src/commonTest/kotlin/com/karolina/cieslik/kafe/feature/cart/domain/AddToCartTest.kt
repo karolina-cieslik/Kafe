@@ -108,8 +108,16 @@ class AddToCartTest {
         addToCart(details(groups = listOf(milkGroup, shotsGroup)), configuration)
 
         val added = repository.added.single()
-        assertEquals(listOf(CartSelection("milk", "cow", "Krowie", Money.ZERO, 1)), added.selections)
+        assertEquals(listOf(CartSelection("milk", "cow", "Krowie", Money.ZERO, 1, isDefault = true)), added.selections)
         assertEquals(Money(1_400), added.unitPrice)
+    }
+
+    @Test
+    fun onlyDefaultOptionOfGroupIsMarkedAsDefault() = runTest {
+        addToCart(details(), configuration(selections = mapOf("milk" to mapOf("cow" to 1))))
+        addToCart(details(), configuration(selections = mapOf("milk" to mapOf("oat" to 1))))
+
+        assertEquals(listOf(true, false), repository.added.map { it.selections.single().isDefault })
     }
 
     @Test
@@ -159,7 +167,17 @@ class AddToCartTest {
 
         override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
 
-        override suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local> = error("nieużywane")
+        override suspend fun increase(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
+
+        override suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local> =
+            error("nieużywane")
+
+        override suspend fun restore(item: CartItem): Result<RestoreOutcome, DataError.Local> = error("nieużywane")
+
+        override suspend fun updateSnapshots(updates: List<CartSnapshotUpdate>): EmptyResult<DataError.Local> =
+            error("nieużywane")
+
+        override suspend fun removeUnreadable(): Result<Int, DataError.Local> = error("nieużywane")
 
         override suspend fun clear(): EmptyResult<DataError.Local> = error("nieużywane")
     }

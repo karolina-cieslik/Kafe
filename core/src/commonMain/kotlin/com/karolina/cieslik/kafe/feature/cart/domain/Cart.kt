@@ -7,7 +7,8 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 /**
  * Pozycja w koszyku: produkt w konkretnej konfiguracji (rozmiar + modyfikatory) i liczba sztuk.
  *
- * Nazwa i cena to migawka z chwili dodania – pozycja przetrwa zmianę albo zniknięcie produktu z menu.
+ * Nazwa i cena to migawka z chwili dodania (aktualizowana po odświeżeniu menu,
+ * [CartRepository.updateSnapshots]) – pozycja przetrwa zmianę albo zniknięcie produktu z menu.
  *
  * @property id identyfikator pozycji nadany przez bazę; stały także po „Cofnij”.
  * @property productId id produktu z menu sieci.
@@ -83,6 +84,8 @@ data class NewCartItem(
  * @property optionName nazwa opcji w chwili dodania.
  * @property surcharge dopłata za jedną sztukę opcji w chwili dodania.
  * @property quantity ilość opcji w jednej sztuce produktu, > 0 (dla SINGLE zawsze 1).
+ * @property isDefault opcja była domyślną opcją grupy w chwili dodania – koszyk nie wypisuje domyślnych opcji
+ * bez dopłaty (np. „Krowie”). Nie wchodzi do klucza konfiguracji.
  */
 data class CartSelection(
     val groupId: String,
@@ -90,9 +93,40 @@ data class CartSelection(
     val optionName: String,
     val surcharge: Money,
     val quantity: Int,
+    val isDefault: Boolean = false,
 )
 
-/** Wynik dodania do koszyka (także scalenia przy „Cofnij”, [CartRepository.restore]). */
+/** Wynik „−” na pozycji ([CartRepository.decreaseOrRemove]). */
+sealed interface DecreaseOutcome {
+
+    /** Ilość zmniejszona o 1; [item] po zmianie. */
+    data class Decreased(val item: CartItem) : DecreaseOutcome
+
+    /** Pozycja miała 1 sztukę i została usunięta; [item] sprzed usunięcia – do „Cofnij”. */
+    data class Removed(val item: CartItem) : DecreaseOutcome
+}
+
+/** Wynik „Cofnij” po usunięciu pozycji ([CartRepository.restore]). */
+sealed interface RestoreOutcome {
+
+    /** Pozycja w koszyku po operacji. */
+    val item: CartItem
+
+    /** Pozycja wróciła z tym samym id na swoje miejsce. */
+    data class Restored(override val item: CartItem) : RestoreOutcome
+
+    /**
+     * W międzyczasie dodano tę samą konfigurację – [item] to tamta pozycja z sumą ilości.
+     *
+     * @property capped suma przekroczyła [ProductConfiguration.MAX_QUANTITY] i została przycięta.
+     */
+    data class Merged(override val item: CartItem, val capped: Boolean) : RestoreOutcome
+
+    /** Pozycja już jest w koszyku (np. podwójne „Cofnij”) – nic się nie zmieniło. */
+    data class AlreadyInCart(override val item: CartItem) : RestoreOutcome
+}
+
+/** Wynik dodania do koszyka ([CartRepository.add]). */
 sealed interface AddToCartOutcome {
 
     /** Pozycja w koszyku po operacji. */

@@ -3,6 +3,8 @@ package com.karolina.cieslik.kafe.feature.product.presentation
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.testing.ViewModelTestContext
 import com.karolina.cieslik.kafe.core.testing.runViewModelTest
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
 import com.karolina.cieslik.kafe.feature.menu.domain.Category
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroup
@@ -69,6 +71,7 @@ class ProductDetailViewModelRefreshTest {
                 menuRepository = menus,
                 getProductDetails = GetProductDetails(menus),
                 priceCalculator = PriceCalculator(),
+                addToCart = AddToCart(FakeCartRepository(), PriceCalculator()),
             ),
         )
         backgroundScope.launch { viewModel.state.collect {} }

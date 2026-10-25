@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartError
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
@@ -14,7 +17,9 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.ProductLookup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +33,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Szczegóły i konfiguracja produktu [productId] w wybranym lokalu.
@@ -48,6 +54,7 @@ class ProductDetailViewModel(
     private val menuRepository: MenuRepository,
     getProductDetails: GetProductDetails,
     private val priceCalculator: PriceCalculator,
+    private val addToCart: AddToCart,
 ) : ViewModel() {
 
     /** Wybór klienta dla konkretnego lokalu – po zmianie lokalu dostępność jest inna, więc start od nowa. */
@@ -58,6 +65,7 @@ class ProductDetailViewModel(
     private var current: LookupOfCafe? = null
     private var refreshJob: Job? = null
     private var refreshedCafeId: String? = null
+    private var addToCartJob: Job? = null
 
     private val eventChannel = Channel<ProductDetailEvent>(Channel.BUFFERED)
     /** Jednorazowe zdarzenia (dodanie do koszyka, powrót); każde trafia do jednego kolektora. */
@@ -91,8 +99,11 @@ class ProductDetailViewModel(
 
     /**
      * Obsługuje akcję użytkownika. Zmiany konfiguracji działają tylko, gdy produkt jest znaleziony; niedozwolone
-     * zmiany są ignorowane. Dodanie do koszyka emituje [ProductDetailEvent.AddedToCart] tylko dla poprawnej
-     * konfiguracji. Retry nie startuje drugiego pobierania, gdy jedno trwa.
+     * zmiany są ignorowane. Dodanie do koszyka zapisuje pozycję i emituje [ProductDetailEvent.AddedToCart]
+     * (z `limitReached`, gdy pozycja doszła do 20 sztuk) albo [ProductDetailEvent.AddToCartFailed] przy błędzie
+     * zapisu; niepoprawna konfiguracja nic nie zapisuje i nie emituje zdarzenia. Kliknięcie w trakcie zapisu jest
+     * ignorowane, a konfiguracja na ekranie po dodaniu zostaje bez zmian. Rozpoczęty zapis kończy się także po
+     * zamknięciu ekranu (bez zdarzenia). Retry nie startuje drugiego pobierania, gdy jedno trwa.
      */
     fun onAction(action: ProductDetailAction) {
         when (action) {
@@ -105,17 +116,35 @@ class ProductDetailViewModel(
             is ProductDetailAction.OptionQuantityChanged ->
                 updateConfiguration { details -> changeOptionQuantity(action.groupId, action.optionId, action.delta, details) }
             is ProductDetailAction.QuantityChanged -> updateConfiguration { changeQuantity(action.delta) }
-            ProductDetailAction.AddToCartClicked -> addToCart()
+            ProductDetailAction.AddToCartClicked -> addCurrentToCart()
             ProductDetailAction.BackClicked -> sendEvent(ProductDetailEvent.NavigateBack)
             ProductDetailAction.Retry -> retry()
         }
     }
 
-    private fun addToCart() {
+    private fun addCurrentToCart() {
+        // Podwójne kliknięcie nie dodaje dwóch sztuk – drugie trafia w trwający zapis.
+        if (addToCartJob?.isActive == true) return
         val (cafeId, details) = currentDetails() ?: return
-        if (effectiveConfiguration(configuration.value, cafeId, details).configuration.validate(details) != null) return
-        // TODO(KAFE-12): zapis do koszyka; na razie tylko potwierdzenie dla UI (snackbar).
-        sendEvent(ProductDetailEvent.AddedToCart(details.product.name))
+        val selected = effectiveConfiguration(configuration.value, cafeId, details).configuration
+        addToCartJob = viewModelScope.launch {
+            // „Dodaj” i od razu „Wstecz” czyści VM – zapis i tak ma się dokończyć, ale zdarzenie już nie.
+            val result = withContext(NonCancellable) { addToCart(details, selected) }
+            val event = when (result) {
+                is Result.Success -> ProductDetailEvent.AddedToCart(
+                    productName = result.data.item.productName,
+                    limitReached = result.data is AddToCartOutcome.CappedAtLimit,
+                )
+                is Result.Failure -> when (result.error) {
+                    // Przycisk jest wtedy nieaktywny (canAddToCart), a powód pokazuje infoMessage.
+                    is AddToCartError.InvalidConfiguration -> return@launch
+                    is AddToCartError.Storage -> ProductDetailEvent.AddToCartFailed
+                }
+            }
+            // send do buforowanego kanału nie zawiesza się, więc sam nie zauważy anulowania VM.
+            ensureActive()
+            eventChannel.send(event)
+        }
     }
 
     private fun retry() {

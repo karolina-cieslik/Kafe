@@ -16,6 +16,11 @@ import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerTestTags
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
+import com.karolina.cieslik.kafe.feature.cart.domain.Cart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
+import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.NewCartItem
 import com.karolina.cieslik.kafe.feature.menu.domain.Category
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
@@ -65,6 +70,8 @@ class MainActivityRecreationTest {
             module {
                 single<CafeRepository> { cafes }
                 single<MenuRepository> { RecreationFakeMenuRepository(sampleMenu()) }
+                // Prawdziwy koszyk otworzyłby Room, a natywny SQLite nie ładuje się na JVM.
+                single<CartRepository> { RecreationFakeCartRepository() }
             },
         )
     }
@@ -181,4 +188,20 @@ private class RecreationFakeMenuRepository(private val menu: Menu) : MenuReposit
     override fun observeMenu(cafeId: String): Flow<Menu?> = flowOf(menu)
 
     override suspend fun refresh(cafeId: String): EmptyResult<DataError> = Result.Success(Unit)
+}
+
+private class RecreationFakeCartRepository : CartRepository {
+
+    override fun observeCart(): Flow<Cart> = flowOf(Cart.EMPTY)
+
+    override suspend fun add(item: NewCartItem): Result<AddToCartOutcome, DataError.Local> = error("nieużywane")
+
+    override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> =
+        error("nieużywane")
+
+    override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
+
+    override suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local> = error("nieużywane")
+
+    override suspend fun clear(): EmptyResult<DataError.Local> = Result.Success(Unit)
 }

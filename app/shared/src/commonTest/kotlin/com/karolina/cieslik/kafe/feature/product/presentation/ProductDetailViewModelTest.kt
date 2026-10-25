@@ -7,6 +7,11 @@ import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import com.karolina.cieslik.kafe.feature.cafe.domain.CafeRepository
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
+import com.karolina.cieslik.kafe.feature.cart.domain.CartSelection
+import com.karolina.cieslik.kafe.feature.cart.toCartItem
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierGroup
@@ -17,6 +22,7 @@ import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import com.karolina.cieslik.kafe.feature.product.domain.GetProductDetails
 import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -70,6 +76,7 @@ class ProductDetailViewModelTest {
         val viewModel: ProductDetailViewModel,
         val cafes: FakeCafeRepository,
         val menus: FakeMenuRepository,
+        val cart: FakeCartRepository,
         val events: MutableList<ProductDetailEvent>,
     ) {
         val content get() = assertIs<ProductDetailUiState.Content>(viewModel.state.value)
@@ -84,7 +91,15 @@ class ProductDetailViewModelTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menus = FakeMenuRepository().apply { savedMenu?.let { menus.value = mapOf("a" to it) } }
-        val viewModel = ProductDetailViewModel(productId, cafes, menus, GetProductDetails(menus), PriceCalculator())
+        val cart = FakeCartRepository()
+        val viewModel = ProductDetailViewModel(
+            productId,
+            cafes,
+            menus,
+            GetProductDetails(menus),
+            PriceCalculator(),
+            AddToCart(cart, PriceCalculator()),
+        )
         val events = mutableListOf<ProductDetailEvent>()
         val collectors = listOf(
             launch { viewModel.state.collect {} },
@@ -92,7 +107,7 @@ class ProductDetailViewModelTest {
         )
         try {
             advanceUntilIdle()
-            block(Env(viewModel, cafes, menus, events))
+            block(Env(viewModel, cafes, menus, cart, events))
         } finally {
             collectors.forEach { it.cancel() }
             viewModel.viewModelScope.cancel()
@@ -187,6 +202,7 @@ class ProductDetailViewModelTest {
         act(env, ProductDetailAction.AddToCartClicked)
 
         assertEquals(emptyList(), env.events)
+        assertTrue(env.cart.added.isEmpty())
     }
 
     @Test
@@ -208,6 +224,95 @@ class ProductDetailViewModelTest {
     }
 
     @Test
+    fun addToCartSavesCurrentConfigurationAndKeepsItOnScreen() = runVmTest { env ->
+        act(
+            env,
+            ProductDetailAction.OptionSelected("milk", "milk-oat"),
+            ProductDetailAction.OptionQuantityChanged("shots", "shot", +2),
+            ProductDetailAction.QuantityChanged(+2),
+        )
+        val before = env.content
+
+        act(env, ProductDetailAction.AddToCartClicked)
+
+        val added = env.cart.added.single()
+        assertEquals("latte", added.productId)
+        assertEquals(SizeCode.M, added.size)
+        assertEquals(3, added.quantity)
+        assertEquals(
+            listOf(
+                CartSelection("milk", "milk-oat", "Owsiane", Money(200), 1),
+                CartSelection("shots", "shot", "Shot espresso", Money(300), 2),
+            ),
+            added.selections,
+        )
+        assertEquals(Money(2_400), added.unitPrice)
+        assertEquals(before, env.content)
+    }
+
+    @Test
+    fun addingAboveLimitEmitsLimitReached() = runVmTest { env ->
+        env.cart.addResult = { item ->
+            Result.Success(AddToCartOutcome.CappedAtLimit(item.toCartItem(id = 1, quantity = 20)))
+        }
+
+        act(env, ProductDetailAction.AddToCartClicked)
+
+        assertEquals(
+            listOf<ProductDetailEvent>(ProductDetailEvent.AddedToCart("Caffè latte", limitReached = true)),
+            env.events,
+        )
+    }
+
+    @Test
+    fun mergingWithinLimitEmitsPlainConfirmation() = runVmTest { env ->
+        env.cart.addResult = { item ->
+            Result.Success(AddToCartOutcome.QuantityIncreased(item.toCartItem(id = 1, quantity = 5)))
+        }
+
+        act(env, ProductDetailAction.AddToCartClicked)
+
+        assertEquals(listOf<ProductDetailEvent>(ProductDetailEvent.AddedToCart("Caffè latte")), env.events)
+    }
+
+    @Test
+    fun storageFailureEmitsAddToCartFailed() = runVmTest { env ->
+        env.cart.addResult = { Result.Failure(DataError.Local.DISK_FULL) }
+
+        act(env, ProductDetailAction.AddToCartClicked)
+
+        assertEquals(listOf<ProductDetailEvent>(ProductDetailEvent.AddToCartFailed), env.events)
+    }
+
+    @Test
+    fun saveStartedBeforeScreenClosesCompletesWithoutEvent() = runVmTest { env ->
+        val gate = CompletableDeferred<Unit>()
+        env.cart.addGate = gate
+
+        act(env, ProductDetailAction.AddToCartClicked)
+        env.viewModel.viewModelScope.cancel()
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(1, env.cart.completed.size)
+        assertTrue(env.events.isEmpty())
+    }
+
+    @Test
+    fun clickDuringSaveIsIgnored() = runVmTest { env ->
+        val gate = CompletableDeferred<Unit>()
+        env.cart.addGate = gate
+
+        act(env, ProductDetailAction.AddToCartClicked, ProductDetailAction.AddToCartClicked)
+        gate.complete(Unit)
+        advanceUntilIdle()
+        act(env, ProductDetailAction.AddToCartClicked)
+
+        assertEquals(2, env.cart.added.size)
+        assertEquals(2, env.events.size)
+    }
+
+    @Test
     fun missingMenuIsFetchedOnce() = runVmTest(savedMenu = null) { env ->
         assertEquals(1, env.menus.refreshCount)
         assertIs<ProductDetailUiState.Content>(env.viewModel.state.value)
@@ -219,7 +324,14 @@ class ProductDetailViewModelTest {
         Dispatchers.setMain(dispatcher)
         val cafes = FakeCafeRepository()
         val menus = FakeMenuRepository().apply { refreshResult = Result.Failure(DataError.Remote.NO_INTERNET) }
-        val viewModel = ProductDetailViewModel("latte", cafes, menus, GetProductDetails(menus), PriceCalculator())
+        val viewModel = ProductDetailViewModel(
+            "latte",
+            cafes,
+            menus,
+            GetProductDetails(menus),
+            PriceCalculator(),
+            AddToCart(FakeCartRepository(), PriceCalculator()),
+        )
         val collector = launch { viewModel.state.collect {} }
         try {
             advanceUntilIdle()

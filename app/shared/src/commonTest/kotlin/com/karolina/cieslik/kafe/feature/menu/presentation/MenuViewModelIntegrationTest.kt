@@ -12,6 +12,7 @@ import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeDto
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.CafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.SeedCafeRemoteDataSource
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.local.ModifierGroupWithOptions
@@ -62,6 +63,7 @@ class MenuViewModelIntegrationTest {
                 cafeRepository = cafeRepository,
                 menuRepository = menuRepository,
                 getMenuForCafe = GetMenuForCafe(menuRepository),
+                cartRepository = FakeCartRepository(),
             ),
         )
         return Setup(viewModel, cafeRepository, switchable)

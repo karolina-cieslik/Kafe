@@ -4,10 +4,15 @@ import app.cash.turbine.Event
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.karolina.cieslik.kafe.core.domain.DataError
+import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.core.testing.ViewModelTestContext
 import com.karolina.cieslik.kafe.core.testing.runViewModelTest
+import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.Cart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
+import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -37,13 +42,45 @@ class MenuViewModelTest {
     private fun ViewModelTestContext.createViewModel(
         cafeRepository: FakeCafeRepository = FakeCafeRepository(krakow),
         menuRepository: FakeMenuRepository,
+        cartRepository: FakeCartRepository = FakeCartRepository(),
     ) = track(
         MenuViewModel(
             cafeRepository = cafeRepository,
             menuRepository = menuRepository,
             getMenuForCafe = GetMenuForCafe(menuRepository),
+            cartRepository = cartRepository,
         ),
     )
+
+    private fun cartOf(vararg quantities: Int) = Cart(
+        quantities.mapIndexed { index, quantity ->
+            CartItem(index + 1L, "latte", "Caffè latte", SizeCode.M, emptyList(), quantity, Money(1_400))
+        },
+    )
+
+    @Test
+    fun emptyCartGivesZeroItemCount() = runViewModelTest { context ->
+        val viewModel = context.createViewModel(menuRepository = FakeMenuRepository(mapOf("krakow" to sampleMenu)))
+        observe(viewModel)
+
+        assertEquals(0, assertIs<MenuUiState.Content>(viewModel.state.value).cartItemCount)
+    }
+
+    @Test
+    fun cartItemCountSumsQuantitiesAndFollowsCartChanges() = runViewModelTest { context ->
+        val cart = FakeCartRepository(cartOf(2, 3))
+        val viewModel = context.createViewModel(
+            menuRepository = FakeMenuRepository(mapOf("krakow" to sampleMenu)),
+            cartRepository = cart,
+        )
+        observe(viewModel)
+        assertEquals(5, assertIs<MenuUiState.Content>(viewModel.state.value).cartItemCount)
+
+        cart.cart.value = cartOf(2, 3, 20)
+        advanceUntilIdle()
+
+        assertEquals(25, assertIs<MenuUiState.Content>(viewModel.state.value).cartItemCount)
+    }
 
     /** Subskrybuje stan w tle (jak UI) i dobiega do bezczynności – do testów stanu końcowego. */
     private fun TestScope.observe(viewModel: MenuViewModel) {

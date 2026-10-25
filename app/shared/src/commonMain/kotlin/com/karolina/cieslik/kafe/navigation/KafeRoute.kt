@@ -22,6 +22,10 @@ sealed interface KafeRoute {
     /** Wybór lokalu. */
     @Serializable
     data object CafePicker : KafeRoute
+
+    /** Koszyk – jeden w aplikacji, sprawdzany z menu wybranego lokalu. */
+    @Serializable
+    data object Cart : KafeRoute
 }
 
 /** Cel nawigacji dla zdarzenia z menu. */

@@ -27,12 +27,14 @@ import org.koin.core.parameter.parametersOf
  *
  * @param productId id produktu z trasy; trafia do ViewModelu jako parametr Koina.
  * @param onNavigateBack wywoływane po strzałce wstecz.
+ * @param onNavigateToCart wywoływane po „Zobacz koszyk”.
  * @param viewModel domyślnie z Koina dla [productId]; parametr ułatwia podmianę w testach.
  */
 @Composable
 fun ProductDetailRoute(
     productId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToCart: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProductDetailViewModel = koinViewModel { parametersOf(productId) },
 ) {
@@ -40,6 +42,7 @@ fun ProductDetailRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarScope = rememberCoroutineScope()
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
+    val currentOnNavigateToCart by rememberUpdatedState(onNavigateToCart)
 
     // Zbieranie eventów startuje raz na instancję ViewModelu – zmiana lambdy nawigacji go nie restartuje,
     // bo wywołujemy ją przez rememberUpdatedState (zawsze najnowszą).
@@ -54,6 +57,7 @@ fun ProductDetailRoute(
                     snackbarHostState.showSnackbar(message)
                 }
                 ProductDetailEvent.NavigateBack -> currentOnNavigateBack()
+                ProductDetailEvent.NavigateToCart -> currentOnNavigateToCart()
             }
         }
     }
@@ -79,5 +83,5 @@ internal suspend fun ProductDetailEvent.snackbarMessage(): String? = when (this)
         getString(Res.string.product_detail_added_to_cart, productName)
     }
     ProductDetailEvent.AddToCartFailed -> getString(Res.string.product_detail_add_to_cart_failed)
-    ProductDetailEvent.NavigateBack -> null
+    ProductDetailEvent.NavigateBack, ProductDetailEvent.NavigateToCart -> null
 }

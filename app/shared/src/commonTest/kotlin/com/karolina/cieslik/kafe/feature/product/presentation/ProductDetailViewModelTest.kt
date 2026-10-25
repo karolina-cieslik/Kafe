@@ -224,6 +224,13 @@ class ProductDetailViewModelTest {
     }
 
     @Test
+    fun viewCartEmitsNavigateToCart() = runVmTest { env ->
+        act(env, ProductDetailAction.ViewCartClicked)
+
+        assertEquals(listOf<ProductDetailEvent>(ProductDetailEvent.NavigateToCart), env.events)
+    }
+
+    @Test
     fun addToCartSavesCurrentConfigurationAndKeepsItOnScreen() = runVmTest { env ->
         act(
             env,

@@ -32,4 +32,5 @@ sealed interface KafeRoute {
 fun MenuEvent.toRoute(): KafeRoute = when (this) {
     is MenuEvent.NavigateToProduct -> KafeRoute.ProductDetail(productId)
     MenuEvent.NavigateToCafePicker -> KafeRoute.CafePicker
+    MenuEvent.NavigateToCart -> KafeRoute.Cart
 }

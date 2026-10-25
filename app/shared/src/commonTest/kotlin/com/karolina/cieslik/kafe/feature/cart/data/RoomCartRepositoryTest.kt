@@ -10,7 +10,12 @@ import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
 import com.karolina.cieslik.kafe.feature.cart.domain.Cart
 import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
 import com.karolina.cieslik.kafe.feature.cart.domain.CartSelection
+import com.karolina.cieslik.kafe.feature.cart.domain.CartSnapshotUpdate
+import com.karolina.cieslik.kafe.feature.cart.domain.DecreaseOutcome
 import com.karolina.cieslik.kafe.feature.cart.domain.NewCartItem
+import com.karolina.cieslik.kafe.feature.cart.domain.OptionRef
+import com.karolina.cieslik.kafe.feature.cart.domain.OptionSnapshot
+import com.karolina.cieslik.kafe.feature.cart.domain.RestoreOutcome
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +50,17 @@ class RoomCartRepositoryTest {
 
     private fun Result<AddToCartOutcome, DataError.Local>.outcome(): AddToCartOutcome =
         assertIs<Result.Success<AddToCartOutcome>>(this).data
+
+    private fun Result<RestoreOutcome, DataError.Local>.restored(): RestoreOutcome =
+        assertIs<Result.Success<RestoreOutcome>>(this).data
+
+    private fun snapshotOf(item: CartItem, name: String, price: Money, oatName: String, oatSurcharge: Money) =
+        CartSnapshotUpdate(
+            item = item,
+            productName = name,
+            unitPrice = price,
+            options = mapOf(OptionRef("milk", "oat") to OptionSnapshot(oatName, oatSurcharge)),
+        )
 
     @Test
     fun emptyCartEmitsEmpty() = runTest {
@@ -143,7 +159,7 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(second)
 
-        assertIs<AddToCartOutcome.Added>(result.outcome())
+        assertEquals(RestoreOutcome.Restored(second), result.restored())
         val items = repository.observeCart().first().items
         assertEquals(listOf("a", "b", "c"), items.map { it.productId })
         assertEquals(listOf(first.id, second.id), items.take(2).map { it.id })
@@ -157,10 +173,11 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(removed)
 
-        val increased = assertIs<AddToCartOutcome.QuantityIncreased>(result.outcome())
-        assertEquals(readded.id, increased.item.id)
-        assertEquals(6, increased.item.quantity)
-        assertEquals(Money(1_800), increased.item.unitPrice)
+        val merged = assertIs<RestoreOutcome.Merged>(result.restored())
+        assertEquals(false, merged.capped)
+        assertEquals(readded.id, merged.item.id)
+        assertEquals(6, merged.item.quantity)
+        assertEquals(Money(1_800), merged.item.unitPrice)
         assertEquals(1, repository.observeCart().first().items.size)
     }
 
@@ -172,8 +189,9 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(removed)
 
-        val capped = assertIs<AddToCartOutcome.CappedAtLimit>(result.outcome())
-        assertEquals(20, capped.item.quantity)
+        val merged = assertIs<RestoreOutcome.Merged>(result.restored())
+        assertEquals(true, merged.capped)
+        assertEquals(20, merged.item.quantity)
     }
 
     @Test
@@ -184,8 +202,118 @@ class RoomCartRepositoryTest {
 
         val result = repository.restore(item)
 
-        assertEquals(Result.Success(AddToCartOutcome.QuantityIncreased(item)), result)
+        assertEquals(Result.Success(RestoreOutcome.AlreadyInCart(item)), result)
         assertEquals(listOf(item), repository.observeCart().first().items)
+    }
+
+    @Test
+    fun increaseAddsOneUpToTwenty() = runTest {
+        val item = addedItem(newItem(quantity = 19))
+
+        assertEquals(20, assertIs<Result.Success<CartItem>>(repository.increase(item.id)).data.quantity)
+        assertEquals(20, assertIs<Result.Success<CartItem>>(repository.increase(item.id)).data.quantity)
+    }
+
+    @Test
+    fun decreaseAboveOneDecreasesAndAtOneRemoves() = runTest {
+        val item = addedItem(newItem(quantity = 2))
+
+        val decreased = repository.decreaseOrRemove(item.id)
+        val removed = repository.decreaseOrRemove(item.id)
+
+        assertEquals(Result.Success(DecreaseOutcome.Decreased(item.copy(quantity = 1))), decreased)
+        assertEquals(Result.Success(DecreaseOutcome.Removed(item.copy(quantity = 1))), removed)
+        assertEquals(Cart.EMPTY, repository.observeCart().first())
+    }
+
+    @Test
+    fun increaseAndDecreaseOfMissingItemAreNotFound() = runTest {
+        assertEquals(Result.Failure(DataError.Local.NOT_FOUND), repository.increase(42))
+        assertEquals(Result.Failure(DataError.Local.NOT_FOUND), repository.decreaseOrRemove(42))
+    }
+
+    @Test
+    fun updateSnapshotsChangesNamesAndPricesButKeepsQuantityAndKey() = runTest {
+        val item = addedItem(newItem(quantity = 3))
+        repository.increase(item.id)
+        val update = snapshotOf(item, "Latte", Money(1_700), "Owsiane bio", Money(300))
+
+        val result = repository.updateSnapshots(listOf(update))
+
+        assertEquals(Result.Success(Unit), result)
+        assertEquals(
+            item.copy(
+                productName = "Latte",
+                unitPrice = Money(1_700),
+                quantity = 4,
+                selections = listOf(oat.copy(optionName = "Owsiane bio", surcharge = Money(300))),
+            ),
+            repository.observeCart().first().items.single(),
+        )
+        assertEquals(item.configurationKey, dao.rowOf(item).configurationKey)
+    }
+
+    @Test
+    fun updateSnapshotsWithDifferentOptionsIsRejectedWithoutWriting() = runTest {
+        val item = addedItem(newItem())
+        val wrong = snapshotOf(item, "Latte", Money(1_700), "Owsiane", Money(200))
+            .copy(options = mapOf(OptionRef("milk", "soy") to OptionSnapshot("Sojowe", Money(200))))
+
+        assertFailsWith<IllegalArgumentException> { repository.updateSnapshots(listOf(wrong)) }
+        assertEquals(listOf(item), repository.observeCart().first().items)
+    }
+
+    @Test
+    fun updateSnapshotsSkipsItemRemovedInTheMeantime() = runTest {
+        val removed = addedItem(newItem(productId = "a"))
+        val kept = addedItem(newItem(productId = "b"))
+        repository.remove(removed.id)
+
+        val result = repository.updateSnapshots(
+            listOf(
+                snapshotOf(removed, "A", Money(1_000), "Owsiane", Money(200)),
+                snapshotOf(kept, "B", Money(1_100), "Owsiane", Money(200)),
+            ),
+        )
+
+        assertEquals(Result.Success(Unit), result)
+        assertEquals(listOf("B"), repository.observeCart().first().items.map { it.productName })
+    }
+
+    @Test
+    fun removeUnreadableDeletesOnlyUnreadableRows() = runTest {
+        val good = addedItem(newItem())
+        dao.seed(dao.rowOf(good).copy(id = 100, sizeCode = "XL", configurationKey = "x"))
+        dao.seed(dao.rowOf(good).copy(id = 101, selectionsJson = "{nie json", configurationKey = "y"))
+
+        assertEquals(Result.Success(2), repository.removeUnreadable())
+        assertEquals(listOf(good.id), dao.observeItems().first().map { it.id })
+    }
+
+    @Test
+    fun removeUnreadableKeepsRowsWhenAllAreUnreadable() = runTest {
+        val good = addedItem(newItem())
+        val broken = dao.rowOf(good).copy(sizeCode = "XL")
+        repository.clear()
+        dao.seed(broken)
+
+        assertEquals(Result.Failure(DataError.Local.UNKNOWN), repository.removeUnreadable())
+        assertEquals(listOf(broken), dao.observeItems().first())
+    }
+
+    @Test
+    fun removeUnreadableOnEmptyCartRemovesNothing() = runTest {
+        assertEquals(Result.Success(0), repository.removeUnreadable())
+    }
+
+    @Test
+    fun defaultFlagOfSelectionIsStoredExplicitlyAndReadBack() = runTest {
+        val cow = CartSelection("milk", "cow", "Krowie", Money.ZERO, 1, isDefault = true)
+        val item = addedItem(newItem(selections = listOf(cow, oat.copy(groupId = "extra"))))
+
+        val stored = repository.observeCart().first().items.single()
+        assertEquals(listOf(true, false), stored.selections.map { it.isDefault })
+        assertEquals(2, Regex("\"isDefault\":").findAll(dao.rowOf(item).selectionsJson).count())
     }
 
     @Test
@@ -265,6 +393,27 @@ class RoomCartRepositoryTest {
         override suspend fun deleteById(id: Long) {
             rows.value = rows.value.filterNot { it.id == id }
         }
+
+        override suspend fun incrementQuantity(id: Long, max: Int): Int {
+            val row = rows.value.firstOrNull { it.id == id } ?: return 0
+            update(row.copy(quantity = minOf(row.quantity + 1, max)))
+            return 1
+        }
+
+        override suspend fun updateSnapshot(
+            id: Long,
+            configurationKey: String,
+            productName: String,
+            selectionsJson: String,
+            unitPriceGrosze: Long,
+        ) {
+            val row = rows.value.firstOrNull { it.id == id && it.configurationKey == configurationKey } ?: return
+            update(
+                row.copy(productName = productName, selectionsJson = selectionsJson, unitPriceGrosze = unitPriceGrosze),
+            )
+        }
+
+        override suspend fun getAll(): List<CartItemEntity> = rows.value
 
         private fun insertRow(item: CartItemEntity): Long {
             val id = if (item.id == 0L) lastId + 1 else item.id

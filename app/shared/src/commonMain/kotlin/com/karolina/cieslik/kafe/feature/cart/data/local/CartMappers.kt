@@ -8,7 +8,11 @@ import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
-private val cartJson = Json { ignoreUnknownKeys = true }
+/** Format migawki w bazie: wszystkie pola zapisywane jawnie (także wartości domyślne), nieznane pomijane. */
+private val cartJson = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
+}
 
 internal fun NewCartItem.toEntity() = CartItemEntity(
     id = 0,
@@ -51,13 +55,15 @@ internal fun CartItemEntity.toDomainOrNull(): CartItem? {
         productName = productName,
         size = size,
         selections = selections.map {
-            CartSelection(it.groupId, it.optionId, it.optionName, Money(it.surchargeGrosze), it.quantity)
+            CartSelection(it.groupId, it.optionId, it.optionName, Money(it.surchargeGrosze), it.quantity, it.isDefault)
         },
         quantity = quantity,
         unitPrice = Money(unitPriceGrosze),
     )
 }
 
-private fun List<CartSelection>.toJson(): String = cartJson.encodeToString(
-    map { CartSelectionJson(it.groupId, it.optionId, it.optionName, it.surcharge.grosze, it.quantity) },
+internal fun List<CartSelection>.toJson(): String = cartJson.encodeToString(
+    map {
+        CartSelectionJson(it.groupId, it.optionId, it.optionName, it.surcharge.grosze, it.quantity, it.isDefault)
+    },
 )

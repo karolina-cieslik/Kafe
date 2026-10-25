@@ -14,6 +14,7 @@ import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
 import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
 import com.karolina.cieslik.kafe.feature.cart.domain.CartSelection
 import com.karolina.cieslik.kafe.feature.cart.domain.NewCartItem
+import com.karolina.cieslik.kafe.feature.cart.domain.RestoreOutcome
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -99,7 +100,7 @@ class RoomCartRepositoryDeviceTest {
         val outcome = repository.restore(removed)
 
         assertEquals(5, removed.quantity)
-        assertIs<AddToCartOutcome.Added>((outcome as Result.Success).data)
+        assertIs<RestoreOutcome.Restored>((outcome as Result.Success).data)
         assertEquals(listOf(latte.id to 5, mocha.id to 1), items().map { it.id to it.quantity })
     }
 
@@ -112,7 +113,7 @@ class RoomCartRepositoryDeviceTest {
 
         val outcome = repository.restore(removed)
 
-        val merged = assertIs<AddToCartOutcome.QuantityIncreased>((outcome as Result.Success).data).item
+        val merged = assertIs<RestoreOutcome.Merged>((outcome as Result.Success).data).item
         assertEquals(newer.id, merged.id)
         assertEquals(5, merged.quantity)
         assertEquals(Money(1_600), merged.unitPrice)
@@ -127,7 +128,9 @@ class RoomCartRepositoryDeviceTest {
 
         val outcome = repository.restore(removed)
 
-        assertEquals(20, assertIs<AddToCartOutcome.CappedAtLimit>((outcome as Result.Success).data).item.quantity)
+        val merged = assertIs<RestoreOutcome.Merged>((outcome as Result.Success).data)
+        assertEquals(true, merged.capped)
+        assertEquals(20, merged.item.quantity)
         assertEquals(1, items().size)
     }
 

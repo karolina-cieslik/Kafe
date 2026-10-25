@@ -20,7 +20,10 @@ import com.karolina.cieslik.kafe.feature.cart.domain.AddToCartOutcome
 import com.karolina.cieslik.kafe.feature.cart.domain.Cart
 import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
 import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.CartSnapshotUpdate
+import com.karolina.cieslik.kafe.feature.cart.domain.DecreaseOutcome
 import com.karolina.cieslik.kafe.feature.cart.domain.NewCartItem
+import com.karolina.cieslik.kafe.feature.cart.domain.RestoreOutcome
 import com.karolina.cieslik.kafe.feature.menu.domain.Category
 import com.karolina.cieslik.kafe.feature.menu.domain.Menu
 import com.karolina.cieslik.kafe.feature.menu.domain.MenuRepository
@@ -201,7 +204,17 @@ private class RecreationFakeCartRepository : CartRepository {
 
     override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
 
-    override suspend fun restore(item: CartItem): Result<AddToCartOutcome, DataError.Local> = error("nieużywane")
+    override suspend fun increase(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
+
+    override suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local> =
+        error("nieużywane")
+
+    override suspend fun restore(item: CartItem): Result<RestoreOutcome, DataError.Local> = error("nieużywane")
+
+    override suspend fun updateSnapshots(updates: List<CartSnapshotUpdate>): EmptyResult<DataError.Local> =
+        error("nieużywane")
+
+    override suspend fun removeUnreadable(): Result<Int, DataError.Local> = error("nieużywane")
 
     override suspend fun clear(): EmptyResult<DataError.Local> = Result.Success(Unit)
 }

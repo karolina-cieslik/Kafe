@@ -75,7 +75,10 @@ class AddToCart(
         details.modifierGroups.flatMap { group ->
             group.options.mapNotNull { option ->
                 quantityOf(group.id, option.id).takeIf { it > 0 }?.let { quantity ->
-                    CartSelection(group.id, option.id, option.name, option.surcharge, quantity)
+                    CartSelection(
+                        group.id, option.id, option.name, option.surcharge, quantity,
+                        isDefault = option.id == group.defaultOptionId,
+                    )
                 }
             }
         }

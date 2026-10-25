@@ -90,7 +90,7 @@ class CartDaoTest {
 
         val write = dao.restore(item)
 
-        assertEquals(CartWrite(item, CartWriteKind.INCREASED), write)
+        assertEquals(CartWrite(item, CartWriteKind.UNCHANGED), write)
         assertEquals(listOf(item), dao.observeItems().first())
     }
 
@@ -107,8 +107,71 @@ class CartDaoTest {
     }
 
     @Test
+    fun parallelIncreasesAreNotLost() = runTest {
+        val item = dao.add(row("latte", quantity = 5)).item
+
+        (1..10).map { async(Dispatchers.IO) { dao.increase(item.id) } }.awaitAll()
+
+        assertEquals(15, dao.observeItems().first().single().quantity)
+    }
+
+    @Test
+    fun increaseAtTwentyKeepsTwenty() = runTest {
+        val item = dao.add(row("latte", quantity = 20)).item
+
+        assertEquals(20, dao.increase(item.id)?.quantity)
+    }
+
+    @Test
+    fun decreaseAtOneRemovesAndReturnsItem() = runTest {
+        val item = dao.add(row("latte")).item
+
+        assertEquals(CartDecrease(item, removed = true), dao.decreaseOrRemove(item.id))
+        assertEquals(emptyList(), dao.observeItems().first())
+    }
+
+    @Test
+    fun parallelDecreasesAtTwoDecreaseOnceAndRemoveOnce() = runTest {
+        val item = dao.add(row("latte", quantity = 2)).item
+
+        val results = (1..2).map { async(Dispatchers.IO) { dao.decreaseOrRemove(item.id) } }.awaitAll()
+
+        assertEquals(listOf(false, true), results.map { it?.removed }.sortedBy { it == true })
+        assertEquals(emptyList(), dao.observeItems().first())
+    }
+
+    @Test
+    fun parallelIncreasesAndSnapshotUpdatesKeepQuantity() = runTest {
+        val item = dao.add(row("latte", quantity = 1)).item
+        val snapshot = CartSnapshotRow(item.id, item.configurationKey, "Latte", "[]", 1_700)
+
+        (1..10).flatMap {
+            listOf(
+                async(Dispatchers.IO) { dao.increase(item.id) },
+                async(Dispatchers.IO) { dao.updateSnapshots(listOf(snapshot)) },
+            )
+        }.awaitAll()
+
+        assertEquals(
+            item.copy(productName = "Latte", unitPriceGrosze = 1_700, quantity = 11),
+            dao.observeItems().first().single(),
+        )
+    }
+
+    @Test
+    fun deleteUnreadableKeepsAllRowsWhenNoneIsReadable() = runTest {
+        dao.add(row("a"))
+        dao.add(row("b"))
+
+        assertNull(dao.deleteUnreadable { false })
+        assertEquals(2, dao.observeItems().first().size)
+    }
+
+    @Test
     fun removeOfMissingItemReturnsNull() = runTest {
         assertNull(dao.remove(42))
+        assertNull(dao.increase(42))
+        assertNull(dao.decreaseOrRemove(42))
         assertEquals(0, dao.updateQuantity(42, 3))
     }
 }

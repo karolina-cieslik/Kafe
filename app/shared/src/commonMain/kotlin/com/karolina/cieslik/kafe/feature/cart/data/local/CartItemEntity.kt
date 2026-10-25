@@ -12,14 +12,15 @@ import kotlinx.serialization.Serializable
  * @property id autoincrement (SQLite AUTOINCREMENT) – id usuniętej pozycji nie jest użyte ponownie, więc
  * „Cofnij” może wstawić ją z powrotem z tym samym id i na to samo miejsce.
  * @property productId id produktu z menu sieci.
- * @property productName nazwa produktu z chwili dodania.
+ * @property productName nazwa produktu z chwili dodania albo ostatniej aktualizacji migawki.
  * @property sizeCode nazwa SizeCode wielkimi literami (S/M/L); wiersz z nieznanym kodem jest pomijany przy odczycie.
  * @property selectionsJson migawka opcji jako JSON – lista [CartSelectionJson]; wiersz z błędnym JSON-em jest
  * pomijany przy odczycie.
  * @property configurationKey klucz konfiguracji z domeny (`cartConfigurationKey`); unikalny, bo identyczna
  * konfiguracja jest zawsze scalana w jedną pozycję.
  * @property quantity liczba sztuk, 1–20.
- * @property unitPriceGrosze cena jednej sztuki z dopłatami w groszach, z chwili ostatniego dodania.
+ * @property unitPriceGrosze cena jednej sztuki z dopłatami w groszach, z chwili ostatniego dodania albo
+ * aktualizacji migawki.
  */
 @Entity(tableName = "cart_items", indices = [Index(value = ["configurationKey"], unique = true)])
 data class CartItemEntity(
@@ -35,13 +36,15 @@ data class CartItemEntity(
 
 /**
  * Element JSON-a w [CartItemEntity.selectionsJson]. Format zapisany w bazie – zmiana pól wymaga migracji danych
- * albo wartości domyślnych dla starych wierszy.
+ * albo wartości domyślnych dla starych wierszy (nowe pole z wartością domyślną nie wymaga migracji).
  *
  * @property groupId id grupy modyfikatorów.
  * @property optionId id opcji.
  * @property optionName nazwa opcji z chwili dodania.
  * @property surchargeGrosze dopłata za jedną sztukę opcji w groszach.
  * @property quantity ilość opcji w jednej sztuce produktu, > 0.
+ * @property isDefault opcja domyślna grupy w chwili dodania; wiersze sprzed dodania pola czytają się jako false
+ * (opcja pokazana w koszyku).
  */
 @Serializable
 data class CartSelectionJson(
@@ -50,4 +53,5 @@ data class CartSelectionJson(
     val optionName: String,
     val surchargeGrosze: Long,
     val quantity: Int,
+    val isDefault: Boolean = false,
 )

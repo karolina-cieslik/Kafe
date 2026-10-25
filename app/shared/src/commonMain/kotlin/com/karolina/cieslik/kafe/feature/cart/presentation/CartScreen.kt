@@ -74,27 +74,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Stabilne tagi ekranu koszyka dla testów UI (Robolectric i instrumentacyjnych). */
-object CartTestTags {
-    /** Wskaźnik w stanie ładowania. */
-    const val LOADING = "cartLoading"
-
-    /** Lista pozycji w stanie treści. */
-    const val LIST = "cartList"
-
-    /** „Wyczyść” w górnym pasku. */
-    const val CLEAR = "cartClear"
-
-    /** Przypięte podsumowanie na dole ekranu. */
-    const val SUMMARY = "cartSummary"
-
-    /** Baner „Nie udało się sprawdzić aktualnych cen”. */
-    const val PRICES_UNVERIFIED = "cartPricesUnverified"
-
-    /** Wiersz pozycji o danym id. */
-    fun item(id: Long) = "cartItem_$id"
-}
-
 /**
  * Koszyk – bezstanowy ekran: cały stan przychodzi w [state], interakcje wychodzą jako [CartAction] przez [onAction].
  *
@@ -265,34 +244,11 @@ private fun CartItemRow(item: CartItemUi, onAction: (CartAction) -> Unit) {
         )
         Spacer(Modifier.width(spacing.m))
         Column(modifier = Modifier.weight(1f)) {
-            Row {
-                Column(modifier = Modifier.weight(1f).padding(top = spacing.xs)) {
-                    Text(
-                        text = item.name,
-                        style = KafeTheme.typography.titleMedium,
-                        color = if (isUnavailable) KafeTheme.colors.onSurfaceVariant else KafeTheme.colors.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = listOfNotNull(item.sizeLabel, item.modifiersLabel).joinToString(separator = " · "),
-                        style = KafeTheme.typography.bodySmall,
-                        color = KafeTheme.colors.onSurfaceVariant,
-                    )
-                }
-                // Przesunięcie o wewnętrzny margines IconButtona: ikona kosza wyrównana do prawej krawędzi cen.
-                IconButton(
-                    onClick = { onAction(CartAction.RemoveClicked(item.id)) },
-                    modifier = Modifier.offset(x = spacing.m),
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_delete),
-                        contentDescription = stringResource(Res.string.cart_item_remove, item.name),
-                        tint = KafeTheme.colors.onSurfaceVariant,
-                        modifier = Modifier.size(spacing.icon - spacing.xxs),
-                    )
-                }
-            }
+            CartItemHeader(
+                item = item,
+                isUnavailable = isUnavailable,
+                onRemove = { onAction(CartAction.RemoveClicked(item.id)) },
+            )
             ItemStatus(status = item.status)
             Spacer(Modifier.height(spacing.s))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -310,6 +266,40 @@ private fun CartItemRow(item: CartItemUi, onAction: (CartAction) -> Unit) {
                 Spacer(Modifier.weight(1f))
                 ItemPrice(item = item, isUnavailable = isUnavailable)
             }
+        }
+    }
+}
+
+/** Nazwa (do 2 linii) z rozmiarem i modyfikatorami pod spodem oraz kosz po prawej. */
+@Composable
+private fun CartItemHeader(item: CartItemUi, isUnavailable: Boolean, onRemove: () -> Unit) {
+    val spacing = KafeTheme.spacing
+    Row {
+        Column(modifier = Modifier.weight(1f).padding(top = spacing.xs)) {
+            Text(
+                text = item.name,
+                style = KafeTheme.typography.titleMedium,
+                color = if (isUnavailable) KafeTheme.colors.onSurfaceVariant else KafeTheme.colors.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = listOfNotNull(item.sizeLabel, item.modifiersLabel).joinToString(separator = " · "),
+                style = KafeTheme.typography.bodySmall,
+                color = KafeTheme.colors.onSurfaceVariant,
+            )
+        }
+        // Przesunięcie o wewnętrzny margines IconButtona: ikona kosza wyrównana do prawej krawędzi cen.
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.offset(x = spacing.m),
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_delete),
+                contentDescription = stringResource(Res.string.cart_item_remove, item.name),
+                tint = KafeTheme.colors.onSurfaceVariant,
+                modifier = Modifier.size(spacing.icon - spacing.xxs),
+            )
         }
     }
 }
@@ -342,9 +332,10 @@ private fun ItemPrice(item: CartItemUi, isUnavailable: Boolean) {
     val priceUpdated = item.status as? CartItemStatusUi.PriceUpdated
     Column(horizontalAlignment = Alignment.End) {
         if (priceUpdated != null) {
-            val previousDescription = stringResource(Res.string.cart_item_previous_price, priceUpdated.previousUnitPriceLabel)
+            val previousPrice = priceUpdated.previousUnitPriceLabel
+            val previousDescription = stringResource(Res.string.cart_item_previous_price, previousPrice)
             Text(
-                text = stringResource(Res.string.cart_item_unit_price, priceUpdated.previousUnitPriceLabel),
+                text = stringResource(Res.string.cart_item_unit_price, previousPrice),
                 style = KafeTheme.typography.bodySmall,
                 color = KafeTheme.colors.onSurfaceVariant,
                 textDecoration = TextDecoration.LineThrough,

@@ -19,7 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-/** CartScreen: stany, oznaczenia pozycji, stepper i kosz, podsumowanie z odmianą liczby produktów i dialog wyczyszczenia. */
+/** CartScreen: stany, oznaczenia pozycji, stepper i kosz, podsumowanie z odmianą liczby i dialog wyczyszczenia. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [ROBOLECTRIC_SDK], qualifiers = "pl-w411dp-h891dp")
 class CartScreenTest {

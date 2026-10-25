@@ -57,6 +57,6 @@ fun KafeInfoBanner(
 @Composable
 private fun KafeInfoBannerPreview() {
     KafePreview {
-        KafeInfoBanner(text = "Nie udało się sprawdzić aktualnych cen. Pokazujemy ceny z chwili dodania do koszyka.")
+        KafeInfoBanner(text = "Nie udało się sprawdzić aktualnych cen. Pokazujemy ostatnio zapisane ceny.")
     }
 }

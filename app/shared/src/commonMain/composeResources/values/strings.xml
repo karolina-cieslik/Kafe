@@ -52,7 +52,7 @@
     <string name="cart_clear_dialog_title">Wyczyścić koszyk?</string>
     <string name="cart_clear_dialog_message">Czy na pewno usunąć wszystkie pozycje?</string>
     <string name="cart_pickup_at">Odbiór w: %1$s</string>
-    <string name="cart_prices_unverified">Nie udało się sprawdzić aktualnych cen. Pokazujemy ceny z chwili dodania do koszyka.</string>
+    <string name="cart_prices_unverified">Nie udało się sprawdzić aktualnych cen. Pokazujemy ostatnio zapisane ceny.</string>
     <string name="cart_item_unavailable">Niedostępne – usuń, aby kontynuować</string>
     <string name="cart_item_price_updated">Cena została zaktualizowana</string>
     <string name="cart_item_previous_price">Poprzednia cena: %1$s</string>

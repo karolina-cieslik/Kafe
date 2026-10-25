@@ -1,7 +1,6 @@
 package com.karolina.cieslik.kafe.feature.cart.domain
 
 import com.karolina.cieslik.kafe.core.domain.DataError
-import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.menu.domain.ModifierOption
@@ -11,8 +10,6 @@ import com.karolina.cieslik.kafe.feature.product.domain.PriceCalculator
 import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 import com.karolina.cieslik.kafe.feature.product.domain.ProductTestData
 import com.karolina.cieslik.kafe.feature.product.domain.ProductTestData.details
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +19,7 @@ import kotlin.test.assertTrue
 /** Przypadki brzegowe AddToCart: scalanie po kluczu, migawka ceny i opcji, walidacja, limity, błędy zapisu. */
 class AddToCartEdgeTest {
 
-    private val repository = RecordingCartRepository()
+    private val repository = FakeCartRepository()
     private val addToCart = AddToCart(repository, PriceCalculator())
 
     private fun configuration(
@@ -193,7 +190,7 @@ class AddToCartEdgeTest {
     @Test
     fun everyLocalErrorIsReturnedAsStorageError() = runTest {
         DataError.Local.entries.forEach { error ->
-            repository.result = Result.Failure(error)
+            repository.addResult = Result.Failure(error)
 
             assertEquals(Result.Failure(AddToCartError.Storage(error)), addToCart(details(), configuration()))
         }
@@ -202,7 +199,7 @@ class AddToCartEdgeTest {
     @Test
     fun quantityIncreasedOutcomeIsPassedThrough() = runTest {
         val merged = AddToCartOutcome.QuantityIncreased(cartItem(quantity = 3))
-        repository.result = Result.Success(merged)
+        repository.addResult = Result.Success(merged)
 
         assertEquals(Result.Success(merged), addToCart(details(), configuration()))
     }
@@ -227,36 +224,4 @@ class AddToCartEdgeTest {
         quantity = quantity,
         unitPrice = Money(1_600),
     )
-
-    private inner class RecordingCartRepository : CartRepository {
-        val added = mutableListOf<NewCartItem>()
-        var result: Result<AddToCartOutcome, DataError.Local> =
-            Result.Success(AddToCartOutcome.Added(cartItem(quantity = 1)))
-
-        override fun observeCart(): Flow<Cart> = flowOf(Cart.EMPTY)
-
-        override suspend fun add(item: NewCartItem): Result<AddToCartOutcome, DataError.Local> {
-            added += item
-            return result
-        }
-
-        override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
-
-        override suspend fun increase(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
-
-        override suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun restore(item: CartItem): Result<RestoreOutcome, DataError.Local> = error("nieużywane")
-
-        override suspend fun updateSnapshots(updates: List<CartSnapshotUpdate>): EmptyResult<DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun removeUnreadable(): Result<Int, DataError.Local> = error("nieużywane")
-
-        override suspend fun clear(): EmptyResult<DataError.Local> = error("nieużywane")
-    }
 }

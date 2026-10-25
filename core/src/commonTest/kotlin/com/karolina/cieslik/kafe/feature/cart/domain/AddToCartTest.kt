@@ -1,7 +1,6 @@
 package com.karolina.cieslik.kafe.feature.cart.domain
 
 import com.karolina.cieslik.kafe.core.domain.DataError
-import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
@@ -11,8 +10,6 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
 import com.karolina.cieslik.kafe.feature.product.domain.details
 import com.karolina.cieslik.kafe.feature.product.domain.milkGroup
 import com.karolina.cieslik.kafe.feature.product.domain.shotsGroup
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +19,7 @@ import kotlin.test.assertTrue
 /** Walidacja, cena jednej sztuki i zapis pozycji przy dodaniu do koszyka. */
 class AddToCartTest {
 
-    private val repository = RecordingCartRepository()
+    private val repository = FakeCartRepository()
     private val addToCart = AddToCart(repository, PriceCalculator())
 
     private fun configuration(
@@ -60,7 +57,7 @@ class AddToCartTest {
     @Test
     fun outcomeFromRepositoryIsReturned() = runTest {
         val capped = AddToCartOutcome.CappedAtLimit(cartItem(quantity = ProductConfiguration.MAX_QUANTITY))
-        repository.result = Result.Success(capped)
+        repository.addResult = Result.Success(capped)
 
         val result = addToCart(details(), configuration())
 
@@ -87,7 +84,7 @@ class AddToCartTest {
 
     @Test
     fun storageErrorIsWrapped() = runTest {
-        repository.result = Result.Failure(DataError.Local.DISK_FULL)
+        repository.addResult = Result.Failure(DataError.Local.DISK_FULL)
 
         val result = addToCart(details(), configuration())
 
@@ -149,36 +146,4 @@ class AddToCartTest {
         quantity = quantity,
         unitPrice = Money(1_400),
     )
-
-    private inner class RecordingCartRepository : CartRepository {
-        val added = mutableListOf<NewCartItem>()
-        var result: Result<AddToCartOutcome, DataError.Local> =
-            Result.Success(AddToCartOutcome.Added(cartItem(quantity = 1)))
-
-        override fun observeCart(): Flow<Cart> = flowOf(Cart.EMPTY)
-
-        override suspend fun add(item: NewCartItem): Result<AddToCartOutcome, DataError.Local> {
-            added += item
-            return result
-        }
-
-        override suspend fun setQuantity(itemId: Long, quantity: Int): EmptyResult<DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun remove(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
-
-        override suspend fun increase(itemId: Long): Result<CartItem, DataError.Local> = error("nieużywane")
-
-        override suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun restore(item: CartItem): Result<RestoreOutcome, DataError.Local> = error("nieużywane")
-
-        override suspend fun updateSnapshots(updates: List<CartSnapshotUpdate>): EmptyResult<DataError.Local> =
-            error("nieużywane")
-
-        override suspend fun removeUnreadable(): Result<Int, DataError.Local> = error("nieużywane")
-
-        override suspend fun clear(): EmptyResult<DataError.Local> = error("nieużywane")
-    }
 }

@@ -3,6 +3,7 @@ package com.karolina.cieslik.kafe.feature.menu.presentation
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.assertContentDescriptionEquals
@@ -289,4 +290,34 @@ class MenuScreenTest {
     }
 
     private fun hasClickAction() = SemanticsMatcher.keyIsDefined(SemanticsActions.OnClick)
+
+    @Test
+    fun headerCartIconDescribesItemCount() {
+        setScreen(content.copy(cartItemCount = 3))
+
+        composeRule.onNodeWithTag(MenuTestTags.CART)
+            .assertIsDisplayed()
+            .assertContentDescriptionEquals("Koszyk, 3 sztuki")
+    }
+
+    @Test
+    fun headerCartIconWithoutItemsIsDescribedAsEmpty() {
+        setScreen(content)
+
+        composeRule.onNodeWithTag(MenuTestTags.CART).assertContentDescriptionEquals("Koszyk jest pusty")
+    }
+
+    @Test
+    fun loadingHeaderShowsEmptyCartIcon() {
+        setScreen(MenuUiState.Loading)
+
+        composeRule.onNodeWithTag(MenuTestTags.CART).assertContentDescriptionEquals("Koszyk jest pusty")
+    }
+
+    @Test
+    fun headerCartIconHasNoClickActionYet() {
+        setScreen(content.copy(cartItemCount = 3))
+
+        composeRule.onNodeWithTag(MenuTestTags.CART).assert(hasClickAction().not())
+    }
 }

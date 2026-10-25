@@ -156,6 +156,9 @@ sealed interface ProductDetailAction {
     /** Strzałka wstecz. */
     data object BackClicked : ProductDetailAction
 
+    /** „Zobacz koszyk” w snackbarze po dodaniu do koszyka. */
+    data object ViewCartClicked : ProductDetailAction
+
     /** „Spróbuj ponownie” na ekranie błędu. */
     data object Retry : ProductDetailAction
 }
@@ -176,4 +179,7 @@ sealed interface ProductDetailEvent {
 
     /** Powrót do poprzedniego ekranu. */
     data object NavigateBack : ProductDetailEvent
+
+    /** Przejście do koszyka. */
+    data object NavigateToCart : ProductDetailEvent
 }

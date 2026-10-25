@@ -22,10 +22,15 @@ sealed interface KafeRoute {
     /** Wybór lokalu. */
     @Serializable
     data object CafePicker : KafeRoute
+
+    /** Koszyk – jeden w aplikacji, sprawdzany z menu wybranego lokalu. */
+    @Serializable
+    data object Cart : KafeRoute
 }
 
 /** Cel nawigacji dla zdarzenia z menu. */
 fun MenuEvent.toRoute(): KafeRoute = when (this) {
     is MenuEvent.NavigateToProduct -> KafeRoute.ProductDetail(productId)
     MenuEvent.NavigateToCafePicker -> KafeRoute.CafePicker
+    MenuEvent.NavigateToCart -> KafeRoute.Cart
 }

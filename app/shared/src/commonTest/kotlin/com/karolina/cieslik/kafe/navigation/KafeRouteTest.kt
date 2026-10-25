@@ -14,6 +14,11 @@ class KafeRouteTest {
     }
 
     @Test
+    fun cartIconNavigatesToCart() {
+        assertEquals(KafeRoute.Cart, MenuEvent.NavigateToCart.toRoute())
+    }
+
+    @Test
     fun changeCafeNavigatesToCafePicker() {
         assertEquals(KafeRoute.CafePicker, MenuEvent.NavigateToCafePicker.toRoute())
     }

@@ -35,8 +35,9 @@ class RefreshCartSnapshots(
      * różnią się od menu. Pozycji niedostępnych nie zmienia (zostaje cała stara migawka). Bez zmian albo bez
      * zapamiętanego menu – bez zapisu.
      *
-     * @return zmiany cen (tylko pozycje z inną ceną; sama zmiana nazwy nie trafia na listę); [DataError.Local]
-     * przy błędzie zapisu – wtedy nic nie jest zapisane.
+     * @return zmiany cen (tylko pozycje z inną ceną; sama zmiana nazwy nie trafia na listę). Pozycja usunięta
+     * między odczytem a zapisem też może się tu znaleźć (zapis ją pomija) – wołający pokazuje zmiany tylko dla
+     * pozycji obecnych w koszyku. [DataError.Local] przy błędzie zapisu – wtedy nic nie jest zapisane.
      */
     suspend operator fun invoke(cafeId: String): Result<List<PriceUpdate>, DataError.Local> {
         val menu = menuRepository.observeMenu(cafeId).first() ?: return Result.Success(emptyList())

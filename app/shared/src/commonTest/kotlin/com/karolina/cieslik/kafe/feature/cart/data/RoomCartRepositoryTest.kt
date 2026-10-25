@@ -54,13 +54,19 @@ class RoomCartRepositoryTest {
     private fun Result<RestoreOutcome, DataError.Local>.restored(): RestoreOutcome =
         assertIs<Result.Success<RestoreOutcome>>(this).data
 
-    private fun snapshotOf(item: CartItem, name: String, price: Money, oatName: String, oatSurcharge: Money) =
-        CartSnapshotUpdate(
-            item = item,
-            productName = name,
-            unitPrice = price,
-            options = mapOf(OptionRef("milk", "oat") to OptionSnapshot(oatName, oatSurcharge)),
-        )
+    private fun snapshotOf(
+        item: CartItem,
+        name: String,
+        price: Money,
+        oatName: String,
+        oatSurcharge: Money,
+        oatIsDefault: Boolean = false,
+    ) = CartSnapshotUpdate(
+        item = item,
+        productName = name,
+        unitPrice = price,
+        options = mapOf(OptionRef("milk", "oat") to OptionSnapshot(oatName, oatSurcharge, oatIsDefault)),
+    )
 
     @Test
     fun emptyCartEmitsEmpty() = runTest {
@@ -254,10 +260,20 @@ class RoomCartRepositoryTest {
     }
 
     @Test
+    fun updateSnapshotsTakesDefaultFlagFromSnapshotNotFromItem() = runTest {
+        val item = addedItem(newItem())
+        val update = snapshotOf(item, "Latte", Money(1_600), "Owsiane", Money(200), oatIsDefault = true)
+
+        repository.updateSnapshots(listOf(update))
+
+        assertEquals(listOf(true), repository.observeCart().first().items.single().selections.map { it.isDefault })
+    }
+
+    @Test
     fun updateSnapshotsWithDifferentOptionsIsRejectedWithoutWriting() = runTest {
         val item = addedItem(newItem())
         val wrong = snapshotOf(item, "Latte", Money(1_700), "Owsiane", Money(200))
-            .copy(options = mapOf(OptionRef("milk", "soy") to OptionSnapshot("Sojowe", Money(200))))
+            .copy(options = mapOf(OptionRef("milk", "soy") to OptionSnapshot("Sojowe", Money(200), false)))
 
         assertFailsWith<IllegalArgumentException> { repository.updateSnapshots(listOf(wrong)) }
         assertEquals(listOf(item), repository.observeCart().first().items)

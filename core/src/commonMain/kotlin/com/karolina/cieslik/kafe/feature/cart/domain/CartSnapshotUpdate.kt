@@ -6,11 +6,12 @@ import com.karolina.cieslik.kafe.core.domain.Money
  * Nowa migawka nazw i cen jednej pozycji z aktualnego menu ([CartRepository.updateSnapshots]). Zmienia tylko
  * nazwy i kwoty – rozmiar, zbiór opcji i ich ilości zostają, więc klucz konfiguracji też.
  *
- * @property item pozycja z koszyka, której migawka jest aktualizowana; ilości opcji i [CartSelection.isDefault]
- * nowej migawki są brane z niej, nie z bieżącego wiersza w bazie.
+ * @property item pozycja z koszyka, której migawka jest aktualizowana; ilości opcji nowej migawki są brane z niej
+ * (wynikają z klucza konfiguracji, więc są te same co w bazie).
  * @property productName aktualna nazwa produktu.
  * @property unitPrice aktualna cena jednej sztuki z dopłatami.
- * @property options aktualne nazwy i dopłaty – klucze to dokładnie opcje z [CartItem.selections].
+ * @property options aktualne nazwy, dopłaty i flagi opcji domyślnej – klucze to dokładnie opcje z
+ * [CartItem.selections].
  */
 data class CartSnapshotUpdate(
     val item: CartItem,
@@ -28,9 +29,10 @@ data class CartSnapshotUpdate(
 data class OptionRef(val groupId: String, val optionId: String)
 
 /**
- * Aktualna nazwa i dopłata opcji.
+ * Aktualna nazwa, dopłata i rola opcji w menu.
  *
  * @property optionName nazwa opcji.
  * @property surcharge dopłata za jedną sztukę opcji.
+ * @property isDefault opcja jest teraz domyślną opcją swojej grupy ([CartSelection.isDefault]).
  */
-data class OptionSnapshot(val optionName: String, val surcharge: Money)
+data class OptionSnapshot(val optionName: String, val surcharge: Money, val isDefault: Boolean)

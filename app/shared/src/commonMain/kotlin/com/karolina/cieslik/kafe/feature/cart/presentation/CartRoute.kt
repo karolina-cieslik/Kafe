@@ -9,6 +9,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -33,6 +34,10 @@ fun CartRoute(
     val snackbarScope = rememberCoroutineScope()
     val currentOnNavigateToMenu by rememberUpdatedState(onNavigateToMenu)
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
+    // Nawigacja tylko z ekranu w stanie RESUMED: po pierwszym „wstecz” wpis koszyka schodzi do STARTED na czas
+    // animacji wyjścia, a drugie szybkie stuknięcie zdjęłoby też ekran pod spodem (np. produkt).
+    val navigateToMenu = dropUnlessResumed { currentOnNavigateToMenu() }
+    val navigateBack = dropUnlessResumed { currentOnNavigateBack() }
 
     // Zbieranie eventów startuje raz na instancję ViewModelu – zmiana lambd nawigacji go nie restartuje,
     // bo wywołujemy je przez rememberUpdatedState (zawsze najnowsze).
@@ -45,8 +50,8 @@ fun CartRoute(
                     snackbarHostState.showCartEventSnackbar(event) { viewModel.onAction(CartAction.UndoClicked) }
                 }
                 CartEvent.UndoExpired -> snackbarHostState.dismissUndoSnackbar()
-                CartEvent.NavigateToMenu -> currentOnNavigateToMenu()
-                CartEvent.NavigateBack -> currentOnNavigateBack()
+                CartEvent.NavigateToMenu -> navigateToMenu()
+                CartEvent.NavigateBack -> navigateBack()
             }
         }
     }

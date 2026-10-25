@@ -1,12 +1,8 @@
 package com.karolina.cieslik.kafe.feature.menu.domain
 
 import app.cash.turbine.test
-import com.karolina.cieslik.kafe.core.domain.DataError
-import com.karolina.cieslik.kafe.core.domain.EmptyResult
 import com.karolina.cieslik.kafe.core.domain.Money
-import com.karolina.cieslik.kafe.core.domain.Result
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -286,16 +282,4 @@ class GetMenuForCafeTest {
     fun basePriceIsNullWithoutSizes() {
         assertNull(product("broken", "classic", sizes = emptyList()).basePrice)
     }
-}
-
-private class FakeMenuRepository(menus: Map<String, Menu?>) : MenuRepository {
-    private val flows = menus.mapValues { (_, menu) -> MutableStateFlow(menu) }.toMutableMap()
-
-    fun emit(cafeId: String, menu: Menu?) {
-        flows.getOrPut(cafeId) { MutableStateFlow(null) }.value = menu
-    }
-
-    override fun observeMenu(cafeId: String): Flow<Menu?> = flows.getOrPut(cafeId) { MutableStateFlow(null) }
-
-    override suspend fun refresh(cafeId: String): EmptyResult<DataError> = Result.Success(Unit)
 }

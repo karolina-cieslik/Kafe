@@ -134,7 +134,8 @@ private fun CartItemEntity?.toFoundItem(): Result<CartItem, DataError.Local> = w
 }
 
 /**
- * Wiersz z nową migawką: ten sam zbiór opcji i ilości (więc klucz bez zmian), nowe nazwy i dopłaty.
+ * Wiersz z nową migawką: ten sam zbiór opcji i ilości (więc klucz bez zmian), nowe nazwy, dopłaty i flagi
+ * opcji domyślnej.
  *
  * @throws IllegalArgumentException gdy opcje aktualizacji nie są dokładnie opcjami pozycji.
  */
@@ -145,7 +146,11 @@ private fun CartSnapshotUpdate.toRow(): CartSnapshotRow {
     }
     val selections = item.selections.map { selection ->
         val snapshot = options.getValue(OptionRef(selection.groupId, selection.optionId))
-        selection.copy(optionName = snapshot.optionName, surcharge = snapshot.surcharge)
+        selection.copy(
+            optionName = snapshot.optionName,
+            surcharge = snapshot.surcharge,
+            isDefault = snapshot.isDefault,
+        )
     }
     return CartSnapshotRow(item.id, item.configurationKey, productName, selections.toJson(), unitPrice.grosze)
 }

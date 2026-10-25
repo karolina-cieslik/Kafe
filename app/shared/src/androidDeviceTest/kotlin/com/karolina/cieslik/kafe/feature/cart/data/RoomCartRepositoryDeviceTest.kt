@@ -96,7 +96,7 @@ class RoomCartRepositoryDeviceTest {
         productName = name,
         unitPrice = Money(1_700),
         options = item.selections.associate {
-            OptionRef(it.groupId, it.optionId) to OptionSnapshot("${it.optionName} $name", Money(50))
+            OptionRef(it.groupId, it.optionId) to OptionSnapshot("${it.optionName} $name", Money(50), it.isDefault)
         },
     )
 

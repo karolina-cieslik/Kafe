@@ -12,11 +12,12 @@ import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
  *
  * @property id identyfikator pozycji nadany przez bazę; stały także po „Cofnij”.
  * @property productId id produktu z menu sieci.
- * @property productName nazwa produktu z chwili dodania.
+ * @property productName nazwa produktu z chwili dodania albo ostatniej aktualizacji migawki.
  * @property size wybrany rozmiar.
  * @property selections migawka wybranych opcji, w kolejności grup i opcji produktu.
  * @property quantity liczba sztuk, od [ProductConfiguration.MIN_QUANTITY] do [ProductConfiguration.MAX_QUANTITY].
- * @property unitPrice cena jednej sztuki z dopłatami z chwili dodania (przy scaleniu – z ostatniego dodania).
+ * @property unitPrice cena jednej sztuki z dopłatami z chwili dodania (przy scaleniu – z ostatniego dodania) albo
+ * ostatniej aktualizacji migawki.
  */
 data class CartItem(
     val id: Long,
@@ -77,15 +78,16 @@ data class NewCartItem(
 }
 
 /**
- * Migawka wybranej opcji z chwili dodania – ekran koszyka opisze pozycję także wtedy, gdy opcja zniknie z menu.
+ * Migawka wybranej opcji z chwili dodania albo ostatniej aktualizacji migawki (po odświeżeniu menu) – ekran
+ * koszyka opisze pozycję także wtedy, gdy opcja zniknie z menu.
  *
  * @property groupId id grupy modyfikatorów.
  * @property optionId id opcji w grupie.
- * @property optionName nazwa opcji w chwili dodania.
- * @property surcharge dopłata za jedną sztukę opcji w chwili dodania.
+ * @property optionName nazwa opcji z chwili dodania albo ostatniej aktualizacji migawki.
+ * @property surcharge dopłata za jedną sztukę opcji z chwili dodania albo ostatniej aktualizacji migawki.
  * @property quantity ilość opcji w jednej sztuce produktu, > 0 (dla SINGLE zawsze 1).
- * @property isDefault opcja była domyślną opcją grupy w chwili dodania – koszyk nie wypisuje domyślnych opcji
- * bez dopłaty (np. „Krowie”). Nie wchodzi do klucza konfiguracji.
+ * @property isDefault opcja domyślna grupy według menu z chwili dodania albo ostatniego odświeżenia – koszyk nie
+ * wypisuje domyślnych opcji bez dopłaty (np. „Krowie”). Nie wchodzi do klucza konfiguracji.
  */
 data class CartSelection(
     val groupId: String,

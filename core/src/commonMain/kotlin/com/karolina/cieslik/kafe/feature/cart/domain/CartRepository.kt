@@ -50,7 +50,7 @@ interface CartRepository {
      * gubią i nie przekroczą limitu.
      *
      * @return pozycję po zmianie (przy 20 – bez zmian); [DataError.Local.NOT_FOUND], gdy jej nie ma;
-     * [DataError.Local.UNKNOWN], gdy wiersza nie da się odczytać.
+     * [DataError.Local.UNKNOWN], gdy wiersza nie da się odczytać – zmiana jest wtedy już zapisana w bazie.
      */
     suspend fun increase(itemId: Long): Result<CartItem, DataError.Local>
 
@@ -60,7 +60,7 @@ interface CartRepository {
      *
      * @return [DecreaseOutcome.Decreased] albo [DecreaseOutcome.Removed] (pozycja do „Cofnij” przez [restore]);
      * [DataError.Local.NOT_FOUND], gdy jej nie ma; [DataError.Local.UNKNOWN], gdy wiersza nie da się odczytać
-     * (przy ilości 1 jest już wtedy usunięty).
+     * – zmiana jest wtedy już zapisana (przy ilości 1 wiersz jest usunięty).
      */
     suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local>
 
@@ -71,7 +71,8 @@ interface CartRepository {
      * „Cofnij”), nic się nie zmienia – ilość się nie podwaja.
      *
      * @return [RestoreOutcome.Restored], [RestoreOutcome.Merged] albo [RestoreOutcome.AlreadyInCart];
-     * [DataError.Local] przy błędzie bazy.
+     * [DataError.Local] przy błędzie bazy; [DataError.Local.UNKNOWN], gdy zapisanego wiersza nie da się
+     * odczytać – zapis jest wtedy już wykonany.
      */
     suspend fun restore(item: CartItem): Result<RestoreOutcome, DataError.Local>
 

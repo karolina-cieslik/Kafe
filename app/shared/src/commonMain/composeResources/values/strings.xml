@@ -29,6 +29,7 @@
     <string name="ds_total_label">Razem</string>
     <string name="ds_read_more">Czytaj więcej</string>
     <string name="ds_read_less">Zwiń</string>
+    <string name="ds_cancel">Anuluj</string>
     <string name="ds_cart_empty">Koszyk jest pusty</string>
     <plurals name="ds_cart_item_count">
         <item quantity="one">Koszyk, %1$d sztuka</item>

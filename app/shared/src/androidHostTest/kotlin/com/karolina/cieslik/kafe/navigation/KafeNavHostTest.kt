@@ -17,6 +17,7 @@ import androidx.navigation.toRoute
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.karolina.cieslik.kafe.core.domain.DataError
 import com.karolina.cieslik.kafe.core.domain.EmptyResult
+import com.karolina.cieslik.kafe.core.domain.Money
 import com.karolina.cieslik.kafe.core.domain.Result
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import com.karolina.cieslik.kafe.core.testing.ROBOLECTRIC_SDK
@@ -26,7 +27,13 @@ import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerTestTags
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
 import com.karolina.cieslik.kafe.feature.cart.FakeCartRepository
 import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
+import com.karolina.cieslik.kafe.feature.cart.domain.Cart
+import com.karolina.cieslik.kafe.feature.cart.domain.CartItem
+import com.karolina.cieslik.kafe.feature.cart.domain.ObserveCheckedCart
+import com.karolina.cieslik.kafe.feature.cart.domain.RefreshCartSnapshots
+import com.karolina.cieslik.kafe.feature.cart.presentation.CartViewModel
 import com.karolina.cieslik.kafe.feature.menu.domain.GetMenuForCafe
+import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import com.karolina.cieslik.kafe.feature.menu.presentation.FakeMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuTestTags
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuViewModel
@@ -78,6 +85,7 @@ class KafeNavHostTest {
         ),
     )
     private val cafes = NavFakeCafeRepository(listOf(krakow, gdansk))
+    private val cart = FakeCartRepository()
 
     /** Poniedziałek 10:00 czasu warszawskiego – stały zegar dla „otwarte teraz”. */
     private val fixedClock = object : Clock {
@@ -102,6 +110,15 @@ class KafeNavHostTest {
                         )
                     }
                     viewModel { CafePickerViewModel(cafes, fixedClock, TimeZone.of("Europe/Warsaw")) }
+                    viewModel {
+                        CartViewModel(
+                            cafeRepository = cafes,
+                            menuRepository = menus,
+                            cartRepository = cart,
+                            observeCheckedCart = ObserveCheckedCart(cart, menus, PriceCalculator()),
+                            refreshCartSnapshots = RefreshCartSnapshots(cart, menus, PriceCalculator()),
+                        )
+                    }
                 },
             )
         }
@@ -282,6 +299,76 @@ class KafeNavHostTest {
         composeRule.onNodeWithTag(CafePickerTestTags.WELCOME).assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Wstecz").assertDoesNotExist()
         assertCurrentRoute<KafeRoute.CafePicker>()
+    }
+
+    private fun openCart() {
+        composeRule.runOnUiThread { navController.navigate(KafeRoute.Cart) { launchSingleTop = true } }
+        composeRule.waitForIdle()
+    }
+
+    @Test
+    fun cartOpenedFromMenuShowsEmptyCartAndBackArrowReturnsToMenu() {
+        setNavHost()
+
+        openCart()
+
+        assertCurrentRoute<KafeRoute.Cart>()
+        composeRule.onNodeWithText("Twój koszyk jest pusty").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Wstecz").performClick()
+        composeRule.waitForIdle()
+        assertCurrentRoute<KafeRoute.Menu>()
+        assertNull(navController.previousBackStackEntry)
+    }
+
+    @Test
+    fun systemBackFromCartOpenedOverProductReturnsToProduct() {
+        setNavHost()
+        click(MenuTestTags.product("espresso"))
+        openCart()
+
+        pressSystemBack()
+
+        assertCurrentRoute<KafeRoute.ProductDetail>()
+    }
+
+    @Test
+    fun goToMenuFromCartOpenedOverProductPopsBackToSingleMenuEntry() {
+        setNavHost()
+        click(MenuTestTags.product("espresso"))
+        openCart()
+
+        composeRule.onNodeWithText("Przejdź do menu").performClick()
+        composeRule.waitForIdle()
+
+        assertCurrentRoute<KafeRoute.Menu>()
+        assertNull(navController.previousBackStackEntry)
+    }
+
+    @Test
+    fun openingCartTwiceKeepsSingleCartEntry() {
+        setNavHost()
+
+        openCart()
+        openCart()
+        composeRule.onNodeWithContentDescription("Wstecz").performClick()
+        composeRule.waitForIdle()
+
+        assertCurrentRoute<KafeRoute.Menu>()
+    }
+
+    @Test
+    fun removingItemInCartShowsUndoAndUndoRestoresIt() {
+        cart.cart.value = Cart(listOf(CartItem(1, "espresso", "Espresso", SizeCode.S, emptyList(), 1, Money(1_200))))
+        setNavHost()
+        openCart()
+
+        composeRule.onNodeWithContentDescription("Usuń: Espresso").performClick()
+        waitUntilDisplayed("Usunięto: Espresso")
+        composeRule.onNodeWithText("Twój koszyk jest pusty").assertIsDisplayed()
+        composeRule.onNodeWithText("Cofnij").performClick()
+
+        waitUntilDisplayed("Espresso")
+        assertEquals(listOf(1L), cart.cart.value.items.map { it.id })
     }
 
     private fun hasClickLabel(label: String) = SemanticsMatcher("onClickLabel = $label") { node ->

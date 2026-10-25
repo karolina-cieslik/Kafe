@@ -6,18 +6,12 @@
     <ID>LongMethod:KafeIntro.kt:@Composable fun KafeIntro</ID>
     <ID>LongMethod:ProductCard.kt:@Composable fun ProductCard</ID>
     <ID>LongMethod:ProductDetailScreen.kt:@Composable private fun ProductDetailContent</ID>
-    <ID>MagicNumber:CafeMappers.kt:60</ID>
-    <ID>MagicNumber:CafePickerViewModel.kt:60</ID>
     <ID>MagicNumber:KafeIntro.kt:0.5f</ID>
     <ID>MagicNumber:KafeIntro.kt:0.65f</ID>
     <ID>MagicNumber:KafeIntro.kt:0.7f</ID>
     <ID>MagicNumber:KafeIntro.kt:0.85f</ID>
     <ID>MagicNumber:ProductCard.kt:0.5f</ID>
     <ID>MagicNumber:ProductCard.kt:0.7f</ID>
-    <ID>MagicNumber:SafeCall.kt:401</ID>
-    <ID>MagicNumber:SafeCall.kt:404</ID>
-    <ID>MagicNumber:SafeCall.kt:408</ID>
-    <ID>MagicNumber:SafeCall.kt:429</ID>
     <ID>MagicNumber:SeedMenuRemoteDataSource.kt:SeedMenuRemoteDataSource$4</ID>
     <ID>MagicNumber:SizeSelector.kt:0.4f</ID>
     <ID>MatchingDeclarationName:AppStartContract.kt:AppStartState</ID>
@@ -40,13 +34,6 @@
     <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$private val dluga = CafeUi("dluga", "Kafe Długa", "ul. Długa 45, Gdańsk", "Dziś 8:00–19:00", isOpenNow = true, isSelected = false)</ID>
     <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$private val rynek = CafeUi("rynek", "Kafe Rynek", "Rynek Główny 12, Kraków", "Dziś zamknięte", isOpenNow = false, isSelected = true)</ID>
     <ID>MaxLineLength:CafePickerScreenTest.kt:CafePickerScreenTest$val top = { id: String -&gt; composeRule.onNodeWithTag(CafePickerTestTags.cafe(id)).fetchSemanticsNode().boundsInRoot.top }</ID>
-    <ID>MaxLineLength:CafePickerViewModel.kt:/** Etykieta dnia bez godzin otwarcia. Teksty docelowo w zasobach stringów (composeResources), gdy dojdzie lokalizacja. */</ID>
-    <ID>MaxLineLength:CafePickerViewModel.kt:if</ID>
-    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$/** „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku i spójność etykiety godzin ze statusem. */</ID>
-    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")</ID>
-    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:CafePickerViewModelEdgeTest$val</ID>
-    <ID>MaxLineLength:CafePickerViewModelEdgeTest.kt:StaticCafeRepository$override fun observeSelectedCafe: Flow&lt;Cafe?&gt;</ID>
-    <ID>MaxLineLength:CafePickerViewModelTest.kt:CafePickerViewModelTest$fun</ID>
     <ID>MaxLineLength:CafeRemoteDataSource.kt:SeedCafes$listOf("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY").map { OpeningHoursDto(it, weekdays.first, weekdays.second) }</ID>
     <ID>MaxLineLength:DataStoreSelectedCafeStoreTest.kt:DataStoreSelectedCafeStoreTest$val dataStore: DataStore&lt;Preferences&gt; = PreferenceDataStoreFactory.createWithPath(scope = scope) { file.toOkioPath() }</ID>
     <ID>MaxLineLength:FeatureModulesTest.kt:FeatureModulesTest.&lt;no name provided&gt;$override suspend</ID>
@@ -110,17 +97,7 @@
     <ID>NewLineAtEndOfFile:SharedCommonTest.kt:com.karolina.cieslik.kafe.SharedCommonTest.kt</ID>
     <ID>NewLineAtEndOfFile:SharedLogicAndroidHostTest.kt:com.karolina.cieslik.kafe.SharedLogicAndroidHostTest.kt</ID>
     <ID>NewLineAtEndOfFile:SharedLogicIOSTest.kt:com.karolina.cieslik.kafe.SharedLogicIOSTest.kt</ID>
-    <ID>SwallowedException:SafeCall.kt:e: ContentConvertException</ID>
-    <ID>SwallowedException:SafeCall.kt:e: NoTransformationFoundException</ID>
-    <ID>SwallowedException:SafeCall.kt:e: SerializationException</ID>
-    <ID>SwallowedException:SelectedCafeStore.kt:DataStoreSelectedCafeStore$e: IOException</ID>
-    <ID>TooGenericExceptionCaught:SafeCall.kt:e: Exception</ID>
-    <ID>TooGenericExceptionCaught:SafeDbCall.kt:e: Exception</ID>
     <ID>TooManyFunctions:MenuDao.kt:MenuDao</ID>
     <ID>TooManyFunctions:MenuScreen.kt:com.karolina.cieslik.kafe.feature.menu.presentation.MenuScreen.kt</ID>
-    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionQuantityChanged$val groupId: String</ID>
-    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionQuantityChanged$val optionId: String</ID>
-    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionSelected$val groupId: String</ID>
-    <ID>UndocumentedPublicProperty:ProductDetailContract.kt:ProductDetailAction.OptionSelected$val optionId: String</ID>
   </CurrentIssues>
 </SmellBaseline>

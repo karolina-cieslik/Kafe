@@ -8,6 +8,7 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.ContentConvertException
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.CancellationException
@@ -18,7 +19,9 @@ import kotlinx.serialization.SerializationException
  *
  * Wyjątki (brak zasięgu, timeout) mapuje na [DataError.Remote], a kody HTTP – przez [responseToResult].
  * CancellationException jest zawsze przepuszczany dalej, żeby nie łamać structured concurrency.
+ * Łapie każdy Exception celowo: silniki Ktora rzucają różne typy, a wywołujący dostaje zawsze [DataError.Remote].
  */
+@Suppress("TooGenericExceptionCaught")
 suspend inline fun <reified T> safeCall(execute: () -> HttpResponse): Result<T, DataError.Remote> {
     val response = try {
         execute()
@@ -40,17 +43,17 @@ suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<
             Result.Success(response.body<T>())
         } catch (e: CancellationException) {
             throw e
-        } catch (e: NoTransformationFoundException) {
+        } catch (_: NoTransformationFoundException) {
             Result.Failure(DataError.Remote.SERIALIZATION)
-        } catch (e: ContentConvertException) {
+        } catch (_: ContentConvertException) {
             Result.Failure(DataError.Remote.SERIALIZATION)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Failure(DataError.Remote.SERIALIZATION)
         }
-        401 -> Result.Failure(DataError.Remote.UNAUTHORIZED)
-        404 -> Result.Failure(DataError.Remote.NOT_FOUND)
-        408 -> Result.Failure(DataError.Remote.REQUEST_TIMEOUT)
-        429 -> Result.Failure(DataError.Remote.TOO_MANY_REQUESTS)
+        HttpStatusCode.Unauthorized.value -> Result.Failure(DataError.Remote.UNAUTHORIZED)
+        HttpStatusCode.NotFound.value -> Result.Failure(DataError.Remote.NOT_FOUND)
+        HttpStatusCode.RequestTimeout.value -> Result.Failure(DataError.Remote.REQUEST_TIMEOUT)
+        HttpStatusCode.TooManyRequests.value -> Result.Failure(DataError.Remote.TOO_MANY_REQUESTS)
         in 400..499 -> Result.Failure(DataError.Remote.CLIENT)
         in 500..599 -> Result.Failure(DataError.Remote.SERVER)
         else -> Result.Failure(DataError.Remote.UNKNOWN)

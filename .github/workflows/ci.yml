@@ -66,6 +66,10 @@ jobs:
       - name: Detekt
         run: ./gradlew detekt
 
+      # Forma komentarzy z D-9 (KDoc nad deklaracją, bez numerów ticketów), której detekt nie sprawdza.
+      - name: Forma komentarzy
+        run: python3 -I -X utf8 tools/kdoc_form.py . HEAD
+
       - name: Lint
         run: ./gradlew :app:androidApp:lintDebug
 

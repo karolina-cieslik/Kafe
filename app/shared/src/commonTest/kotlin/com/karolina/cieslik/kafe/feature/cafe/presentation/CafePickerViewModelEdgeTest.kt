@@ -24,7 +24,10 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-/** „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku i spójność etykiety godzin ze statusem. */
+/**
+ * „Otwarte teraz” w strefie Europe/Warsaw (czas zimowy/letni, dzień zmiany czasu), sortowanie po polsku
+ * i spójność etykiety godzin ze statusem.
+ */
 class CafePickerViewModelEdgeTest {
 
     private val warsaw = TimeZone.of("Europe/Warsaw")
@@ -106,13 +109,17 @@ class CafePickerViewModelEdgeTest {
 
     @Test
     fun cafesAreSortedPolishAlphabeticallyNotByCodePoint() = runViewModelTest { context ->
-        val cafes = listOf("Kafe Żoliborz", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Sopot", "Kafe Łazienki", "Kafe Mokotów")
+        val cafes = listOf(
+            "Kafe Żoliborz", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Sopot", "Kafe Łazienki", "Kafe Mokotów",
+        )
             .mapIndexed { index, name -> cafe("c$index", name) }
 
         val content = contentAt(context::track, "2026-10-19T08:00:00Z", cafes)
 
         assertEquals(
-            listOf("Kafe Łazienki", "Kafe Mokotów", "Kafe Sopot", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Żoliborz"),
+            listOf(
+                "Kafe Łazienki", "Kafe Mokotów", "Kafe Sopot", "Kafe Śródmieście", "Kafe Zabłocie", "Kafe Żoliborz",
+            ),
             content.cafes.map { it.name },
         )
     }
@@ -125,7 +132,11 @@ class CafePickerViewModelEdgeTest {
         val cafeUi = contentAt(context::track, "2026-12-06T00:00:00Z", overnight).cafes.single()
 
         assertTrue(cafeUi.isOpenNow)
-        assertNotEquals(CAFE_CLOSED_TODAY, cafeUi.openingHoursLabel, "Etykieta „Dziś zamknięte” przy statusie „Otwarte”")
+        assertNotEquals(
+            CAFE_CLOSED_TODAY,
+            cafeUi.openingHoursLabel,
+            "Etykieta „Dziś zamknięte” przy statusie „Otwarte”",
+        )
         assertEquals("Do 2:00", cafeUi.openingHoursLabel)
     }
 }
@@ -136,7 +147,8 @@ private class StaticCafeRepository(cafes: List<Cafe>) : CafeRepository {
 
     override fun observeCafes(): Flow<List<Cafe>> = cafes
 
-    override fun observeSelectedCafe(): Flow<Cafe?> = combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
+    override fun observeSelectedCafe(): Flow<Cafe?> =
+        combine(cafes, selectedId) { list, id -> list.firstOrNull { it.id == id } }
 
     override suspend fun selectCafe(cafeId: String): EmptyResult<DataError.Local> {
         selectedId.value = cafeId

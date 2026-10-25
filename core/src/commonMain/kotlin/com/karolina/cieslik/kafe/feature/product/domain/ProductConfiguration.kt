@@ -51,7 +51,12 @@ data class ProductConfiguration(
      * QUANTITY: zmiana ilości opcji o [delta]. Suma w grupie zostaje w zakresie 0..maxQuantity (np. shoty 0–4),
      * a przekroczenie jest przycinane do limitu. Niedostępną opcję można tylko zmniejszać.
      */
-    fun changeOptionQuantity(groupId: String, optionId: String, delta: Int, details: ProductDetails): ProductConfiguration {
+    fun changeOptionQuantity(
+        groupId: String,
+        optionId: String,
+        delta: Int,
+        details: ProductDetails,
+    ): ProductConfiguration {
         val group = details.group(groupId)?.takeIf { it.type == ModifierGroupType.QUANTITY } ?: return this
         if (delta == 0 || group.options.none { it.id == optionId }) return this
         if (delta > 0 && !details.isOptionAvailable(optionId)) return this
@@ -128,7 +133,7 @@ data class ProductConfiguration(
      */
     data class Normalized(val configuration: ProductConfiguration, val deselectedOptions: List<String>)
 
-    /** Cena wszystkich sztuk z dopłatami według [PriceCalculator]; liczy tylko opcje istniejące w grupach produktu. */
+    /** Cena wszystkich sztuk z dopłatami ([PriceCalculator]); liczy tylko opcje istniejące w grupach produktu. */
     fun totalPrice(details: ProductDetails, calculator: PriceCalculator): Money {
         val sizePrice = (details.product.sizes.firstOrNull { it.code == size } ?: details.product.sizes.first()).price
         val options = details.modifierGroups.flatMap { group ->
@@ -139,7 +144,8 @@ data class ProductConfiguration(
         return calculator.totalPrice(sizePrice, options, quantity)
     }
 
-    private fun withGroup(groupId: String, options: Map<String, Int>) = copy(selections = selections + (groupId to options))
+    private fun withGroup(groupId: String, options: Map<String, Int>) =
+        copy(selections = selections + (groupId to options))
 
     /** Limity i konfiguracja startowa. */
     companion object {
@@ -153,8 +159,8 @@ data class ProductConfiguration(
          * Konfiguracja startowa, 1 sztuka.
          *
          * Rozmiar: domyślny rozmiar produktu, jeśli jest dostępny w lokalu; w przeciwnym razie pierwszy dostępny
-         * w kolejności S → M → L (tę kolejność rozmiarów zapewnia mapper danych); gdy żaden nie jest dostępny – domyślny, a bez domyślnego pierwszy z listy
-         * (dodanie i tak zablokuje [validate]).
+         * w kolejności S → M → L (tę kolejność rozmiarów zapewnia mapper danych); gdy żaden nie jest dostępny –
+         * domyślny, a bez domyślnego pierwszy z listy (dodanie i tak zablokuje [validate]).
          * Grupy SINGLE: opcja domyślna, jeśli jest dostępna; grupa wymagana bez dostępnej opcji domyślnej –
          * pierwsza dostępna; grupa opcjonalna – nic. Grupy QUANTITY startują od zera.
          */

@@ -126,11 +126,26 @@ sealed interface ProductDetailAction {
     /** Wybór rozmiaru [code] (z [ProductSizeUi.code]). */
     data class SizeSelected(val code: String) : ProductDetailAction
 
-    /** SINGLE: wybór opcji; w grupie opcjonalnej ponowny wybór zaznaczonej opcji ją odznacza. */
+    /**
+     * SINGLE: wybór opcji; w grupie opcjonalnej ponowny wybór zaznaczonej opcji ją odznacza.
+     *
+     * @property groupId id grupy modyfikatorów (z [ModifierGroupUi.id]).
+     * @property optionId id wybranej opcji w tej grupie.
+     */
     data class OptionSelected(val groupId: String, val optionId: String) : ProductDetailAction
 
-    /** QUANTITY: zmiana ilości opcji o [delta] (+1 / -1). */
-    data class OptionQuantityChanged(val groupId: String, val optionId: String, val delta: Int) : ProductDetailAction
+    /**
+     * QUANTITY: zmiana ilości opcji o [delta] (+1 / -1).
+     *
+     * @property groupId id grupy modyfikatorów (z [ModifierGroupUi.id]).
+     * @property optionId id opcji, której ilość się zmienia.
+     * @property delta zmiana ilości: +1 albo -1.
+     */
+    data class OptionQuantityChanged(
+        val groupId: String,
+        val optionId: String,
+        val delta: Int,
+    ) : ProductDetailAction
 
     /** Zmiana liczby sztuk o [delta] (+1 / -1). */
     data class QuantityChanged(val delta: Int) : ProductDetailAction

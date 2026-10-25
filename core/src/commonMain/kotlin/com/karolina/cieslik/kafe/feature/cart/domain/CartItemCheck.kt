@@ -40,9 +40,10 @@ internal fun CartSnapshotUpdate.differsFromItem(): Boolean =
     }
 
 /**
- * Pierwszy powód niedostępności; null = można zamówić. Najpierw to, czego [ProductConfiguration.validate] nie
- * widzi, bo zakłada wybór z aktualnego menu: opcje usunięte z grupy (bez tego pozycja wyszłaby po cichu tańsza)
- * i limity grup zmienione po dodaniu. Potem te same reguły co przy dodaniu z ekranu produktu.
+ * Pierwszy wykryty powód niedostępności (kolejność nie jest częścią kontraktu); null = można zamówić. Najpierw
+ * to, czego [ProductConfiguration.validate] nie widzi, bo zakłada wybór z aktualnego menu: opcje usunięte z grupy
+ * (bez tego pozycja wyszłaby po cichu tańsza) i limity grup zmienione po dodaniu. Potem te same reguły co przy
+ * dodaniu z ekranu produktu.
  */
 private fun CartItem.unavailableReasonIn(details: ProductDetails): UnavailableReason? {
     if (!details.isAvailable) return UnavailableReason.PRODUCT_UNAVAILABLE

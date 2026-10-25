@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -137,6 +138,17 @@ class KafeNavHostTest {
         composeRule.waitForIdle()
     }
 
+    /**
+     * Czeka, aż tekst będzie widoczny. Snackbar pokazuje się w osobnej korutynie po odczycie tekstu przez suspend
+     * `getString`, więc `waitForIdle()` po kliknięciu nie gwarantuje, że węzeł jest już ułożony – na wolniejszym CI
+     * istniał, ale nie był jeszcze „displayed”.
+     */
+    private fun waitUntilDisplayed(text: String) {
+        composeRule.waitUntil(conditionDescription = "widoczny tekst „$text”", timeoutMillis = SNACKBAR_TIMEOUT_MS) {
+            composeRule.onNodeWithText(text).isDisplayed()
+        }
+    }
+
     private fun openCafePickerFromMenu() {
         composeRule.onNode(hasClickLabel("Zmień kawiarnię")).performClick()
         composeRule.waitForIdle()
@@ -234,7 +246,7 @@ class KafeNavHostTest {
         click(CafePickerTestTags.cafe("gdansk"))
 
         assertCurrentRoute<KafeRoute.CafePicker>()
-        composeRule.onNodeWithText("Nie udało się zapisać wyboru lokalu. Spróbuj ponownie.").assertIsDisplayed()
+        waitUntilDisplayed("Nie udało się zapisać wyboru lokalu. Spróbuj ponownie.")
         assertEquals("krakow", cafes.selectedId.value)
     }
 
@@ -276,6 +288,9 @@ class KafeNavHostTest {
         node.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label
     }
 }
+
+/** Limit czekania na snackbar; z zapasem dla wolnych maszyn CI, w praktyce pojawia się po kilku klatkach. */
+private const val SNACKBAR_TIMEOUT_MS = 5_000L
 
 /** Kilka lokali i zapamiętany wybór (`null` = pierwsze uruchomienie), jak `OfflineFirstCafeRepository` bez sieci. */
 private class NavFakeCafeRepository(cafes: List<Cafe>) : CafeRepository {

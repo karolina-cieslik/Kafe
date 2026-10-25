@@ -19,7 +19,7 @@ import com.karolina.cieslik.kafe.feature.cafe.data.toDomainOrNull
 import com.karolina.cieslik.kafe.feature.cafe.data.remote.OpeningHoursDto
 import com.karolina.cieslik.kafe.feature.cafe.domain.Cafe
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
@@ -76,16 +76,30 @@ data class CafeWithOpeningHours(
 abstract class CafeDao {
 
     /**
-     * Lokale z godzinami w kolejności ze źródła. Relacja czytana w jednej transakcji.
-     * Emituje od razu i ponownie po każdej zmianie tabel `cafes` lub `cafe_opening_hours`.
+     * Wyzwalacz zmian: emituje od razu i ponownie po każdym zatwierdzonym zapisie tabel `cafes`,
+     * `cafe_opening_hours` lub `sync_metadata`. Wartość nie ma znaczenia – dane czyta [loadCafes]. Lista tabel
+     * musi odpowiadać tabelom czytanym przez [loadCafes], także przez relację (`cafe_opening_hours`).
+     */
+    @Query(
+        "SELECT (SELECT COUNT(*) FROM cafes) + (SELECT COUNT(*) FROM cafe_opening_hours) + " +
+            "(SELECT COUNT(*) FROM sync_metadata)",
+    )
+    abstract fun observeCafeTablesChanged(): Flow<Int>
+
+    /**
+     * Lokale z godzinami w kolejności ze źródła, odczytane razem ze znacznikiem synchronizacji w jednej
+     * transakcji – nigdy w połowie [replaceCafes]. Null, gdy lokale nie były jeszcze nigdy zapisane.
      */
     @Transaction
-    @Query("SELECT * FROM cafes ORDER BY position")
-    abstract fun observeCafes(): Flow<List<CafeWithOpeningHours>>
+    open suspend fun loadCafes(): List<CafeWithOpeningHours>? =
+        if (getSyncedCount(CAFES_SYNC_KEY) == 0) null else getCafes()
 
-    /** 1, gdy lokale były już zapisane, 0 – gdy jeszcze nigdy. Emituje po każdej zmianie `sync_metadata`. */
+    @Transaction
+    @Query("SELECT * FROM cafes ORDER BY position")
+    protected abstract suspend fun getCafes(): List<CafeWithOpeningHours>
+
     @Query("SELECT COUNT(*) FROM sync_metadata WHERE resourceKey = :resourceKey")
-    abstract fun observeSyncedCount(resourceKey: String = CAFES_SYNC_KEY): Flow<Int>
+    protected abstract suspend fun getSyncedCount(resourceKey: String): Int
 
     /**
      * Zastępuje wszystkie lokale nowymi i zapisuje znacznik synchronizacji.
@@ -151,15 +165,11 @@ interface CafeLocalDataSource {
 /** [CafeLocalDataSource] na Room. */
 class RoomCafeLocalDataSource(private val dao: CafeDao) : CafeLocalDataSource {
 
-    // TODO(KAFE-6): R-1 – niespójny odczyt przez combine, jak w RoomMenuLocalDataSource.observeMenu.
-    /**
-     * Znane ograniczenie (R-1): dwa osobne zapytania w combine mogą po pierwszym zapisie wyemitować stan pośredni
-     * (znacznik już jest, lokali jeszcze nie), czyli na moment pustą listę zamiast lokali.
-     */
+    /** Jeden wyzwalacz i odczyt w transakcji ([CafeDao.loadCafes]) – bez stanu pośredniego po zapisie. */
     override fun observeCafes(): Flow<List<Cafe>?> =
-        combine(dao.observeSyncedCount(), dao.observeCafes()) { syncedCount, cafes ->
-            if (syncedCount == 0) null else cafes.map { it.toDomain() }
-        }.distinctUntilChanged()
+        dao.observeCafeTablesChanged()
+            .map { dao.loadCafes()?.map { it.toDomain() } }
+            .distinctUntilChanged()
 
     override suspend fun saveCafes(cafes: List<CafeDto>, syncedAtEpochMillis: Long): EmptyResult<DataError.Local> =
         safeDbCall {

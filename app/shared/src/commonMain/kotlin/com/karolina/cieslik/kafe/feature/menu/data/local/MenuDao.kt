@@ -11,41 +11,66 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * DAO menu sieci (kategorie, produkty, rozmiary, modyfikatory) i dostępności w lokalach (produkty, rozmiary,
- * opcje). Klasa abstrakcyjna, żeby zapis wielu tabel mógł być jedną metodą @Transaction.
- * Zapytania `observe*` emitują od razu i ponownie po każdej zmianie swoich tabel.
+ * opcje). Klasa abstrakcyjna, żeby zapis i odczyt wielu tabel mogły być jedną metodą @Transaction.
  */
 @Dao
 abstract class MenuDao {
 
-    /** Wszystkie kategorie sieci, bez sortowania (sortuje domena). */
-    @Query("SELECT * FROM menu_categories")
-    abstract fun observeCategories(): Flow<List<CategoryEntity>>
+    /**
+     * Wyzwalacz zmian: emituje od razu i ponownie po każdym zatwierdzonym zapisie którejkolwiek tabeli menu,
+     * dostępności lub `sync_metadata`. Wartość nie ma znaczenia – zapytanie istnieje tylko po to, żeby Room
+     * śledził wszystkie te tabele jednym strumieniem; dane czyta [loadMenu]. Lista tabel musi odpowiadać
+     * tabelom czytanym przez [loadMenu], także tym czytanym tylko przez relacje Room (rozmiary, opcje,
+     * przypisania grup) – nowa tabela w odczycie bez wpisu tutaj nie wywoła emisji.
+     */
+    @Query(
+        "SELECT (SELECT COUNT(*) FROM menu_categories) + (SELECT COUNT(*) FROM menu_products) + " +
+            "(SELECT COUNT(*) FROM menu_product_sizes) + (SELECT COUNT(*) FROM menu_modifier_groups) + " +
+            "(SELECT COUNT(*) FROM menu_modifier_options) + (SELECT COUNT(*) FROM menu_product_modifier_groups) + " +
+            "(SELECT COUNT(*) FROM menu_product_availability) + (SELECT COUNT(*) FROM menu_size_availability) + " +
+            "(SELECT COUNT(*) FROM menu_modifier_option_availability) + (SELECT COUNT(*) FROM sync_metadata)",
+    )
+    abstract fun observeMenuTablesChanged(): Flow<Int>
 
-    /** Wszystkie produkty z rozmiarami i przypisanymi grupami; relacje czytane w jednej transakcji. */
+    /**
+     * Całe menu sieci i dostępność w lokalu [cafeId] odczytane w jednej transakcji – spójny stan, nigdy w połowie
+     * [replaceMenuForCafe]. [resourceKeys] to znaczniki, które muszą być zapisane, żeby menu było „zapamiętane”.
+     */
+    @Transaction
+    open suspend fun loadMenu(cafeId: String, resourceKeys: List<String>): MenuRows = MenuRows(
+        syncedCount = getSyncedCount(resourceKeys),
+        categories = getCategories(),
+        products = getProducts(),
+        modifierGroups = getModifierGroups(),
+        availability = CafeAvailabilityRows(
+            products = getAvailability(cafeId),
+            sizes = getSizeAvailability(cafeId),
+            options = getOptionAvailability(cafeId),
+        ),
+    )
+
+    @Query("SELECT * FROM menu_categories")
+    protected abstract suspend fun getCategories(): List<CategoryEntity>
+
     @Transaction
     @Query("SELECT * FROM menu_products")
-    abstract fun observeProducts(): Flow<List<ProductWithSizes>>
+    protected abstract suspend fun getProducts(): List<ProductWithSizes>
 
-    /** Wszystkie grupy modyfikatorów z opcjami; relacja czytana w jednej transakcji. */
     @Transaction
     @Query("SELECT * FROM menu_modifier_groups")
-    abstract fun observeModifierGroups(): Flow<List<ModifierGroupWithOptions>>
+    protected abstract suspend fun getModifierGroups(): List<ModifierGroupWithOptions>
 
-    /** Wpisy dostępności produktów w lokalu [cafeId]; produkt bez wpisu jest dostępny. */
     @Query("SELECT * FROM menu_product_availability WHERE cafeId = :cafeId")
-    abstract fun observeAvailability(cafeId: String): Flow<List<ProductAvailabilityEntity>>
+    protected abstract suspend fun getAvailability(cafeId: String): List<ProductAvailabilityEntity>
 
-    /** Wpisy dostępności rozmiarów w lokalu [cafeId]; rozmiar bez wpisu jest dostępny. */
     @Query("SELECT * FROM menu_size_availability WHERE cafeId = :cafeId")
-    abstract fun observeSizeAvailability(cafeId: String): Flow<List<SizeAvailabilityEntity>>
+    protected abstract suspend fun getSizeAvailability(cafeId: String): List<SizeAvailabilityEntity>
 
-    /** Wpisy dostępności opcji modyfikatorów w lokalu [cafeId]; opcja bez wpisu jest dostępna. */
     @Query("SELECT * FROM menu_modifier_option_availability WHERE cafeId = :cafeId")
-    abstract fun observeOptionAvailability(cafeId: String): Flow<List<ModifierOptionAvailabilityEntity>>
+    protected abstract suspend fun getOptionAvailability(cafeId: String): List<ModifierOptionAvailabilityEntity>
 
-    /** Liczba zsynchronizowanych zasobów z podanych kluczy – menu jest „zapamiętane”, gdy są oba. */
     @Query("SELECT COUNT(*) FROM sync_metadata WHERE resourceKey IN (:resourceKeys)")
-    abstract fun observeSyncedCount(resourceKeys: List<String>): Flow<Int>
+    protected abstract suspend fun getSyncedCount(resourceKeys: List<String>): Int
 
     /**
      * Zastępuje menu sieci w całości i dostępność w lokalu [cafeId] wierszami z [menu], a na końcu zapisuje oba
@@ -79,9 +104,7 @@ abstract class MenuDao {
         insertSizeAvailability(menu.availability.sizes)
         insertOptionAvailability(menu.availability.options)
         // 3. Znaczniki na końcu: observeMenu przestaje zwracać null dopiero, gdy menu i dostępność są zapisane.
-        // TODO(KAFE-6): R-1 – zapis jest atomowy, ale observeMenu łączy siedem osobnych zapytań, które po
-        // transakcji wykonują się ponownie każde osobno, więc może wyemitować stan pośredni (np. nowe produkty
-        // bez grup albo nowe menu ze starą dostępnością). Poprawka: jeden wyzwalacz i odczyt w jednej transakcji.
+        // Obserwatorzy dostają powiadomienie po zatwierdzeniu i czytają całość przez loadMenu.
         upsertSyncMetadata(SyncMetadataEntity(MenuSyncKeys.MENU, syncedAtEpochMillis))
         upsertSyncMetadata(SyncMetadataEntity(MenuSyncKeys.availability(cafeId), syncedAtEpochMillis))
     }
@@ -143,6 +166,23 @@ abstract class MenuDao {
     @Upsert
     protected abstract suspend fun upsertSyncMetadata(metadata: SyncMetadataEntity)
 }
+
+/**
+ * Wynik [MenuDao.loadMenu] – wiersze z jednej transakcji.
+ *
+ * @property syncedCount liczba zapisanych znaczników z żądanych kluczy.
+ * @property categories kategorie sieci.
+ * @property products produkty z rozmiarami i przypisaniami grup.
+ * @property modifierGroups grupy modyfikatorów z opcjami.
+ * @property availability braki w lokalu, którego dotyczy odczyt.
+ */
+data class MenuRows(
+    val syncedCount: Int,
+    val categories: List<CategoryEntity>,
+    val products: List<ProductWithSizes>,
+    val modifierGroups: List<ModifierGroupWithOptions>,
+    val availability: CafeAvailabilityRows,
+)
 
 /**
  * Komplet wierszy do zapisania w [MenuDao.replaceMenuForCafe].

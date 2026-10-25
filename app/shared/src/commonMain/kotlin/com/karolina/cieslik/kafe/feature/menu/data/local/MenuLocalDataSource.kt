@@ -15,7 +15,7 @@ import com.karolina.cieslik.kafe.feature.menu.domain.Product
 import com.karolina.cieslik.kafe.feature.menu.domain.ProductSize
 import com.karolina.cieslik.kafe.feature.menu.domain.SizeCode
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /** Lokalne źródło menu (źródło prawdy offline-first). Interfejs pozwala testować repozytorium na JVM. */
@@ -45,28 +45,24 @@ interface MenuLocalDataSource {
 /** [MenuLocalDataSource] na Room. */
 class RoomMenuLocalDataSource(private val dao: MenuDao) : MenuLocalDataSource {
 
-    // TODO(KAFE-6): R-1 – odczyt niespójny z atomowym zapisem; poprawka: jeden wyzwalacz + odczyt w transakcji.
     /**
-     * Znane ograniczenie (R-1): zapis w [MenuDao.replaceMenuForCafe] jest atomowy, ale odczyt nie – combine łączy
-     * siedem osobnych zapytań, które po transakcji wykonują się ponownie każde osobno. Może więc wyemitować stan
-     * pośredni, np. nowe kategorie bez produktów (pusta lista sekcji) albo nowe menu ze starą dostępnością.
+     * Jeden wyzwalacz na wszystkie tabele menu, a po każdym powiadomieniu odczyt całości w jednej transakcji
+     * ([MenuDao.loadMenu]). Zapis w [MenuDao.replaceMenuForCafe] też jest jedną transakcją, więc odczyt nigdy nie
+     * zobaczy stanu pośredniego (np. nowych produktów bez grup albo nowego menu ze starą dostępnością).
      */
     override fun observeMenu(cafeId: String): Flow<Menu?> {
-        val network = combine(dao.observeCategories(), dao.observeProducts(), dao.observeModifierGroups(), ::Triple)
-        val availability = combine(
-            dao.observeAvailability(cafeId),
-            dao.observeSizeAvailability(cafeId),
-            dao.observeOptionAvailability(cafeId),
-            ::CafeAvailabilityRows,
-        )
-        return combine(
-            dao.observeSyncedCount(listOf(MenuSyncKeys.MENU, MenuSyncKeys.availability(cafeId))),
-            network,
-            availability,
-        ) { syncedCount, (categories, products, groups), cafeAvailability ->
-            // Menu jest „zapamiętane” dopiero, gdy są oba znaczniki: menu sieci i dostępności w tym lokalu.
-            if (syncedCount < 2) null else toMenu(categories, products, groups, cafeAvailability)
-        }.distinctUntilChanged()
+        val resourceKeys = listOf(MenuSyncKeys.MENU, MenuSyncKeys.availability(cafeId))
+        return dao.observeMenuTablesChanged()
+            .map { dao.loadMenu(cafeId, resourceKeys) }
+            .map { rows ->
+                // Menu jest „zapamiętane” dopiero, gdy są oba znaczniki: menu sieci i dostępności w tym lokalu.
+                if (rows.syncedCount < resourceKeys.size) {
+                    null
+                } else {
+                    toMenu(rows.categories, rows.products, rows.modifierGroups, rows.availability)
+                }
+            }
+            .distinctUntilChanged()
     }
 
     override suspend fun saveMenu(

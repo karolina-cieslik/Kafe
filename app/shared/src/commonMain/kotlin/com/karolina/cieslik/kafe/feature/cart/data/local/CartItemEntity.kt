@@ -40,10 +40,11 @@ data class CartItemEntity(
  *
  * @property groupId id grupy modyfikatorów.
  * @property optionId id opcji.
- * @property optionName nazwa opcji z chwili dodania.
+ * @property optionName nazwa opcji z chwili dodania albo ostatniej aktualizacji migawki.
  * @property surchargeGrosze dopłata za jedną sztukę opcji w groszach.
  * @property quantity ilość opcji w jednej sztuce produktu, > 0.
- * @property isDefault opcja domyślna grupy w chwili dodania; wiersze sprzed dodania pola czytają się jako false
+ * @property isDefault opcja domyślna grupy według menu z chwili dodania albo ostatniego odświeżenia; wiersze
+ * sprzed dodania pola czytają się jako false
  * (opcja pokazana w koszyku).
  */
 @Serializable

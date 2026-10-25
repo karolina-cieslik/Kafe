@@ -58,6 +58,7 @@
     <string name="cart_item_previous_price">Poprzednia cena: %1$s</string>
     <string name="cart_item_unit_price">%1$s / szt.</string>
     <string name="cart_item_remove">Usuń: %1$s</string>
+    <string name="cart_item_total">Razem za pozycję: %1$s</string>
     <string name="cart_summary_total">Razem do zapłaty</string>
     <string name="cart_summary_vat">Ceny zawierają VAT</string>
     <plurals name="cart_summary_item_count">

@@ -362,7 +362,7 @@ class KafeNavHostTest {
         setNavHost()
         openCart()
 
-        composeRule.onNodeWithContentDescription("Usuń: Espresso").performClick()
+        composeRule.onNodeWithContentDescription("Usuń: Espresso, Mały").performClick()
         waitUntilDisplayed("Usunięto: Espresso")
         composeRule.onNodeWithText("Twój koszyk jest pusty").assertIsDisplayed()
         composeRule.onNodeWithText("Cofnij").performClick()

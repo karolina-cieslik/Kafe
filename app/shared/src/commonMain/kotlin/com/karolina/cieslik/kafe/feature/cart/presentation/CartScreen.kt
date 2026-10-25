@@ -59,6 +59,7 @@ import kafe.app.shared.generated.resources.cart_go_to_menu
 import kafe.app.shared.generated.resources.cart_item_previous_price
 import kafe.app.shared.generated.resources.cart_item_price_updated
 import kafe.app.shared.generated.resources.cart_item_remove
+import kafe.app.shared.generated.resources.cart_item_total
 import kafe.app.shared.generated.resources.cart_item_unavailable
 import kafe.app.shared.generated.resources.cart_item_unit_price
 import kafe.app.shared.generated.resources.cart_pickup_at
@@ -256,7 +257,7 @@ private fun CartItemRow(item: CartItemUi, onAction: (CartAction) -> Unit) {
                     // „−” jest zawsze aktywny: przy 1 sztuce usuwa pozycję (z „Cofnij”), tak jak kosz.
                     KafeStepper(
                         value = item.quantity,
-                        label = item.name,
+                        label = item.accessibilityLabel,
                         onDecrease = { onAction(CartAction.DecreaseClicked(item.id)) },
                         onIncrease = { onAction(CartAction.IncreaseClicked(item.id)) },
                         canDecrease = true,
@@ -296,13 +297,20 @@ private fun CartItemHeader(item: CartItemUi, isUnavailable: Boolean, onRemove: (
         ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_delete),
-                contentDescription = stringResource(Res.string.cart_item_remove, item.name),
+                contentDescription = stringResource(Res.string.cart_item_remove, item.accessibilityLabel),
                 tint = KafeTheme.colors.onSurfaceVariant,
                 modifier = Modifier.size(spacing.icon - spacing.xxs),
             )
         }
     }
 }
+
+/**
+ * Nazwa pozycji dla TalkBacka w przyciskach kosza i steppera: z rozmiarem i modyfikatorami, żeby odróżnić dwie
+ * konfiguracje tego samego produktu, np. „Latte, Średni, Owsiane”.
+ */
+private val CartItemUi.accessibilityLabel: String
+    get() = listOfNotNull(name, sizeLabel, modifiersLabel).joinToString(separator = ", ")
 
 /** Oznaczenie pod nazwą: zaktualizowana cena (akcent) albo niedostępność (kolor błędu); [CartItemStatusUi.Ok] – nic. */
 @Composable
@@ -349,11 +357,13 @@ private fun ItemPrice(item: CartItemUi, isUnavailable: Boolean) {
                 color = KafeTheme.colors.onSurfaceVariant,
             )
         }
+        val totalDescription = stringResource(Res.string.cart_item_total, item.totalPriceLabel)
         Text(
             text = item.totalPriceLabel,
             style = KafeTheme.typography.titleMedium,
             color = if (isUnavailable) KafeTheme.colors.onSurfaceVariant else KafeTheme.colors.primary,
             maxLines = 1,
+            modifier = Modifier.clearAndSetSemantics { contentDescription = totalDescription },
         )
     }
 }

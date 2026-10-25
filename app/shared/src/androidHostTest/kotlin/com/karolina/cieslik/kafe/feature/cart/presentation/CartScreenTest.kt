@@ -92,7 +92,7 @@ class CartScreenTest {
         composeRule.onNodeWithText("Latte").assertIsDisplayed()
         composeRule.onNodeWithText("Średni · Owsiane, 2× Shot espresso").assertIsDisplayed()
         composeRule.onNodeWithText("22,00 zł / szt.").assertIsDisplayed()
-        composeRule.onNodeWithText("44,00 zł").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Razem za pozycję: 44,00 zł").assertIsDisplayed()
     }
 
     @Test
@@ -107,8 +107,8 @@ class CartScreenTest {
     fun stepperSendsIncreaseAndDecreaseWithItemId() {
         setScreen(contentWith(CartPreviewData.latte))
 
-        composeRule.onNodeWithContentDescription("Zwiększ: Latte").performClick()
-        composeRule.onNodeWithContentDescription("Zmniejsz: Latte").performClick()
+        composeRule.onNodeWithContentDescription("Zwiększ: $LATTE_LABEL").performClick()
+        composeRule.onNodeWithContentDescription("Zmniejsz: $LATTE_LABEL").performClick()
 
         assertEquals(listOf(CartAction.IncreaseClicked(1), CartAction.DecreaseClicked(1)), actions)
     }
@@ -117,22 +117,32 @@ class CartScreenTest {
     fun decreaseStaysEnabledAtOnePiece() {
         setScreen(contentWith(CartPreviewData.cappuccino))
 
-        composeRule.onNodeWithContentDescription("Zmniejsz: Cappuccino").assertIsEnabled()
+        composeRule.onNodeWithContentDescription("Zmniejsz: Cappuccino, Mały").assertIsEnabled()
     }
 
     @Test
     fun increaseDisabledAtLimit() {
         setScreen(contentWith(CartPreviewData.espressoAtLimit))
 
-        composeRule.onNodeWithContentDescription("Zwiększ: Espresso").assertIsNotEnabled()
-        composeRule.onNodeWithContentDescription("Espresso: 20").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Zwiększ: Espresso, Mały").assertIsNotEnabled()
+        composeRule.onNodeWithContentDescription("Espresso, Mały: 20").assertIsDisplayed()
+    }
+
+    @Test
+    fun twoConfigurationsOfSameProductHaveDistinctButtonLabels() {
+        setScreen(contentWith(CartPreviewData.latte, CartPreviewData.latte.copy(id = 5, modifiersLabel = null)))
+
+        composeRule.onNodeWithContentDescription("Usuń: Latte, Średni").performClick()
+        composeRule.onNodeWithContentDescription("Zwiększ: $LATTE_LABEL").performClick()
+
+        assertEquals(listOf(CartAction.RemoveClicked(5), CartAction.IncreaseClicked(1)), actions)
     }
 
     @Test
     fun removeSendsRemoveClickedWithItemId() {
         setScreen(contentWith(CartPreviewData.latte))
 
-        composeRule.onNodeWithContentDescription("Usuń: Latte").performClick()
+        composeRule.onNodeWithContentDescription("Usuń: $LATTE_LABEL").performClick()
 
         assertEquals(listOf<CartAction>(CartAction.RemoveClicked(1)), actions)
     }
@@ -142,9 +152,9 @@ class CartScreenTest {
         setScreen(contentWith(CartPreviewData.flatWhite))
 
         composeRule.onNodeWithText("Niedostępne – usuń, aby kontynuować").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Zwiększ: Flat white").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("Zmniejsz: Flat white").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("Usuń: Flat white").performClick()
+        composeRule.onNodeWithContentDescription("Zwiększ: Flat white, Średni").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Zmniejsz: Flat white, Średni").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Usuń: Flat white, Średni").performClick()
 
         assertEquals(listOf<CartAction>(CartAction.RemoveClicked(3)), actions)
     }
@@ -215,5 +225,9 @@ class CartScreenTest {
         setScreen(CartPreviewData.content)
 
         composeRule.onNodeWithText("Czy na pewno usunąć wszystkie pozycje?").assertDoesNotExist()
+    }
+
+    private companion object {
+        const val LATTE_LABEL = "Latte, Średni, Owsiane, 2× Shot espresso"
     }
 }

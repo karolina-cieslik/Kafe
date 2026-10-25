@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * i zwraca [addResult] (domyślnie nowa pozycja zbudowana z dodawanej); [addGate] pozwala zatrzymać zapis
  * w trakcie, a [completed] zawiera tylko zapisy, które przeszły bramkę. [writeError] sprawia, że następne
  * zapisy kończą się tym błędem bez zmian; [writeGate] wstrzymuje zapisy koszyka do `complete()`.
+ * [removeUnreadableResult] to wynik `removeUnreadable` (domyślnie nic do usunięcia).
  */
 internal class FakeCartRepository(initial: Cart = Cart.EMPTY) : CartRepository {
     val cart = MutableStateFlow(initial)
@@ -33,6 +34,7 @@ internal class FakeCartRepository(initial: Cart = Cart.EMPTY) : CartRepository {
     var writeGate: CompletableDeferred<Unit>? = null
     val snapshotUpdates = mutableListOf<List<CartSnapshotUpdate>>()
     var removeUnreadableCalls = 0
+    var removeUnreadableResult: Result<Int, DataError.Local> = Result.Success(0)
 
     private val items get() = cart.value.items
 
@@ -99,7 +101,7 @@ internal class FakeCartRepository(initial: Cart = Cart.EMPTY) : CartRepository {
 
     override suspend fun removeUnreadable(): Result<Int, DataError.Local> {
         removeUnreadableCalls++
-        return Result.Success(0)
+        return removeUnreadableResult
     }
 
     override suspend fun clear(): EmptyResult<DataError.Local> = write {

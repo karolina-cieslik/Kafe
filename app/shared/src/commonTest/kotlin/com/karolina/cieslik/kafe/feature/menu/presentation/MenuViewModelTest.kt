@@ -396,6 +396,16 @@ class MenuViewModelTest {
         }
     }
 
+    @Test
+    fun cartClickedEmitsNavigateToCart() = runViewModelTest { context ->
+        val viewModel = context.createViewModel(menuRepository = FakeMenuRepository(cached = mapOf("krakow" to sampleMenu)))
+
+        viewModel.events.test {
+            viewModel.onAction(MenuAction.CartClicked)
+            assertEquals(MenuEvent.NavigateToCart, awaitItem())
+        }
+    }
+
     // --- Dostępność per lokal i zmiana lokalu ---
 
     @Test

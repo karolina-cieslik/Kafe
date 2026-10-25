@@ -81,6 +81,8 @@ sealed interface MenuAction {
     data object Refresh : MenuAction
     /** Kliknięcie „Zmień lokal”. */
     data object ChangeCafeClicked : MenuAction
+    /** Kliknięcie ikony koszyka – otwiera koszyk. */
+    data object CartClicked : MenuAction
 }
 
 /** Jednorazowe zdarzenia nawigacyjne – zbiera je route ekranu, nie MenuScreen. */
@@ -89,4 +91,6 @@ sealed interface MenuEvent {
     data class NavigateToProduct(val productId: String) : MenuEvent
     /** Przejście do wyboru lokalu. */
     data object NavigateToCafePicker : MenuEvent
+    /** Przejście do koszyka. */
+    data object NavigateToCart : MenuEvent
 }

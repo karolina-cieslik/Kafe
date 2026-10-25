@@ -41,12 +41,16 @@ fun KafeNavHost(
                 onNavigateToCafePicker = {
                     navController.navigate(MenuEvent.NavigateToCafePicker.toRoute()) { launchSingleTop = true }
                 },
+                // TODO(KAFE-13): navigate(KafeRoute.Cart) razem z celem composable<KafeRoute.Cart> (ekran koszyka).
+                onNavigateToCart = {},
             )
         }
         composable<KafeRoute.ProductDetail> { entry ->
             ProductDetailRoute(
                 productId = entry.toRoute<KafeRoute.ProductDetail>().productId,
                 onNavigateBack = { navController.popBackStack() },
+                // TODO(KAFE-13): navigate(KafeRoute.Cart) razem z celem composable<KafeRoute.Cart> (ekran koszyka).
+                onNavigateToCart = {},
             )
         }
         composable<KafeRoute.CafePicker> {

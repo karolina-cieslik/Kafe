@@ -118,6 +118,7 @@ class ProductDetailViewModel(
             is ProductDetailAction.QuantityChanged -> updateConfiguration { changeQuantity(action.delta) }
             ProductDetailAction.AddToCartClicked -> addCurrentToCart()
             ProductDetailAction.BackClicked -> sendEvent(ProductDetailEvent.NavigateBack)
+            ProductDetailAction.ViewCartClicked -> sendEvent(ProductDetailEvent.NavigateToCart)
             ProductDetailAction.Retry -> retry()
         }
     }

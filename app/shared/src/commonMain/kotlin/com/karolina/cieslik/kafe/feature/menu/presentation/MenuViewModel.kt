@@ -105,7 +105,7 @@ class MenuViewModel(
 
     /**
      * Obsługuje akcję użytkownika. Retry i Refresh nie startują drugiego odświeżania, gdy jedno już trwa.
-     * Kliknięcia produktu i „Zmień lokal” emitują zdarzenie w [events].
+     * Kliknięcia produktu, „Zmień lokal” i ikony koszyka emitują zdarzenie w [events].
      */
     fun onAction(action: MenuAction) {
         when (action) {
@@ -113,6 +113,7 @@ class MenuViewModel(
             is MenuAction.SearchQueryChanged -> searchQuery.value = action.query
             is MenuAction.ProductClicked -> sendEvent(MenuEvent.NavigateToProduct(action.id))
             MenuAction.ChangeCafeClicked -> sendEvent(MenuEvent.NavigateToCafePicker)
+            MenuAction.CartClicked -> sendEvent(MenuEvent.NavigateToCart)
             MenuAction.Retry, MenuAction.Refresh -> {
                 // Bez lokalu nie ma czego odświeżać w menu – ponawiamy pobranie lokali (po sukcesie ruszy menu).
                 val cafeId = currentCafeId

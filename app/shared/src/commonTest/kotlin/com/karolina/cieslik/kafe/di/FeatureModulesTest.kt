@@ -12,6 +12,8 @@ import com.karolina.cieslik.kafe.feature.cart.data.local.CartDao
 import com.karolina.cieslik.kafe.feature.cart.data.local.CartItemEntity
 import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
 import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.ObserveCheckedCart
+import com.karolina.cieslik.kafe.feature.cart.domain.RefreshCartSnapshots
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.remote.AvailabilityDto
 import com.karolina.cieslik.kafe.feature.menu.data.remote.MenuDto
@@ -99,6 +101,8 @@ class FeatureModulesTest {
             assertNotNull(koin.get<GetMenuForCafe>())
             assertSame(koin.get<CartRepository>(), koin.get<CartRepository>())
             assertNotNull(koin.get<AddToCart>())
+            assertNotNull(koin.get<ObserveCheckedCart>())
+            assertNotNull(koin.get<RefreshCartSnapshots>())
         } finally {
             koin.close()
         }

@@ -12,6 +12,9 @@ import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerViewModel
 import com.karolina.cieslik.kafe.feature.cart.data.RoomCartRepository
 import com.karolina.cieslik.kafe.feature.cart.domain.AddToCart
 import com.karolina.cieslik.kafe.feature.cart.domain.CartRepository
+import com.karolina.cieslik.kafe.feature.cart.domain.ObserveCheckedCart
+import com.karolina.cieslik.kafe.feature.cart.domain.RefreshCartSnapshots
+import com.karolina.cieslik.kafe.feature.cart.presentation.CartViewModel
 import com.karolina.cieslik.kafe.feature.menu.data.OfflineFirstMenuRepository
 import com.karolina.cieslik.kafe.feature.menu.data.local.MenuLocalDataSource
 import com.karolina.cieslik.kafe.feature.menu.data.local.RoomMenuLocalDataSource
@@ -91,10 +94,21 @@ val productModule = module {
 }
 
 /**
- * Koszyk: repozytorium na Room (DAO z databaseModule) i przypadek użycia dodania; kalkulator ceny
- * z [productModule].
+ * Koszyk: repozytorium na Room (DAO z databaseModule), przypadki użycia (dodanie, sprawdzenie z menu lokalu,
+ * nowa migawka cen) i CartViewModel; kalkulator ceny z [productModule].
  */
 val cartModule = module {
     single<CartRepository> { RoomCartRepository(dao = get()) }
     factory { AddToCart(cartRepository = get(), priceCalculator = get()) }
+    factory { ObserveCheckedCart(cartRepository = get(), menuRepository = get(), priceCalculator = get()) }
+    factory { RefreshCartSnapshots(cartRepository = get(), menuRepository = get(), priceCalculator = get()) }
+    viewModel {
+        CartViewModel(
+            cafeRepository = get(),
+            menuRepository = get(),
+            cartRepository = get(),
+            observeCheckedCart = get(),
+            refreshCartSnapshots = get(),
+        )
+    }
 }

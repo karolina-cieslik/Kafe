@@ -32,7 +32,7 @@ sealed interface CartItemStatus {
     /**
      * Pozycji nie da się zamówić w tym lokalu.
      *
-     * @property reason pierwszy wykryty powód.
+     * @property reason pierwszy wykryty powód; przy kilku naraz kolejność sprawdzania nie jest częścią kontraktu.
      */
     data class Unavailable(val reason: UnavailableReason) : CartItemStatus
 
@@ -40,7 +40,10 @@ sealed interface CartItemStatus {
     data object Unverified : CartItemStatus
 }
 
-/** Powód, dla którego pozycji koszyka nie da się zamówić w lokalu. */
+/**
+ * Powód, dla którego pozycji koszyka nie da się zamówić w lokalu. Pozycja dostaje jeden – pierwszy wykryty;
+ * kolejność sprawdzania nie jest częścią kontraktu (UI pokazuje jedno „Niedostępne”).
+ */
 enum class UnavailableReason {
     /** Produktu nie ma w menu, jest nieaktywny albo nie ma rozmiarów. */
     PRODUCT_REMOVED,

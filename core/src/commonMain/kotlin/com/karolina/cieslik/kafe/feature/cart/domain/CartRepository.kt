@@ -49,7 +49,8 @@ interface CartRepository {
      * „+”: zwiększa ilość pozycji [itemId] o 1 atomowo w bazie, najwyżej do 20 – szybkie stuknięcia się nie
      * gubią i nie przekroczą limitu.
      *
-     * @return pozycję po zmianie (przy 20 – bez zmian); [DataError.Local.NOT_FOUND], gdy jej nie ma.
+     * @return pozycję po zmianie (przy 20 – bez zmian); [DataError.Local.NOT_FOUND], gdy jej nie ma;
+     * [DataError.Local.UNKNOWN], gdy wiersza nie da się odczytać.
      */
     suspend fun increase(itemId: Long): Result<CartItem, DataError.Local>
 
@@ -58,7 +59,8 @@ interface CartRepository {
      * decyduje stan bazy, nie ilość widoczna w UI.
      *
      * @return [DecreaseOutcome.Decreased] albo [DecreaseOutcome.Removed] (pozycja do „Cofnij” przez [restore]);
-     * [DataError.Local.NOT_FOUND], gdy jej nie ma.
+     * [DataError.Local.NOT_FOUND], gdy jej nie ma; [DataError.Local.UNKNOWN], gdy wiersza nie da się odczytać
+     * (przy ilości 1 jest już wtedy usunięty).
      */
     suspend fun decreaseOrRemove(itemId: Long): Result<DecreaseOutcome, DataError.Local>
 

@@ -6,7 +6,8 @@ import com.karolina.cieslik.kafe.core.domain.Money
  * Nowa migawka nazw i cen jednej pozycji z aktualnego menu ([CartRepository.updateSnapshots]). Zmienia tylko
  * nazwy i kwoty – rozmiar, zbiór opcji i ich ilości zostają, więc klucz konfiguracji też.
  *
- * @property item pozycja z koszyka, której migawka jest aktualizowana.
+ * @property item pozycja z koszyka, której migawka jest aktualizowana; ilości opcji i [CartSelection.isDefault]
+ * nowej migawki są brane z niej, nie z bieżącego wiersza w bazie.
  * @property productName aktualna nazwa produktu.
  * @property unitPrice aktualna cena jednej sztuki z dopłatami.
  * @property options aktualne nazwy i dopłaty – klucze to dokładnie opcje z [CartItem.selections].

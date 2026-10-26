@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
  * @property addButton rozmiar widocznego przycisku „+” na karcie produktu (obszar dotyku jest większy).
  * @property cardImageHeight wysokość zdjęcia na karcie produktu.
  * @property heroImageHeight wysokość dużego zdjęcia na górze szczegółów produktu.
+ * @property thumbnail bok kwadratowej miniatury zdjęcia w wierszu listy (np. pozycja koszyka).
  */
 @Immutable
 data class KafeSpacing(
@@ -50,6 +51,7 @@ data class KafeSpacing(
     val addButton: Dp = 32.dp,
     val cardImageHeight: Dp = 128.dp,
     val heroImageHeight: Dp = 240.dp,
+    val thumbnail: Dp = 72.dp,
     /** Pole ikony systemowego splasha bez tła (288dp) – intro rysuje logo w tym samym miejscu i rozmiarze. */
     val brandLogo: Dp = 288.dp,
 )

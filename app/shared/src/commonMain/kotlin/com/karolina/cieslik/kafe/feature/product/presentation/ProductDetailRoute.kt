@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kafe.app.shared.generated.resources.Res
 import com.karolina.cieslik.kafe.feature.product.domain.ProductConfiguration
+import kafe.app.shared.generated.resources.cart_limit_reached
 import kafe.app.shared.generated.resources.product_detail_add_to_cart_failed
 import kafe.app.shared.generated.resources.product_detail_added_to_cart
-import kafe.app.shared.generated.resources.product_detail_cart_limit_reached
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
@@ -78,7 +78,7 @@ fun ProductDetailRoute(
  */
 internal suspend fun ProductDetailEvent.snackbarMessage(): String? = when (this) {
     is ProductDetailEvent.AddedToCart -> if (limitReached) {
-        getString(Res.string.product_detail_cart_limit_reached, ProductConfiguration.MAX_QUANTITY)
+        getString(Res.string.cart_limit_reached, ProductConfiguration.MAX_QUANTITY)
     } else {
         getString(Res.string.product_detail_added_to_cart, productName)
     }

@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.karolina.cieslik.kafe.feature.cafe.presentation.CafePickerRoute
+import com.karolina.cieslik.kafe.feature.cart.presentation.CartRoute
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuEvent
 import com.karolina.cieslik.kafe.feature.menu.presentation.MenuRoute
 import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
@@ -16,7 +17,8 @@ import com.karolina.cieslik.kafe.feature.product.presentation.ProductDetailRoute
 /**
  * Graf nawigacji aplikacji.
  *
- * Przejścia z menu używają launchSingleTop, więc szybkie podwójne kliknięcie nie otwiera ekranu dwa razy.
+ * Przejścia z menu i do koszyka używają launchSingleTop, więc szybkie podwójne kliknięcie nie otwiera ekranu
+ * dwa razy.
  * Powrót zdejmuje ekran ze stosu, a menu zachowuje swój stan.
  *
  * @param navController kontroler nawigacji; parametr, żeby testy mogły podać TestNavHostController.
@@ -41,16 +43,21 @@ fun KafeNavHost(
                 onNavigateToCafePicker = {
                     navController.navigate(MenuEvent.NavigateToCafePicker.toRoute()) { launchSingleTop = true }
                 },
-                // TODO(KAFE-13): navigate(KafeRoute.Cart) razem z celem composable<KafeRoute.Cart> (ekran koszyka).
-                onNavigateToCart = {},
+                onNavigateToCart = { navController.navigate(KafeRoute.Cart) { launchSingleTop = true } },
             )
         }
         composable<KafeRoute.ProductDetail> { entry ->
             ProductDetailRoute(
                 productId = entry.toRoute<KafeRoute.ProductDetail>().productId,
                 onNavigateBack = { navController.popBackStack() },
-                // TODO(KAFE-13): navigate(KafeRoute.Cart) razem z celem composable<KafeRoute.Cart> (ekran koszyka).
-                onNavigateToCart = {},
+                onNavigateToCart = { navController.navigate(KafeRoute.Cart) { launchSingleTop = true } },
+            )
+        }
+        composable<KafeRoute.Cart> {
+            CartRoute(
+                onNavigateToMenu = { navController.navigateFromCartToMenu() },
+                // Bezpiecznik: zdjęcie jedynego wpisu stosu zostawiłoby pusty ekran.
+                onNavigateBack = { if (navController.previousBackStackEntry != null) navController.popBackStack() },
             )
         }
         composable<KafeRoute.CafePicker> {

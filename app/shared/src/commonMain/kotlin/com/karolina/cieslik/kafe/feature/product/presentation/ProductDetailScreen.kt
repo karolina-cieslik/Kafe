@@ -1,7 +1,5 @@
 package com.karolina.cieslik.kafe.feature.product.presentation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,11 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,6 +30,7 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeC
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeErrorState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeExpandableText
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeGroupHeader
+import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeInfoBanner
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeLoadingState
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeQuantityGroup
 import com.karolina.cieslik.kafe.core.presentation.designsystem.components.KafeStepper
@@ -47,12 +44,10 @@ import com.karolina.cieslik.kafe.core.presentation.designsystem.system.SystemBar
 import com.karolina.cieslik.kafe.core.presentation.designsystem.theme.KafeTheme
 import kafe.app.shared.generated.resources.Res
 import kafe.app.shared.generated.resources.ds_product_unavailable
-import kafe.app.shared.generated.resources.ic_info
 import kafe.app.shared.generated.resources.product_detail_add_to_cart
 import kafe.app.shared.generated.resources.product_detail_quantity
 import kafe.app.shared.generated.resources.product_detail_size
 import kafe.app.shared.generated.resources.product_detail_title
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /** Stabilne tagi ekranu szczegółów produktu dla testów UI (Robolectric i instrumentacyjnych). */
@@ -190,7 +185,7 @@ private fun ProductDetailContent(
         }
         state.infoMessage?.let {
             Spacer(Modifier.height(spacing.m))
-            InfoBanner(text = it)
+            KafeInfoBanner(text = it, modifier = Modifier.testTag(ProductDetailTestTags.INFO))
         }
 
         if (state.sizes.size > 1) {
@@ -302,33 +297,6 @@ private fun QuantityRow(
             canDecrease = canDecrease,
             canIncrease = canIncrease,
             size = KafeStepperSize.Large,
-        )
-    }
-}
-
-/** Baner informacyjny w kolorze akcentu, np. „Ten produkt jest chwilowo niedostępny w …”. */
-@Composable
-private fun InfoBanner(text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(KafeTheme.spacing.s),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(KafeTheme.shapes.medium)
-            .background(KafeTheme.colors.primaryContainer)
-            .padding(KafeTheme.spacing.m)
-            .testTag(ProductDetailTestTags.INFO),
-    ) {
-        Icon(
-            painter = painterResource(Res.drawable.ic_info),
-            contentDescription = null,
-            tint = KafeTheme.colors.onPrimaryContainer,
-            modifier = Modifier.size(KafeTheme.spacing.icon - KafeTheme.spacing.xs),
-        )
-        Text(
-            text = text,
-            style = KafeTheme.typography.bodyMedium,
-            color = KafeTheme.colors.onPrimaryContainer,
         )
     }
 }

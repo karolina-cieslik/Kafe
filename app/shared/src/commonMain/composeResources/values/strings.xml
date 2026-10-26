@@ -29,6 +29,7 @@
     <string name="ds_total_label">Razem</string>
     <string name="ds_read_more">Czytaj więcej</string>
     <string name="ds_read_less">Zwiń</string>
+    <string name="ds_cancel">Anuluj</string>
     <string name="ds_cart_empty">Koszyk jest pusty</string>
     <plurals name="ds_cart_item_count">
         <item quantity="one">Koszyk, %1$d sztuka</item>
@@ -43,8 +44,37 @@
     <string name="product_detail_quantity">Liczba sztuk</string>
     <string name="product_detail_add_to_cart">Dodaj do koszyka</string>
     <string name="product_detail_added_to_cart">Dodano do koszyka: %1$s</string>
-    <string name="product_detail_cart_limit_reached">W koszyku jest już maks. %1$d szt. tej pozycji</string>
     <string name="product_detail_add_to_cart_failed">Nie udało się dodać do koszyka. Spróbuj ponownie.</string>
+
+    <!-- Koszyk -->
+    <string name="cart_title">Koszyk</string>
+    <string name="cart_clear">Wyczyść</string>
+    <string name="cart_clear_dialog_title">Wyczyścić koszyk?</string>
+    <string name="cart_clear_dialog_message">Czy na pewno usunąć wszystkie pozycje?</string>
+    <string name="cart_pickup_at">Odbiór w: %1$s</string>
+    <string name="cart_prices_unverified">Nie udało się sprawdzić aktualnych cen. Pokazujemy ostatnio zapisane ceny.</string>
+    <string name="cart_item_unavailable">Niedostępne – usuń, aby kontynuować</string>
+    <string name="cart_item_price_updated">Cena została zaktualizowana</string>
+    <string name="cart_item_previous_price">Poprzednia cena: %1$s</string>
+    <string name="cart_item_unit_price">%1$s / szt.</string>
+    <string name="cart_item_remove">Usuń: %1$s</string>
+    <string name="cart_item_total">Razem za pozycję: %1$s</string>
+    <string name="cart_summary_total">Razem do zapłaty</string>
+    <string name="cart_summary_vat">Ceny zawierają VAT</string>
+    <plurals name="cart_summary_item_count">
+        <item quantity="one">%1$d produkt</item>
+        <item quantity="few">%1$d produkty</item>
+        <item quantity="many">%1$d produktów</item>
+        <item quantity="other">%1$d produktu</item>
+    </plurals>
+    <string name="cart_empty_title">Twój koszyk jest pusty</string>
+    <string name="cart_empty_message">Dodaj coś z menu, a pojawi się tutaj.</string>
+    <string name="cart_go_to_menu">Przejdź do menu</string>
+    <string name="cart_item_removed">Usunięto: %1$s</string>
+    <string name="cart_undo">Cofnij</string>
+    <string name="cart_action_failed">Nie udało się zmienić koszyka. Spróbuj ponownie.</string>
+    <!-- Wspólny z ekranem produktu: dodanie albo „Cofnij” doszło do limitu sztuk jednej pozycji. -->
+    <string name="cart_limit_reached">W koszyku jest już maks. %1$d szt. tej pozycji</string>
 
     <!-- Wybór lokalu -->
     <string name="cafe_picker_title">Wybierz kawiarnię</string>

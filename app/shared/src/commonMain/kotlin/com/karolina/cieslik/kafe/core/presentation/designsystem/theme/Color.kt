@@ -42,7 +42,10 @@ internal object KafePalette {
     val ErrorDark = Color(0xFFFF8A80)
 }
 
-/** Schemat Material3 jasnego motywu – kawowy `primary` na jasnym tle. */
+/**
+ * Schemat Material3 jasnego motywu – kawowy `primary` na jasnym tle. Kolory `inverse*` to tło snackbara i kolor
+ * jego akcji („Cofnij”); bez nich Material3 bierze domyślny fiolet.
+ */
 internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     primary = KafePalette.Coffee,
     onPrimary = KafePalette.White,
@@ -65,11 +68,17 @@ internal val KafeLightColorScheme: ColorScheme = lightColorScheme(
     surfaceContainerHighest = KafePalette.Grey200,
     outline = KafePalette.Grey400,
     outlineVariant = KafePalette.Grey200,
+    inverseSurface = KafePalette.Charcoal,
+    inverseOnSurface = KafePalette.White,
+    inversePrimary = KafePalette.CoffeeLight,
     error = KafePalette.ErrorLight,
     onError = KafePalette.White,
 )
 
-/** Schemat Material3 ciemnego motywu – jaśniejszy kawowy `primary`, żeby zachować kontrast na ciemnym tle. */
+/**
+ * Schemat Material3 ciemnego motywu – jaśniejszy kawowy `primary`, żeby zachować kontrast na ciemnym tle. Akcja
+ * snackbara (`inversePrimary`) jest ciemnobrązowa, bo leży na jasnym `inverseSurface` (ok. 4,9:1, WCAG AA).
+ */
 internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
     primary = KafePalette.CoffeeLight,
     onPrimary = KafePalette.Espresso,
@@ -92,6 +101,9 @@ internal val KafeDarkColorScheme: ColorScheme = darkColorScheme(
     surfaceContainerHighest = KafePalette.DarkOutline,
     outline = KafePalette.DarkOutline,
     outlineVariant = KafePalette.DarkSurfaceVariant,
+    inverseSurface = KafePalette.DarkOnSurface,
+    inverseOnSurface = KafePalette.Espresso,
+    inversePrimary = KafePalette.CoffeeDark,
     error = KafePalette.ErrorDark,
     onError = KafePalette.Espresso,
 )
